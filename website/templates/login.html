@@ -1,0 +1,28 @@
+{% extends "base.html" %} {% block title %}Logga In{% endblock %} {% block
+content %}
+<form method="POST">
+  <h3 align="center">Logga In</h3>
+  <div class="form-group">
+    <label for="username">Användarnamn</label>
+    <input
+      type="text"
+      class="form-control"
+      id="username"
+      name="username"
+      placeholder="Skriv användarnamn"
+    />
+  </div>
+  <div class="form-group">
+    <label for="password">Lösenord</label>
+    <input
+      type="password"
+      class="form-control"
+      id="password"
+      name="password"
+      placeholder="Skriv lösenord"
+    />
+  </div>
+  <br />
+  <button type="submit" class="btn btn-outline-primary">Logga In</button>
+</form>
+{%endblock%}

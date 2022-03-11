@@ -1,0 +1,46 @@
+{% extends "fixtures_base.html" %}{% block title %}Matcher{% endblock %}{% block
+header %}Matcher{% endblock %} {% block content_before %}
+<div class="border hover">
+  <div class="text-center">
+    Visar alla matcher mellan {{ date[0] }} till {{ date[1] }}
+  </div>
+  <br />
+  <form method="POST">
+    <div class="row align-items-center">
+      <div class="col form-group">
+        <div class="float-right">
+          <label for="date-start">Startdatum</label>
+          <br />
+          <input
+            type="date"
+            id="date-start"
+            name="date-start"
+            value="{{ date[0] }}"
+            min="2021-08-13"
+            max="2022-05-22"
+          />
+        </div>
+      </div>
+      <div class="col form-group">
+        <div class="float-left">
+          <label for="date-end">Slutdatum</label>
+          <br />
+          <input
+            type="date"
+            id="date-end"
+            name="date-end"
+            value="{{ date[1] }}"
+            min="2021-08-13"
+            max="2022-05-22"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="text-center">
+      <button type="submit" class="btn btn-outline-primary">Visa</button>
+    </div>
+  </form>
+  <br />
+</div>
+<br />
+{% endblock content_before %}

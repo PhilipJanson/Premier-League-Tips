@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Extra
+*.db
+*.json
+__init__.py
+api.py

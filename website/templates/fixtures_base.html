@@ -1,0 +1,76 @@
+{% extends "base.html" %}{% block title %}Fixtures Base{% endblock %}{% block
+content %}
+<h2 class="pb-2 text-center">{% block header %}Header{% endblock %}</h2>
+{% block content_before %}{% endblock content_before %}
+<div class="border-bottom"></div>
+<div>
+  {% for events in data|reverse %} {% if date[0] <= events['event_date'] and
+  date[1] >= events['event_date'] %}
+  <div
+    class="container border-bottom hover"
+    id="{{ events['event_date'] }}:{{ events['event_key'] }}"
+    data-mdb-ripple-color="dark"
+  >
+    <div class="text-center text-responsive">
+      Datum: {{ events["event_date"] }}
+    </div>
+    <div class="text-center text-responsive">
+      Tid: {{ events["event_time"] }}
+    </div>
+    <div class="row align-items-center">
+      <div class="col">
+        <img
+          class="img-thumbnail float-start"
+          src="{{ events['home_team_logo'] }}"
+          alt="home team logo"
+        />
+      </div>
+      <div class="col-3">
+        <div class="text-right text-responsive">
+          {{ events["event_home_team"] }}
+        </div>
+      </div>
+      <div class="col">
+        <div class="text-center text-nowrap text-responsive">
+          {% if events["event_final_result"] %}{{ events["event_final_result"]
+          }}{% else %}-{% endif %}
+        </div>
+      </div>
+      <div class="col-3">
+        <div class="text-left text-responsive">
+          {{ events["event_away_team"] }}
+        </div>
+      </div>
+      <div class="col">
+        <img
+          class="img-thumbnail float-end"
+          src="{{ events['away_team_logo'] }}"
+          alt="home team logo"
+        />
+      </div>
+    </div>
+    <br />
+    {% block tips scoped -%}
+    <div>
+      <form method="POST">
+        <div class="form-group">
+          <select
+            class="form-control form-control-sm"
+            name="form-{{ events['event_key'] }}"
+            id="form-{{ events['event_key'] }}"
+          >
+            <option value="1">1</option>
+            <option value="X">X</option>
+            <option value="2">2</option>
+          </select>
+          <br />
+          <button type="submit" class="btn btn-outline-primary">Tipsa</button>
+        </div>
+      </form>
+    </div>
+    <br />
+    {% endblock tips %}
+  </div>
+  {% endif %} {% endfor %}{% block content_after %}{% endblock content_after
+  %}{% endblock content %}
+</div>

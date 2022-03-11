@@ -1,0 +1,36 @@
+.hover {
+  background: #fff;
+}
+.hover:hover {
+  background: #f5f5f5;
+}
+
+@media (min-width: 0px) {
+  .text-responsive {
+    font-size: 10px;
+  }
+}
+
+@media (min-width: 544px) {
+  .text-responsive {
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 768px) {
+  .text-responsive {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 992px) {
+  .text-responsive {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .text-responsive {
+    font-size: 16px;
+  }
+}
