@@ -1,5 +1,5 @@
 {% extends "fixtures_base.html" %}{% block title %}Matcher{% endblock %}{% block
-header %}Matcher{% endblock %} {% block content_before %}
+header %}Matcher{% endblock %} {% block before_fixures %}
 <div class="border hover">
   <div class="text-center">
     Visar alla matcher mellan {{ date[0] }} till {{ date[1] }}
@@ -43,4 +43,27 @@ header %}Matcher{% endblock %} {% block content_before %}
   <br />
 </div>
 <br />
-{% endblock content_before %}
+{% endblock before_fixures %} {% block tips %}
+<div>
+  {% if events["event_ft_result"] %}
+  <div class="text-center">Matchen är slut, ingen tippning tillåten</div>
+  {% else %}
+  <form method="POST">
+    <div class="form-group">
+      <select
+        class="form-control form-control-sm"
+        name="form-{{ events['event_key'] }}"
+        id="form-{{ events['event_key'] }}"
+      >
+        <option value="1">1</option>
+        <option value="X">X</option>
+        <option value="2">2</option>
+      </select>
+      <br />
+      <button type="submit" class="btn btn-outline-primary">Tippa</button>
+    </div>
+  </form>
+  {% endif %}
+</div>
+<br />
+{% endblock tips %}

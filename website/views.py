@@ -33,11 +33,7 @@ def fixtures():
         data = json.load(f)
 
     time = datetime.datetime.now()
-    y = time.strftime("%Y")
-    m = time.strftime("%m")
-    d = time.strftime("%d")
-    start_date = "{}-{}-{}".format(y, m, d)
-    end_date = str(time + datetime.timedelta(days=14)).split()[0]
+    start_date, end_date = get_dates(time)
 
     if request.method == "POST":
         for key in request.form:
@@ -57,6 +53,10 @@ def fixtures():
                     db.session.add(new_tip)
                     db.session.commit()
                     print(f"Added tip for {event_key}: {tip}")
+
+    if start_date > end_date:
+        flash("Slutdatum kan inte vara innan startdatum", category="error")
+        start_date, end_date = get_dates(time)
 
     return render_template("fixtures.html", user=current_user, date=[start_date, end_date], data=data["result"])
 
@@ -96,3 +96,13 @@ def delete_note():
             db.session.commit()
 
     return jsonify({})
+
+
+def get_dates(time):
+    y = time.strftime("%Y")
+    m = time.strftime("%m")
+    d = time.strftime("%d")
+    start_date = "{}-{}-{}".format(y, m, d)
+    end_date = str(time + datetime.timedelta(days=14)).split()[0]
+
+    return start_date, end_date
