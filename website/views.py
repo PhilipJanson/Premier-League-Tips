@@ -46,19 +46,20 @@ def fixtures():
                 tip = request.form[key]
 
                 if (len(tip) < 1 or len(tip) > 1):
-                    flash("Something went wrong", category="error")
+                    flash("Något gick fel", category="error")
                 else:
                     new_tip = Tip(event_key=event_key, tip=tip,
                                   user_id=current_user.id)
                     db.session.add(new_tip)
                     db.session.commit()
+                    flash("Tippning regristrerad", category="success")
                     print(f"Added tip for {event_key}: {tip}")
 
     if start_date > end_date:
         flash("Slutdatum kan inte vara innan startdatum", category="error")
         start_date, end_date = get_dates(time)
 
-    return render_template("fixtures.html", user=current_user, date=[start_date, end_date], data=data["result"])
+    return render_template("fixtures.html", user=current_user, users=User.query.all(), date=[start_date, end_date], data=data["result"])
 
 
 @views.route("/tips")
@@ -67,33 +68,17 @@ def tips():
     return render_template("tips.html", user=current_user, users=User.query.all())
 
 
-@views.route("/notes", methods=["GET", "POST"])
-@login_required
-def notes():
-    if request.method == "POST":
-        note = request.form.get("note")
+@views.route("/delete-tip", methods=["POST"])
+def delete_tip():
+    tip = json.loads(request.data)
+    tip_id = tip["tip_id"]
+    tip = Tip.query.get(tip_id)
 
-        if len(note) < 1:
-            flash("Note is empty", category="error")
-        else:
-            new_note = Note(data=note, user_id=current_user.id)
-            db.session.add(new_note)
+    if tip:
+        if tip.user_id == current_user.id:
+            db.session.delete(tip)
             db.session.commit()
-            flash("Note added", category="success")
-
-    return render_template("notes.html", user=current_user)
-
-
-@views.route("/delete-note", methods=["POST"])
-def delete_note():
-    note = json.loads(request.data)
-    note_id = note["noteId"]
-    note = Note.query.get(note_id)
-
-    if note:
-        if note.user_id == current_user.id:
-            db.session.delete(note)
-            db.session.commit()
+            flash("Tip borttaget", category="success")
 
     return jsonify({})
 

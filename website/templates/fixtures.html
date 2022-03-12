@@ -48,22 +48,59 @@ header %}Matcher{% endblock %} {% block before_fixures %}
   {% if events["event_ft_result"] %}
   <div class="text-center">Matchen är slut, ingen tippning tillåten</div>
   {% else %}
-  <form method="POST">
-    <div class="form-group">
-      <select
-        class="form-control form-control-sm"
-        name="form-{{ events['event_key'] }}"
-        id="form-{{ events['event_key'] }}"
-      >
-        <option value="1">1</option>
-        <option value="X">X</option>
-        <option value="2">2</option>
-      </select>
-      <br />
-      <button type="submit" class="btn btn-outline-primary">Tippa</button>
-    </div>
-  </form>
+  <div>
+    <form method="POST">
+      <div class="form-group">
+        <select
+          class="form-control form-control-sm"
+          name="form-{{ events['event_key'] }}"
+          id="form-{{ events['event_key'] }}"
+        >
+          <option value="1">1</option>
+          <option value="X">X</option>
+          <option value="2">2</option>
+        </select>
+        <br />
+        <div class="text-center">
+          <button type="submit" class="btn btn-outline-primary">Tippa</button>
+          <button
+            class="btn btn-outline-primary"
+            type="button"
+            data-toggle="collapse"
+            data-target="#tips-{{ events['event_key'] }}"
+            aria-expanded="false"
+            aria-controls="tips-{{ events['event_key'] }}"
+          >
+            Visa Tips
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
   {% endif %}
+  <div class="collapse border" id="tips-{{ events['event_key'] }}">
+    <ul class="list-group list-group-flush">
+      {% for u in users %} {% for tips in u.tips %} {% if tips.event_key|int ==
+      events['event_key']|int %}
+      <li class="list-group-item">
+        {{ u.username }}: {{ tips.tip }} {% if u == user %}
+        <button
+          type="button"
+          class="close"
+          onClick="deleteTip('{{ tips.id }}')"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+        {% endif %}
+      </li>
+      {% endif %} {% endfor %} {% endfor %}
+    </ul>
+  </div>
 </div>
 <br />
-{% endblock tips %}
+{% endblock tips %} {% block script %}
+<script
+  type="text/javascript"
+  src="{{ url_for('static', filename='js/deleteTip.js') }}"
+></script>
+{% endblock %}
