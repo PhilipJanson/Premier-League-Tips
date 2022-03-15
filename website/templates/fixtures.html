@@ -2,7 +2,7 @@
 header %}Matcher{% endblock %} {% block before_fixures %}
 <div class="border hover">
   <div class="text-center">
-    Visar alla matcher mellan {{ date[0] }} till {{ date[1] }}
+    Visar alla matcher från {{ date[0] }} till {{ date[1] }}
   </div>
   <br />
   <form method="POST">
@@ -45,7 +45,7 @@ header %}Matcher{% endblock %} {% block before_fixures %}
 <br />
 {% endblock before_fixures %} {% block tips %}
 <div>
-  {% if events["event_ft_result"] %}
+  {% if fixture["status"]["short"] == "TEMP" %}
   <div class="text-center">Matchen är slut, ingen tippning tillåten</div>
   {% else %}
   <div>
@@ -53,8 +53,8 @@ header %}Matcher{% endblock %} {% block before_fixures %}
       <div class="form-group">
         <select
           class="form-control form-control-sm"
-          name="form-{{ events['event_key'] }}"
-          id="form-{{ events['event_key'] }}"
+          name="form-{{ fixture['id'] }}"
+          id="form-{{ fixture['id'] }}"
         >
           <option value="1">1</option>
           <option value="X">X</option>
@@ -67,9 +67,9 @@ header %}Matcher{% endblock %} {% block before_fixures %}
             class="btn btn-outline-primary"
             type="button"
             data-toggle="collapse"
-            data-target="#tips-{{ events['event_key'] }}"
+            data-target="#tips-{{ fixture['id'] }}"
             aria-expanded="false"
-            aria-controls="tips-{{ events['event_key'] }}"
+            aria-controls="tips-{{ fixture['id'] }}"
           >
             Visa Tips
           </button>
@@ -78,10 +78,10 @@ header %}Matcher{% endblock %} {% block before_fixures %}
     </form>
   </div>
   {% endif %}
-  <div class="collapse border" id="tips-{{ events['event_key'] }}">
+  <div class="collapse border" id="tips-{{ fixture['id'] }}">
     <ul class="list-group list-group-flush">
-      {% for u in users %} {% for tips in u.tips %} {% if tips.event_key|int ==
-      events['event_key']|int %}
+      {% for u in users %} {% for tips in u.tips %} {% if tips.fixture_id ==
+      fixture['id'] %}
       <li class="list-group-item">
         {{ u.username }}: {{ tips.tip }} {% if u == user %}
         <button
@@ -98,7 +98,7 @@ header %}Matcher{% endblock %} {% block before_fixures %}
   </div>
 </div>
 <br />
-{% endblock tips %} {% block script %}
+{% endblock tips %} {% block script %} {{super()}}
 <script
   type="text/javascript"
   src="{{ url_for('static', filename='js/deleteTip.js') }}"
