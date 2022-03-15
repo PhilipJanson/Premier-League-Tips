@@ -48,6 +48,9 @@
           href="https://github.com/PhilipJanson/Premier-League-Tips"
           >Github</a
         >
+        {% if user.username == "admin" %}
+        <a class="nav-item nav-link" id="logout" href="/admin">Admin</a>
+        {% endif %}
         <a class="nav-item nav-link" id="logout" href="/logout">Logga Ut</a>
         {% else %}
         <a class="nav-item nav-link" id="home" href="/">Hem</a>

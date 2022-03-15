@@ -2,6 +2,7 @@ import requests
 import json
 import time
 from keys import API_KEY
+from matplotlib import pyplot as plt
 
 LEAGUE_ID = 39
 SEASON = 2021
@@ -53,29 +54,35 @@ def calc_results():
     results = {}
     user_list = []
 
-    for users in tips_data["users"]:
-        for user in users:
-            user_data = {}
-            user_data["name"] = user
-            score = 0
+    for user in tips_data["users"]:
+        user_data = {}
+        user_data["name"] = user["name"]
+        user_data["total"] = len(user["tips"])
+        finished = 0
+        score = 0
 
-            for fixtures in fixtures_data["response"]:
-                fixture = fixtures["fixture"]
+        for fixtures in fixtures_data["response"]:
+            fixture = fixtures["fixture"]
 
-                if (fixture["status"]["short"] == "FT"):
-                    for tip in users[user]:
-                        tip_fixture_id = tip["fixture_id"]
-                        tip_tip = tip["tip"]
+            if (fixture["status"]["short"] == "FT"):
+                for tip in user["tips"]:
+                    tip_fixture_id = tip["fixture_id"]
+                    tip_tip = tip["tip"]
 
-                        if tip_fixture_id == fixture["id"]:
-                            winner = fixtures["teams"]["home"]["winner"]
-                            if is_winner(winner, tip_tip):
-                                score += 1
+                    if tip_fixture_id == fixture["id"]:
+                        winner = fixtures["teams"]["home"]["winner"]
+                        finished += 1
+                        if is_winner(winner, tip_tip):
+                            score += 1
 
-            user_data["score"] = score
-            user_list.append(user_data)
+        user_data["finished"] = finished
+        user_data["score"] = score
+        user_list.append(user_data)
 
     results["users"] = user_list
+
+    results['users'] = sorted(
+        results['users'], key=lambda x: x['score'], reverse=True)
 
     with open("website/data/results.json", "w", encoding="utf-8") as f:
         json.dump(results, f, indent=4)
@@ -85,10 +92,27 @@ def is_winner(winner, tip):
     return (winner == True and tip == "1") or (winner == False and tip == "2") or (winner == None and tip == "X")
 
 
+def gen_stats():
+    with open("website/data/results.json", "r") as f:
+        result_data = json.load(f)
+
+    for user in result_data["users"]:
+        if user["score"] != 0 and user["finished"] != 0:
+            labels = ['Antal rätt', 'Antal fel']
+            frequency = [user["score"], user["finished"]]
+            explode = (0.1, 0)
+            colors = ((0.68627, 1, 0.65882), (1, 0.36862, 0.36862))
+            fig = plt.figure()
+            plt.pie(frequency, labels=labels, colors=colors, explode=explode, autopct='%1.1f%%',
+                    shadow=True, startangle=90)
+            plt.savefig(f'website/static/images/stats/{user["name"]}.png')
+
+
 if __name__ == "__main__":
     start = time.time()
     #api_call(["fixtures", "standings", "players/topscorers"])
     sort_fixtures()
     calc_results()
+    gen_stats()
     end = time.time()
     print("Finished in:", end - start)

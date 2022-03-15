@@ -1,0 +1,54 @@
+{% extends "base.html" %} {% block title %}Admin{% endblock %}{% block header
+%}Admin{% endblock %}{% block content %}
+<div class="border">
+  <br />
+  <div class="text-center">Lägg till tips</div>
+  <br />
+  <div class="row align-items-center">
+    <div class="col"></div>
+    <div class="col">
+      <form method="POST">
+        <div class="form-group">
+          <select
+            class="form-control form-control"
+            name="form-username"
+            id="form-username"
+          >
+            {% for u in users %}
+            <option value="{{ u.username }}">{{ u.username }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <input
+            type="text"
+            class="form-control"
+            id="form-fixture-id"
+            name="form-fixture-id"
+            placeholder="Fixture ID"
+          />
+        </div>
+        <div class="form-group">
+          <select
+            class="form-control form-control"
+            name="form-tip"
+            id="form-tip"
+          >
+            <option value="1">1</option>
+            <option value="X">X</option>
+            <option value="2">2</option>
+          </select>
+        </div>
+        <div class="text-center">
+          <button type="submit" class="btn btn-outline-primary">
+            Lägg till
+          </button>
+        </div>
+      </form>
+    </div>
+    <div class="col"></div>
+  </div>
+  <br />
+</div>
+
+{% endblock content %}

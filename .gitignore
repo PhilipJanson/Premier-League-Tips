@@ -133,3 +133,4 @@ dmypy.json
 *.json
 keys.py
 api.py
+stats

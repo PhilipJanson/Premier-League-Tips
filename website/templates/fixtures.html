@@ -1,5 +1,5 @@
 {% extends "fixtures_base.html" %}{% block title %}Matcher{% endblock %}{% block
-header %}Matcher{% endblock %} {% block before_fixures %}
+header %}Matcher{% endblock header %} {% block before_fixures %}
 <div class="border hover">
   <div class="text-center">
     Visar alla matcher från {{ date[0] }} till {{ date[1] }}
@@ -45,8 +45,25 @@ header %}Matcher{% endblock %} {% block before_fixures %}
 <br />
 {% endblock before_fixures %} {% block tips %}
 <div>
-  {% if fixture["status"]["short"] == "TEMP" %}
-  <div class="text-center">Matchen är slut, ingen tippning tillåten</div>
+  {% if fixture["status"]["short"] == "FT" %}
+  <div>
+    <div class="text-center">Matchen är slut, ingen tippning tillåten</div>
+    <br />
+    <div class="text-center">
+      <button
+        class="btn btn-outline-primary"
+        type="button"
+        data-toggle="collapse"
+        data-target="#tips-{{ fixture['id'] }}"
+        aria-expanded="false"
+        aria-controls="tips-{{ fixture['id'] }}"
+      >
+        Visa Tips
+      </button>
+    </div>
+  </div>
+  {% elif fixture["status"]["short"] == "PST" %}
+  <div class="text-center">Matchen är uppskjuten, ingen tippning tillåten</div>
   {% else %}
   <div>
     <form method="POST">
@@ -98,7 +115,7 @@ header %}Matcher{% endblock %} {% block before_fixures %}
   </div>
 </div>
 <br />
-{% endblock tips %} {% block script %} {{super()}}
+{% endblock tips %} {% block script %}
 <script
   type="text/javascript"
   src="{{ url_for('static', filename='js/deleteTip.js') }}"

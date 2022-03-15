@@ -4,7 +4,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from .models import User
 from . import db
 
-
 auth = Blueprint("auth", __name__)
 
 
@@ -56,7 +55,7 @@ def signup():
             flash("Lösenorden stämmer inte överens", category="error")
         else:
             new_user = User(username=username, password=generate_password_hash(
-                password, method="sha256"))
+                password, method="sha256"), is_admin=username == "admin")
             db.session.add(new_user)
             db.session.commit()
 

@@ -1,14 +1,21 @@
-{% extends "base.html" %} {% block title %}Tips{% endblock %} {% block content
-%}
-<h1 align="center">Tips</h1>
-{% for u in users %}
-<h3>{{ u.username }}:</h3>
-<ul class="list-group list-group-flush" id="tips">
-  {% for tips in u.tips %}
-  <li class="list-group-item">
-    <div>{{ tips.fixture_id }}: {{ tips.tip }}</div>
-  </li>
-  {% endfor %}
-</ul>
+{% extends "base.html" %} {% block title %}Tips{% endblock %}{% block content %}
+<h2 class="pb-2 text-center">Tips</h2>
+{% for u in users %} {% if u.username != "admin" %}
+<div class="text-responsive">
+  <h3>{{ u.username }}:</h3>
+  <div>
+    {% for tips in u.tips %}
+    <div class="row align-items-center border-bottom hover">
+      <div class="col">
+        {% for fixtures in fixtures_data %} {% if fixtures["fixture"]["id"] ==
+        tips.fixture_id %} {{ fixtures["teams"]["home"]["name"] }} - {{
+        fixtures["teams"]["away"]["name"] }} {% endif %} {% endfor %}
+      </div>
+      <div class="col">{{ tips.tip }}</div>
+      <div class="col-2"></div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
 <br />
-{% endfor %} {% endblock %}
+{% endif %} {% endfor %} {% endblock %}

@@ -14,8 +14,8 @@ content%}
     <div class="col-sm-1">MS</div>
     <div class="col-sm-1"><strong>P</strong></div>
   </div>
-  {% for leagues in data %} {% for temp in leagues["league"]["standings"] %} {%
-  for team in temp %}
+  {% for leagues in standings_data %} {% for temp in
+  leagues["league"]["standings"] %} {% for team in temp %}
   <div class="row align-items-center border-bottom hover">
     <div class="col-sm-1">{{ team["rank"] }}</div>
     <div class="col-1">

@@ -5,10 +5,10 @@ fixtures %}
 {% block before_fixures %}{% endblock before_fixures %}
 <div class="border-bottom"></div>
 <div>
-  {% for fixtures in data %} {% set fixture = fixtures["fixture"] %} {% set home
-  = fixtures["teams"]["home"] %} {% set away = fixtures["teams"]["away"] %} {%
-  if date[0] <= fixture['date'].split("T")[0] and date[1] >=
-  fixture['date'].split("T")[0] %}
+  {% for fixtures in fixtures_data %} {% set fixture = fixtures["fixture"] %} {%
+  set home = fixtures["teams"]["home"] %} {% set away =
+  fixtures["teams"]["away"] %} {% if date[0] <= fixture['date'].split("T")[0]
+  and date[1] >= fixture['date'].split("T")[0] %}
   <div
     class="container border-bottom hover"
     id="{{ fixture['id'] }}"
@@ -24,6 +24,7 @@ fixtures %}
     <div class="text-center text-responsive">
       Tid: {{ fixture["date"].split("T")[1][0:5] }}
     </div>
+    <div class="text-center text-responsive">ID: {{ fixture['id'] }}</div>
     {% endif %}
     <div class="row align-items-center">
       <div class="col">
