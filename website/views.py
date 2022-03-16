@@ -12,6 +12,8 @@ fixture_file = os.path.join(curr_folder, 'data/fixtures.json')
 standings_file = os.path.join(curr_folder, 'data/standings.json')
 tips_file = os.path.join(curr_folder, 'data/tips.json')
 results_file = os.path.join(curr_folder, 'data/results.json')
+p_file = os.path.join(curr_folder, 'data/old/p.txt')
+t_file = os.path.join(curr_folder, 'data/old/t.txt')
 
 
 @views.route("/")
@@ -85,16 +87,16 @@ def standings():
     return render_template("standings.html", user=current_user, standings_data=standings_data["response"])
 
 
-@views.route("/tips")
+@views.route("/stats")
 @login_required
-def tips():
+def stats():
     with open(fixture_file) as f:
         fixtures_data = json.load(f)
 
     with open(results_file) as f:
         results_data = json.load(f)
 
-    return render_template("tips.html", user=current_user, fixtures_data=fixtures_data["response"], results_data=results_data["users"], users=User.query.all())
+    return render_template("stats.html", user=current_user, fixtures_data=fixtures_data["response"], results_data=results_data["users"], users=User.query.all())
 
 
 @views.route("/admin", methods=["GET", "POST"])
@@ -139,6 +141,36 @@ def delete_tip():
     return jsonify({})
 
 
+@views.route("/load-tips", methods=["POST"])
+def load_tips():
+    p = open(p_file, "r")
+    user = User.query.filter_by(username="philip").first()
+
+    for line in p:
+        data = str(line).split(":")
+        fixture_id = data[0]
+        tip = data[1].replace("\n", "")
+        new_tip = Tip(fixture_id=fixture_id, tip=tip,
+                      user_id=user.id)
+        db.session.add(new_tip)
+
+    t = open(t_file, "r")
+    user = User.query.filter_by(username="totte").first()
+
+    for line in t:
+        data = str(line).split(":")
+        fixture_id = data[0]
+        tip = data[1].replace("\n", "")
+        new_tip = Tip(fixture_id=fixture_id, tip=tip,
+                      user_id=user.id)
+        db.session.add(new_tip)
+
+    db.session.commit()
+    write_tip()
+
+    return jsonify({})
+
+
 def write_tip():
     data = {}
     user_list = []
@@ -159,8 +191,8 @@ def write_tip():
 
     data["users"] = user_list
 
-    with open(tips_file, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4)
+    with open(tips_file, "w") as f:
+        json.dump(data, f)
 
 
 def get_dates(time, days):

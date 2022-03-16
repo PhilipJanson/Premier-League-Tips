@@ -49,6 +49,19 @@
     <div class="col"></div>
   </div>
   <br />
+  <div class="text-center">Ladda Gamla Tips</div>
+  <br />
+  <div class="text-center">
+    <button type="button" class="btn btn-outline-primary" onClick="loadTips()">
+      Ladda
+    </button>
+  </div>
+  <br />
 </div>
 
-{% endblock content %}
+{% endblock content %} {% block script %}
+<script
+  type="text/javascript"
+  src="{{ url_for('static', filename='js/utils.js') }}"
+></script>
+{% endblock %}
