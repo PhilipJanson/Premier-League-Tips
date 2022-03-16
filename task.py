@@ -11,6 +11,7 @@ SEASON = 2021
 def api_call(endpoints):
     for endpoint in endpoints:
         url = f"https://v3.football.api-sports.io/{endpoint}?season={SEASON}&league={LEAGUE_ID}"
+
         if endpoint == "fixtures":
             url = url+"&timezone=Europe/Stockholm"
 
@@ -28,8 +29,8 @@ def api_call(endpoints):
         name = endpoint.split("/")
         name = name[len(name) - 1]
 
-        with open(f"website/data/{name}.json", "w", encoding="utf-8") as f:
-            json.dump(response.json(), f, indent=4)
+        with open(f"website/data/{name}.json", "w") as f:
+            json.dump(response.json(), f)
 
 
 def sort_fixtures():
@@ -40,8 +41,8 @@ def sort_fixtures():
     sorted_fixtures['response'] = sorted(
         fixtures['response'], key=lambda x: x['fixture']['date'])
 
-    with open("website/data/fixtures.json", "w", encoding="utf-8") as f:
-        json.dump(sorted_fixtures, f, indent=4)
+    with open("website/data/fixtures.json", "w") as f:
+        json.dump(sorted_fixtures, f)
 
 
 def calc_results():
@@ -84,8 +85,8 @@ def calc_results():
     results['users'] = sorted(
         results['users'], key=lambda x: x['score'], reverse=True)
 
-    with open("website/data/results.json", "w", encoding="utf-8") as f:
-        json.dump(results, f, indent=4)
+    with open("website/data/results.json", "w") as f:
+        json.dump(results, f)
 
 
 def is_winner(winner, tip):
@@ -99,7 +100,7 @@ def gen_stats():
     for user in result_data["users"]:
         if user["score"] != 0 and user["finished"] != 0:
             labels = ['Antal rätt', 'Antal fel']
-            frequency = [user["score"], user["finished"]]
+            frequency = [user["score"], user["finished"] - user["score"]]
             explode = (0.1, 0)
             colors = ((0.68627, 1, 0.65882), (1, 0.36862, 0.36862))
             fig = plt.figure()
@@ -110,7 +111,7 @@ def gen_stats():
 
 if __name__ == "__main__":
     start = time.time()
-    #api_call(["fixtures", "standings", "players/topscorers"])
+    #api_call(["fixtures", "standings"])
     sort_fixtures()
     calc_results()
     gen_stats()

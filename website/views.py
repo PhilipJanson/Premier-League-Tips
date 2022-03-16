@@ -11,6 +11,7 @@ curr_folder = os.path.dirname(os.path.abspath(__file__))
 fixture_file = os.path.join(curr_folder, 'data/fixtures.json')
 standings_file = os.path.join(curr_folder, 'data/standings.json')
 tips_file = os.path.join(curr_folder, 'data/tips.json')
+results_file = os.path.join(curr_folder, 'data/results.json')
 
 
 @views.route("/")
@@ -90,7 +91,10 @@ def tips():
     with open(fixture_file) as f:
         fixtures_data = json.load(f)
 
-    return render_template("tips.html", user=current_user, fixtures_data=fixtures_data["response"], users=User.query.all())
+    with open(results_file) as f:
+        results_data = json.load(f)
+
+    return render_template("tips.html", user=current_user, fixtures_data=fixtures_data["response"], results_data=results_data["users"], users=User.query.all())
 
 
 @views.route("/admin", methods=["GET", "POST"])

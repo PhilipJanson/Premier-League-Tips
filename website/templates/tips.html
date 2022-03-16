@@ -1,21 +1,62 @@
 {% extends "base.html" %} {% block title %}Tips{% endblock %}{% block content %}
-<h2 class="pb-2 text-center">Tips</h2>
+<h1 class="pb-2 text-center">Tips</h1>
 {% for u in users %} {% if u.username != "admin" %}
-<div class="text-responsive">
-  <h3>{{ u.username }}:</h3>
-  <div>
-    {% for tips in u.tips %}
-    <div class="row align-items-center border-bottom hover">
-      <div class="col">
-        {% for fixtures in fixtures_data %} {% if fixtures["fixture"]["id"] ==
-        tips.fixture_id %} {{ fixtures["teams"]["home"]["name"] }} - {{
-        fixtures["teams"]["away"]["name"] }} {% endif %} {% endfor %}
+<div class="border text-responsive">
+  <h2 class="text-center">{{ u.username }}</h2>
+  <div class="row align-items-center">
+    <div class="col">
+      <div class="row">
+        {% for u1 in results_data %}{% if u1["name"] == u.username %}
+        <div class="col"></div>
+        <div class="col">
+          <div>Tips gjorda: {{ u1["total"] }}</div>
+          <div>Avslutade tips: {{ u1["finished"] }}</div>
+          <div>Antal rätt: {{ u1["score"] }}</div>
+          <div>Antal fel: {{ u1["finished"] - u1["score"] }}</div>
+        </div>
+        {% endif %}{% endfor %}
       </div>
-      <div class="col">{{ tips.tip }}</div>
-      <div class="col-2"></div>
     </div>
-    {% endfor %}
+    <div class="col text-center">
+      {% set errorimg = url_for('static', filename='images/statnotfound.png') %}
+      <img
+        class="img-fluid"
+        src="{{ url_for('static', filename='images/stats/' + u.username + '.png') }}"
+        onerror="this.onerror=null; this.src='{{ errorimg }}'"
+        alt="Pie chart showing {{ u.username }}'s statistics."
+      />
+    </div>
   </div>
+  <br />
+  <div>
+    <div class="row align-items-center">
+      <div class="col-3"></div>
+      <div class="col">
+        <div class="row align-items-center border-bottom hover">
+          <div class="col"><strong>Match</strong></div>
+          <div class="col text-right"><strong>Tips</strong></div>
+        </div>
+        {% for tips in u.tips %}{% for fixtures in fixtures_data %}{% if
+        fixtures["fixture"]["status"]["short"] == "NS" and
+        fixtures["fixture"]["id"] == tips.fixture_id %}
+        <div class="row align-items-center border-bottom hover">
+          <div class="col">
+            {{ fixtures["teams"]["home"]["name"] }} - {{
+            fixtures["teams"]["away"]["name"] }}
+          </div>
+          <div class="col text-right">{{ tips.tip }}</div>
+        </div>
+        {% endif %} {% endfor %} {% endfor %}
+      </div>
+      <div class="col-3"></div>
+    </div>
+  </div>
+  <br />
 </div>
 <br />
-{% endif %} {% endfor %} {% endblock %}
+{% endif %} {% endfor %} {% endblock %} {% block script %}
+<script
+  type="text/javascript"
+  src="{{ url_for('static', filename='js/deleteTip.js') }}"
+></script>
+{% endblock %}

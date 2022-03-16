@@ -61,10 +61,11 @@ header %}Matcher{% endblock header %} {% block before_fixures %}
         Visa Tips
       </button>
     </div>
+    <div><br /></div>
   </div>
   {% elif fixture["status"]["short"] == "PST" %}
   <div class="text-center">Matchen är uppskjuten, ingen tippning tillåten</div>
-  {% else %}
+  {% elif fixture["status"]["short"] == "NS" %}
   <div>
     <form method="POST">
       <div class="form-group">
@@ -100,7 +101,8 @@ header %}Matcher{% endblock header %} {% block before_fixures %}
       {% for u in users %} {% for tips in u.tips %} {% if tips.fixture_id ==
       fixture['id'] %}
       <li class="list-group-item">
-        {{ u.username }}: {{ tips.tip }} {% if u == user %}
+        {{ u.username }}: {{ tips.tip }} {% if u == user and
+        fixture["status"]["short"] == "NS" %}
         <button
           type="button"
           class="close"
