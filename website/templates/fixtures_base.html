@@ -7,8 +7,8 @@ fixtures %}
 <div>
   {% for fixtures in fixtures_data %} {% set fixture = fixtures["fixture"] %} {%
   set home = fixtures["teams"]["home"] %} {% set away =
-  fixtures["teams"]["away"] %} {% if date[0] <= fixture['date'].split("T")[0]
-  and date[1] >= fixture['date'].split("T")[0] %}
+  fixtures["teams"]["away"] %} {% if date[0] <= fixture["date"].split("T")[0]
+  and date[1] >= fixture["date"].split("T")[0] %}
   <div
     class="container border-bottom hover"
     id="{{ fixture['id'] }}"

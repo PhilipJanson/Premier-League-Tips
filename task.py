@@ -111,7 +111,7 @@ def gen_stats():
 
 if __name__ == "__main__":
     start = time.time()
-    api_call(["fixtures", "standings"])
+    #api_call(["fixtures", "standings"])
     sort_fixtures()
     calc_results()
     gen_stats()

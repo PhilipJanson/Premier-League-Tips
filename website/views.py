@@ -33,9 +33,6 @@ def fixtures():
     with open(fixture_file) as f:
         fixtures_data = json.load(f)
 
-    with open(tips_file) as f:
-        tips_data = json.load(f)
-
     time = datetime.datetime.now()
     start_date, end_date = get_dates(time, 14)
 
@@ -97,6 +94,21 @@ def stats():
         results_data = json.load(f)
 
     return render_template("stats.html", user=current_user, fixtures_data=fixtures_data["response"], results_data=results_data["users"], users=User.query.all())
+
+
+@views.route("/tips", methods=["GET", "POST"])
+@login_required
+def tips():
+    with open(fixture_file) as f:
+        fixtures_data = json.load(f)
+
+    u = current_user
+
+    if request.method == "POST":
+        username = request.form["form-username"]
+        u = User.query.filter_by(username=username).first()
+
+    return render_template("tips.html", user=current_user, fixtures_data=fixtures_data["response"], u=u, users=User.query.all())
 
 
 @views.route("/admin", methods=["GET", "POST"])

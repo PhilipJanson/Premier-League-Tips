@@ -1,15 +1,16 @@
-{% extends "base.html" %} {% block title %}Tips{% endblock %}{% block content %}
-<h1 class="pb-2 text-center">Tips</h1>
-{% for u in users %} {% if u.username != "admin" %}
+{% extends "base.html" %} {% block title %}Statistik{% endblock %}{% block
+content %}
+<h1 class="pb-2 text-center">Statistik</h1>
+{% for u in users %} {% if not u.is_admin %}
 <div class="border text-responsive">
-  <h2 class="text-center">{{ u.username }}</h2>
+  <h2 class="text-center">{{ u.username.capitalize() }}</h2>
   <div class="row align-items-center">
     <div class="col">
       <div class="row">
         {% for u1 in results_data %}{% if u1["name"] == u.username %}
         <div class="col"></div>
         <div class="col">
-          <div>Tips gjorda: {{ u1["total"] }}</div>
+          <div>Tips gjorda: {{ u.tips|length }}</div>
           <div>Avslutade tips: {{ u1["finished"] }}</div>
           <div>Antal rätt: {{ u1["score"] }}</div>
           <div>Antal fel: {{ u1["finished"] - u1["score"] }}</div>
@@ -32,6 +33,7 @@
     <div class="row align-items-center">
       <div class="col-3"></div>
       <div class="col">
+        <h4 class="text-center">Inte ännu avslutade</h4>
         <div class="row align-items-center border-bottom hover">
           <div class="col"><strong>Match</strong></div>
           <div class="col text-right"><strong>Tips</strong></div>
@@ -54,9 +56,4 @@
   <br />
 </div>
 <br />
-{% endif %} {% endfor %} {% endblock %} {% block script %}
-<script
-  type="text/javascript"
-  src="{{ url_for('static', filename='js/deleteTip.js') }}"
-></script>
-{% endblock %}
+{% endif %} {% endfor %} {% endblock %}

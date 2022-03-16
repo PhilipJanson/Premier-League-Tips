@@ -1,64 +1,99 @@
 {% extends "base.html" %} {% block title %}Admin{% endblock %}{% block header
 %}Admin{% endblock %}{% block content %}
-<div class="border">
-  <br />
-  <div class="text-center">Lägg till tips</div>
+<div class="text-center border">
   <br />
   <div class="row align-items-center">
     <div class="col"></div>
     <div class="col">
-      <form method="POST">
-        <div class="form-group">
-          <select
-            class="form-control form-control"
-            name="form-username"
-            id="form-username"
+      <div>Länkar</div>
+      <div class="border-bottom">
+        <div>
+          <a
+            href="https://github.com/PhilipJanson/Premier-League-Tips"
+            target="_blank"
+            >Github</a
           >
-            {% for u in users %}
-            <option value="{{ u.username }}">{{ u.username }}</option>
-            {% endfor %}
-          </select>
         </div>
-        <div class="form-group">
-          <input
-            type="text"
-            class="form-control"
-            id="form-fixture-id"
-            name="form-fixture-id"
-            placeholder="Fixture ID"
-          />
-        </div>
-        <div class="form-group">
-          <select
-            class="form-control form-control"
-            name="form-tip"
-            id="form-tip"
+        <div>
+          <a
+            href="https://eu.pythonanywhere.com/user/philipjanson/"
+            target="_blank"
+            >PythonAnywhere</a
           >
-            <option value="1">1</option>
-            <option value="X">X</option>
-            <option value="2">2</option>
-          </select>
         </div>
-        <div class="text-center">
-          <button type="submit" class="btn btn-outline-primary">
-            Lägg till
-          </button>
+        <div>
+          <a href="https://philipjanson.eu.pythonanywhere.com/" target="_blank"
+            >Hemsida</a
+          >
         </div>
-      </form>
+        <div>
+          <a href="https://dashboard.api-football.com/" target="_blank"
+            >Api-Sports</a
+          >
+        </div>
+        <br />
+      </div>
+      <br />
+      <div>Lägg till tips</div>
+      <br />
+      <div class="border-bottom">
+        <form method="POST">
+          <div class="form-group">
+            <select
+              class="form-control form-control"
+              name="form-username"
+              id="form-username"
+            >
+              {% for u in users %} {% if not u.is_admin %}
+              <option value="{{ u.username }}">{{ u.username }}</option>
+              {% endif %}{% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <input
+              type="text"
+              class="form-control"
+              id="form-fixture-id"
+              name="form-fixture-id"
+              placeholder="Fixture ID"
+            />
+          </div>
+          <div class="form-group">
+            <select
+              class="form-control form-control"
+              name="form-tip"
+              id="form-tip"
+            >
+              <option value="1">1</option>
+              <option value="X">X</option>
+              <option value="2">2</option>
+            </select>
+          </div>
+          <div class="text-center">
+            <button type="submit" class="btn btn-outline-warning">
+              Lägg till
+            </button>
+          </div>
+        </form>
+        <br />
+      </div>
+      <br />
+      <div>Ladda Gamla Tips</div>
+      <br />
+      <div>
+        <button
+          type="button"
+          class="btn btn-outline-danger"
+          onClick="loadTips()"
+        >
+          Ladda
+        </button>
+      </div>
+      <br />
     </div>
     <div class="col"></div>
   </div>
-  <br />
-  <div class="text-center">Ladda Gamla Tips</div>
-  <br />
-  <div class="text-center">
-    <button type="button" class="btn btn-outline-primary" onClick="loadTips()">
-      Ladda
-    </button>
-  </div>
-  <br />
 </div>
-
 {% endblock content %} {% block script %}
 <script
   type="text/javascript"

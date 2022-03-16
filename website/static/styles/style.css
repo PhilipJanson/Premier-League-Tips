@@ -5,6 +5,14 @@
   background: #f5f5f5;
 }
 
+.bg-success-light {
+  background-color: #afffa8;
+}
+
+.bg-danger-light {
+  background-color: #ff5e5e;
+}
+
 .img-thumbnail-custom {
   padding: 0.25rem;
   border-radius: 0.25rem;
