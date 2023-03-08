@@ -40,13 +40,13 @@
         {% if user.is_authenticated %}
         <a class="nav-item nav-link" id="home" href="/">Hem</a>
         <a class="nav-item nav-link" id="fixtures" href="/fixtures">Matcher</a>
-        <a class="nav-item nav-link" id="tips" href="/standings">Tabell</a>
+        <a class="nav-item nav-link" id="standings" href="/standings">Tabell</a>
         <a class="nav-item nav-link" id="stats" href="/stats">Statistik</a>
         <a class="nav-item nav-link" id="tips" href="/tips">Tips</a>
         {% if user.is_admin %}
         <a class="nav-item nav-link" id="logout" href="/admin">Admin</a>
         {% endif %}
-        <a class="nav-item nav-link" id="logout" href="/logout">Logga Ut</a>
+        <a class="nav-item nav-link" id="admin" href="/logout">Logga Ut</a>
         {% else %}
         <a class="nav-item nav-link" id="home" href="/">Hem</a>
         <a class="nav-item nav-link" id="fixtures" href="/fixtures">Matcher</a>
@@ -55,7 +55,6 @@
         {% endif %}
       </div>
     </nav>
-
     {% with messages = get_flashed_messages(with_categories=true) %} {% if
     messages %} {% for category, message in messages %} {% if category ==
     "error" %}
@@ -73,10 +72,8 @@
       </button>
     </div>
     {% endif%} {% endfor %} {% endif %} {% endwith %}
-
     <br />
     <div class="container">{% block content %} {% endblock %}</div>
-
     <script
       src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
       integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
@@ -92,7 +89,6 @@
       integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
       crossorigin="anonymous"
     ></script>
-
     {% block script %}{% endblock %}
   </body>
 </html>

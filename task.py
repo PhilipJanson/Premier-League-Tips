@@ -5,7 +5,7 @@ from keys import API_KEY
 from matplotlib import pyplot as plt
 
 LEAGUE_ID = 39
-SEASON = 2021
+SEASON = 2022
 
 
 def api_call(endpoints):
@@ -28,6 +28,10 @@ def api_call(endpoints):
 
         name = endpoint.split("/")
         name = name[len(name) - 1]
+
+        if endpoint == "fixtures":
+            with open(f"website/data/requests.json", "w") as f:
+                json.dump(dict(response.headers), f)
 
         with open(f"website/data/{name}.json", "w") as f:
             json.dump(response.json(), f)
@@ -111,7 +115,7 @@ def gen_stats():
 
 if __name__ == "__main__":
     start = time.time()
-    #api_call(["fixtures", "standings"])
+    api_call(["standings", "fixtures"])
     sort_fixtures()
     calc_results()
     gen_stats()

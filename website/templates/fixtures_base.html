@@ -24,8 +24,9 @@ fixtures %}
     <div class="text-center text-responsive">
       Tid: {{ fixture["date"].split("T")[1][0:5] }}
     </div>
+    {% if user.is_admin %}
     <div class="text-center text-responsive">ID: {{ fixture['id'] }}</div>
-    {% endif %}
+    {% endif %} {% endif %}
     <div class="row align-items-center">
       <div class="col">
         <img

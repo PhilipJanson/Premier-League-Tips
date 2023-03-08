@@ -34,9 +34,9 @@ content %}
       <div class="col-3"></div>
       <div class="col">
         <h4 class="text-center">Inte ännu avslutade</h4>
-        <div class="row align-items-center border-bottom hover">
-          <div class="col"><strong>Match</strong></div>
-          <div class="col text-right"><strong>Tips</strong></div>
+        <div class="row align-items-center border-bottom font-weight-bold">
+          <div class="col">Match</div>
+          <div class="col text-right">Tips</div>
         </div>
         {% for tips in u.tips %}{% for fixtures in fixtures_data %}{% if
         fixtures["fixture"]["status"]["short"] == "NS" and
