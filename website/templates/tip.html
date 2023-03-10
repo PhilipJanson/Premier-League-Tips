@@ -66,65 +66,68 @@
             <div class="d-flex col-md-auto border-left text-center align-items-center small">
               {% if fixture["status"]["short"] == "FT" %}
                 Slut
+              {% elif fixture["status"]["short"] == "PST" %}
+                <div class="text-warning">Uppskjuten</div>
               {% else %}
                 {{ fixture["date"].split("T")[1][0:5] }}
               {% endif %}
               <br/>
-              {{ fixture["date"].split("T")[0] }}
+              {% if fixture["status"]["short"] != "PST" %}
+                {{ fixture["date"].split("T")[0] }}
+              {% endif %}
             </div>
             <!--Buttons-->
             <div class="d-flex col col-lg-3 border-left align-items-center small">
-              {% if fixture["status"]["short"] == "FT" %}
-                {% for tips in user.tips %}
-                  {% if tips.fixture_id == fixture['id'] %}
-                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                      {% set button_name = 'btn-outline-success' %}
-                      {% if tips.tip == "1" %}
-                        {%set button_name = 'btn-success' %}
-                      {% else %}
-                        {% set button_name = 'btn-outline-success' %}
-                      {% endif %}
-                      <label class="btn {{ button_name }} disabled">
-                        <input type="radio" name="{{ fixture['id'] }}-buttons" id="{{ fixture['id'] }}-tips-1">
-                        1
-                      </label>
-                      {% if tips.tip == "X" %}
-                        {%set button_name = 'btn-success' %}
-                      {% else %}
-                        {% set button_name = 'btn-outline-success' %}
-                      {% endif %}
-                      <label class="btn {{ button_name }} disabled">
-                        <input type="radio" name="{{ fixture['id'] }}-buttons" id="{{ fixture['id'] }}-tips-X">
-                        X
-                      </label>
-                      {% if tips.tip == "2" %}
-                        {%set button_name = 'btn-success' %}
-                      {% else %}
-                        {% set button_name = 'btn-outline-success' %}
-                      {% endif %}
-                      <label class="btn {{ button_name }} disabled">
-                        <input type="radio" name="{{ fixture['id'] }}-buttons" id="{{ fixture['id'] }}-tips-2">
-                        2
-                      </label>
-                    </div>
-                  {% endif %}
-                {% endfor %}
+              {% set current_tip = namespace(tip = none) %}
+              {% for tips in user.tips %}
+                {% if tips.fixture_id == fixture['id'] %}
+                  {% set current_tip.tip = tips.tip %}
+                {% endif %}
+              {% endfor %}
+
+              {% set button1 = "btn-outline-success" %}
+              {% set buttonX = "btn-outline-success" %}
+              {% set button2= "btn-outline-success" %}
+
+              {% if fixture["status"]["short"] == "FT"%}
+                {% if current_tip.tip == "1" %}
+                  {% set button1 = "btn-success" %}
+                {% elif current_tip.tip == "X" %}
+                  {% set buttonX = "btn-success" %}
+                {% elif current_tip.tip == "2" %}
+                  {% set button2 = "btn-success" %}
+                {% endif %}
+                {% set button1 = button1 + " disabled" %}
+                {% set buttonX = buttonX + " disabled" %}
+                {% set button2 = button2 + " disabled" %}
+              {% elif fixture["status"]["short"] == "PST" %}
+                {% set button1 = "btn-outline-warning disabled" %}
+                {% set buttonX = "btn-outline-warning disabled" %}
+                {% set button2 = "btn-outline-warning disabled" %}
               {% else %}
-                <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                  <label class="btn btn-outline-success">
-                    <input type="radio" name="{{ fixture['id'] }}-buttons" id="{{ fixture['id'] }}-tips-1">
-                    1
-                  </label>
-                  <label class="btn btn-outline-success">
-                    <input type="radio" name="{{ fixture['id'] }}-buttons" id="{{ fixture['id'] }}-tips-X">
-                    X
-                  </label>
-                  <label class="btn btn-outline-success">
-                    <input type="radio" name="{{ fixture['id'] }}-buttons" id="{{ fixture['id'] }}-tips-2">
-                    2
-                  </label>
-                </div>
+                {% if current_tip.tip == "1" %}
+                  {% set button1 = "btn-outline-success active" %}
+                {% elif current_tip.tip == "X" %}
+                  {% set buttonX = "btn-outline-success active" %}
+                {% elif current_tip.tip == "2" %}
+                  {% set button2 = "btn-outline-success active" %}
+                {% endif %}
               {% endif %}
+
+              <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                <label class="btn {{ button1 }}">
+                  <input type="radio" name="{{ fixture['id'] }}-buttons" id="{{ fixture['id'] }}-tips-1">
+                  1
+                </label>
+                <label class="btn {{ buttonX }}">
+                  <input type="radio" name="{{ fixture['id'] }}-buttons" id="{{ fixture['id'] }}-tips-X">
+                  X
+                </label>
+                <label class="btn {{ button2 }}">
+                  <input type="radio" name="{{ fixture['id'] }}-buttons" id="{{ fixture['id'] }}-tips-2">
+                  2
+                </label>
+              </div>
             </div>
           </div>
         </div>
@@ -150,5 +153,12 @@
       var fixture = document.getElementById(id);
       fixture.scrollIntoView({alignToTop: true, block: 'center', behavior: 'smooth'});
     }
+
+    document.addEventListener('click', function (e) {
+      var target = e.target;
+      if (target.tagName) {
+        alert(target.tagName);
+      }
+    });
   </script>
 {% endblock %}
