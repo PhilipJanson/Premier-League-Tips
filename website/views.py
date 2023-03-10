@@ -33,7 +33,7 @@ def tip():
     with open(fixture_file) as f:
         fixtures_data = json.load(f)    
 
-    return render_template("tip.html", user=current_user, round="30", fixtures_data=fixtures_data["response"])
+    return render_template("tip.html", user=current_user, fixtures_data=fixtures_data["response"])
 
 
 @views.route("/fixtures", methods=["GET", "POST"])
