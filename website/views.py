@@ -30,10 +30,32 @@ def home():
 @views.route("/tip")
 @login_required
 def tip():
+    date = datetime.datetime.now()
+
     with open(fixture_file) as f:
         fixtures_data = json.load(f)    
 
-    return render_template("tip.html", user=current_user, fixtures_data=fixtures_data["response"])
+    id = getIdFromDate(fixtures_data, date)
+
+    return render_template("tip.html", id=id, user=current_user, fixtures_data=fixtures_data["response"])
+
+def getIdFromDate(fixtures_data, date):
+    dates = []
+
+    for fixtures in fixtures_data["response"]:
+        datestr = fixtures["fixture"]["date"].split("+")[0]
+        dates.append(datetime.datetime.strptime(datestr, '%Y-%m-%dT%H:%M:%S'))
+
+    nearest = min(dates, key=lambda x: abs(x - date))
+    id = ""
+
+    for fixtures in fixtures_data["response"]:
+        datestr = fixtures["fixture"]["date"].split("+")[0]
+
+        if nearest == datetime.datetime.strptime(datestr, '%Y-%m-%dT%H:%M:%S'):
+            id = fixtures["fixture"]["id"]
+
+    return id
 
 
 @views.route("/fixtures", methods=["GET", "POST"])

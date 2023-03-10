@@ -4,12 +4,23 @@
   <h2 class="pb-2 text-center">Tippa matcher</h2>
   <div class="text-responive">
     <div class="row">
-      {% set prev_round = namespace(round="0")%}
-      {% for fixtures in fixtures_data %}
 
+      {% set prev_round = namespace(round = "0") %}
+      {% set index = namespace(value = 1) %}
+
+      {% for fixtures in fixtures_data %}
         {% set round = fixtures["league"]["round"].split(" - ")[1] %}
+
         {% if round != prev_round.round %}
           {% set prev_round.round = round %}
+
+          {% if index.value % 2 == 0 %}
+            <div class="col"></div>
+            <div class="w-100"></div>
+
+            {% set index.value = index.value + 1 %}
+          {% endif %}
+
           <div class="p-2 font-weight-bold">
             Omgång
             {{ round }}
@@ -21,7 +32,8 @@
         {% set fixture = fixtures["fixture"] %}
         {% set home = fixtures["teams"]["home"] %}
         {% set away = fixtures["teams"]["away"] %}
-        <div id="{{ fixture['id'] }}" class="col">
+
+        <div id="{{ fixture['id'] }}" class="col" tabindex="0">
           <div class="row border hover p-2">
             <!--Teams-->
             <div class="col">
@@ -116,10 +128,27 @@
             </div>
           </div>
         </div>
-        {% if loop.index % 2 == 0 %}
+        {% if index.value % 2 == 0 %}
           <div class="w-100"></div>
         {% endif %}
+        {% set index.value = index.value + 1 %}
       {% endfor %}
     </div>
   </div>
+  <p id="dateid" hidden="hidden">
+    {{ id }}
+  </p>
+{% endblock %}
+{% block script %}
+  <script>
+    window.onload = function () {
+      var id = document
+        .getElementById("dateid")
+        .innerText
+        .trim();
+
+      var fixture = document.getElementById(id);
+      fixture.scrollIntoView({alignToTop: true, block: 'center', behavior: 'smooth'});
+    }
+  </script>
 {% endblock %}
