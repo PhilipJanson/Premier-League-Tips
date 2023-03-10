@@ -1,25 +1,20 @@
-{% extends "fixtures_base.html" %}{% block title %}Premier League Tips{%
-endblock %} {% block before_content %}
-<div class="text-center">
-  <img
-    class="img-thumbnail-custom"
-    src="https://media.api-sports.io/football/leagues/39.png"
-    alt="Premier League Logo"
-  />
-</div>
-<h1 class="pb-2 text-center">Premier League Tips</h1>
-<div class="row">
-  <div class="col-1"></div>
-  <div class="col text-center">
-    En hemsida skapad för att visa matcher och resultat från Premier League samt
-    att kunna tippa på resultaten. Skapa ett konto för att börja tipsa. Hemsidan
-    är skapad av Philip Janson och bygger på Python, Flask, Jinja och HTML.
-    Information om matcher och resultat hämtas från
-    <a href="https://api-sports.io/">https://api-sports.io/</a>. Matchresultat
-    uppdateras en gång om dagen vid <nobr>kl. 00.00.</nobr>
+{% extends "fixtures_base.html" %}
+{% block title %}Premier League Tips{% endblock %}
+{% block before_content %}
+  <div class="text-center">
+    <img class="img-thumbnail-custom" src="https://media.api-sports.io/football/leagues/39.png" alt="Premier League Logo"/>
   </div>
-  <div class="col-1"></div>
-</div>
-<br />
-<br />
-{% endblock before_content %} {% block header %}Denna Vecka{% endblock %}
+  <h1 class="pb-2 text-center">Premier League Tips</h1>
+  <div class="row">
+    <div class="col-1"></div>
+    <div class="col text-center">
+      En hemsida skapad för att visa matcher och resultat från Premier League samt att kunna tippa på resultaten. Skapa ett konto för att börja tipsa. Hemsidan är skapad av Philip Janson och bygger på Python, Flask, Jinja och HTML. Information om matcher och resultat hämtas från
+      <a href="https://api-sports.io/">https://api-sports.io/</a>. Matchresultat uppdateras en gång om dagen vid
+      <nobr>kl. 00.00.</nobr>
+    </div>
+    <div class="col-1"></div>
+  </div>
+  <br/>
+  <br/>
+{% endblock before_content %}
+{% block header %}Denna Vecka{% endblock %}

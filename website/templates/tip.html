@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Tippa Matcher{% endblock %}
+{% block content %}
+  <h2 class="pb-2 text-center">Tippa matcher</h2>
+  <h3 class="pb-2 text-center">Runda
+    {{ round }}
+    av 38</h3>
+  <div class="text-responive">
+    <div class="row">
+      {% for fixtures in fixtures_data %}
+        {% set fixture = fixtures["fixture"] %}
+
+        {% if fixtures["league"]["round"].split(" - ")[1] == round %}
+          {% set home = fixtures["teams"]["home"] %}
+          {% set away = fixtures["teams"]["away"] %}
+          <div id="{{ fixture['id'] }}" class="col">
+            <div class="row border hover p-2">
+              <!--Teams-->
+              <div class="col">
+                <!--Home team-->
+                <div class="row align-items-center">
+                  <div class="col col-lg-1 p-1">
+                    <img class="img-thumbnail-custom-2 float-start" src="{{ home['logo'] }}" alt="Home team's logo"/>
+                  </div>
+                  <div class="col text-left small">{{ home["name"] }}</div>
+                  <div class="col-md-auto text-right small">
+                    {% if fixture["status"]["short"] == "FT" %}
+                      {{ fixtures["goals"]["home"] }}
+                    {% endif %}
+                  </div>
+                </div>
+                <!--Away team-->
+                <div class="row align-items-center">
+                  <div class="col col-lg-1 p-1">
+                    <img class="img-thumbnail-custom-2 float-start" src="{{ away['logo'] }}" alt="Away team's logo"/>
+                  </div>
+                  <div class="col text-left small">{{ away["name"] }}</div>
+                  <div class="col-md-auto text-right small">
+                    {% if fixture["status"]["short"] == "FT" %}
+                      {{ fixtures["goals"]["away"] }}
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              <!--Time-->
+              <div class="d-flex col-md-auto border-left text-center align-items-center small">
+                {% if fixture["status"]["short"] == "FT" %}
+                  Slut
+                {% else %}
+                  {{ fixture["date"].split("T")[1][0:5] }}
+                {% endif %}
+                <br/>
+                {{ fixture["date"].split("T")[0] }}
+              </div>
+              <!--Buttons-->
+              <div class="d-flex col col-lg-3 border-left align-items-center small">
+                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                  <label class="btn btn-outline-success">
+                    <input type="radio" name="{{ fixture['id'] }}-buttons" id="{{ fixture['id'] }}-tips-1">
+                    1
+                  </label>
+                  <label class="btn btn-outline-success">
+                    <input type="radio" name="{{ fixture['id'] }}-buttons" id="{{ fixture['id'] }}-tips-X">
+                    X
+                  </label>
+                  <label class="btn btn-outline-success">
+                    <input type="radio" name="{{ fixture['id'] }}-buttons" id="{{ fixture['id'] }}-tips-2">
+                    2
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% if loop.index % 2 == 0 %}
+            <div class="w-100"></div>
+          {% endif %}
+
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

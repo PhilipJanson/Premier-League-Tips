@@ -1,125 +1,97 @@
-{% extends "fixtures_base.html" %}{% block title %}Matcher{% endblock %}{% block
-header %}Matcher{% endblock header %} {% block before_fixures %}
-<div class="border hover">
-  <div class="text-center">
-    Visar alla matcher från {{ date[0] }} till {{ date[1] }}
-  </div>
-  <br />
-  <form method="POST">
-    <div class="row align-items-center">
-      <div class="col form-group">
-        <div class="float-right">
-          <label for="date-start">Startdatum</label>
-          <br />
-          <input
-            type="date"
-            id="date-start"
-            name="date-start"
-            value="{{ date[0] }}"
-            min="2021-08-13"
-            max="2023-06-29"
-          />
-        </div>
-      </div>
-      <div class="col form-group">
-        <div class="float-left">
-          <label for="date-end">Slutdatum</label>
-          <br />
-          <input
-            type="date"
-            id="date-end"
-            name="date-end"
-            value="{{ date[1] }}"
-            min="2021-08-13"
-            max="2023-06-29"
-          />
-        </div>
-      </div>
-    </div>
+{% extends "fixtures_base.html" %}
+{% block title %}Matcher{% endblock %}
+{% block header %}Matcher{% endblock header %}
+{% block before_fixures %}
+  <div class="border hover">
     <div class="text-center">
-      <button type="submit" class="btn btn-outline-primary">Visa</button>
+      Visar alla matcher från
+      {{ date[0] }}
+      till
+      {{ date[1] }}
     </div>
-  </form>
-  <br />
-</div>
-<br />
-{% endblock before_fixures %} {% block tips %}
-<div>
-  {% if fixture["status"]["short"] == "FT" %}
-  <div>
-    <div class="text-center">Matchen är slut, ingen tippning tillåten</div>
-    <br />
-    <div class="text-center">
-      <button
-        class="btn btn-outline-primary"
-        type="button"
-        data-toggle="collapse"
-        data-target="#tips-{{ fixture['id'] }}"
-        aria-expanded="false"
-        aria-controls="tips-{{ fixture['id'] }}"
-      >
-        Visa Tips
-      </button>
-    </div>
-    <div><br /></div>
-  </div>
-  {% elif fixture["status"]["short"] == "PST" %}
-  <div class="text-center">Matchen är uppskjuten, ingen tippning tillåten</div>
-  {% elif fixture["status"]["short"] == "NS" %}
-  <div>
+    <br/>
     <form method="POST">
-      <div class="form-group">
-        <select
-          class="form-control form-control-sm"
-          name="form-{{ fixture['id'] }}"
-          id="form-{{ fixture['id'] }}"
-        >
-          <option value="1">1</option>
-          <option value="X">X</option>
-          <option value="2">2</option>
-        </select>
-        <br />
+      <div class="row align-items-center">
+        <div class="col form-group">
+          <div class="float-right">
+            <label for="date-start">Startdatum</label>
+            <br/>
+            <input type="date" id="date-start" name="date-start" value="{{ date[0] }}" min="2021-08-13" max="2023-06-29"/>
+          </div>
+        </div>
+        <div class="col form-group">
+          <div class="float-left">
+            <label for="date-end">Slutdatum</label>
+            <br/>
+            <input type="date" id="date-end" name="date-end" value="{{ date[1] }}" min="2021-08-13" max="2023-06-29"/>
+          </div>
+        </div>
+      </div>
+      <div class="text-center">
+        <button type="submit" class="btn btn-outline-primary">Visa</button>
+      </div>
+    </form>
+    <br/>
+  </div>
+  <br/>
+{% endblock before_fixures %}
+{% block tips %}
+  <div>
+    {% if fixture["status"]["short"] == "FT" %}
+      <div>
+        <div class="text-center">Matchen är slut, ingen tippning tillåten</div>
+        <br/>
         <div class="text-center">
-          <button type="submit" class="btn btn-outline-primary">Tippa</button>
-          <button
-            class="btn btn-outline-primary"
-            type="button"
-            data-toggle="collapse"
-            data-target="#tips-{{ fixture['id'] }}"
-            aria-expanded="false"
-            aria-controls="tips-{{ fixture['id'] }}"
-          >
+          <button class="btn btn-outline-primary" type="button" data-toggle="collapse" data-target="#tips-{{ fixture['id'] }}" aria-expanded="false" aria-controls="tips-{{ fixture['id'] }}">
             Visa Tips
           </button>
         </div>
+        <div><br/></div>
       </div>
-    </form>
+    {% elif fixture["status"]["short"] == "PST" %}
+      <div class="text-center">Matchen är uppskjuten, ingen tippning tillåten</div>
+    {% elif fixture["status"]["short"] == "NS" %}
+      <div>
+        <form method="POST">
+          <div class="form-group">
+            <select class="form-control form-control-sm" name="form-{{ fixture['id'] }}" id="form-{{ fixture['id'] }}">
+              <option value="1">1</option>
+              <option value="X">X</option>
+              <option value="2">2</option>
+            </select>
+            <br/>
+            <div class="text-center">
+              <button type="submit" class="btn btn-outline-primary">Tippa</button>
+              <button class="btn btn-outline-primary" type="button" data-toggle="collapse" data-target="#tips-{{ fixture['id'] }}" aria-expanded="false" aria-controls="tips-{{ fixture['id'] }}">
+                Visa Tips
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    {% endif %}
+    <div class="collapse border" id="tips-{{ fixture['id'] }}">
+      <ul class="list-group list-group-flush">
+        {% for u in users %}
+          {% for tips in u.tips %}
+            {% if tips.fixture_id == fixture['id'] %}
+              <li class="list-group-item">
+                {{ u.username }}:
+                {{ tips.tip }}
+                {% if u == user and fixture["status"]["short"] == "NS" %}
+                  <button type="button" class="close" onclick="deleteTip('{{ tips.id }}')">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                {% endif %}
+              </li>
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      </ul>
+    </div>
   </div>
-  {% endif %}
-  <div class="collapse border" id="tips-{{ fixture['id'] }}">
-    <ul class="list-group list-group-flush">
-      {% for u in users %} {% for tips in u.tips %} {% if tips.fixture_id ==
-      fixture['id'] %}
-      <li class="list-group-item">
-        {{ u.username }}: {{ tips.tip }} {% if u == user and
-        fixture["status"]["short"] == "NS" %}
-        <button
-          type="button"
-          class="close"
-          onClick="deleteTip('{{ tips.id }}')"
-        >
-          <span aria-hidden="true">&times;</span>
-        </button>
-        {% endif %}
-      </li>
-      {% endif %} {% endfor %} {% endfor %}
-    </ul>
-  </div>
-</div>
-<br />
-{% endblock tips %} {% block script %}
-<script
-  type="text/javascript"
-  src="{{ url_for('static', filename='js/utils.js') }}"
-></script>
+  <br/>
+{% endblock tips %}
+{% block script %}
+  <script type="text/javascript" src="{{ url_for('static', filename='js/utils.js') }}"></script>
 {% endblock %}

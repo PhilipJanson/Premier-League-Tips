@@ -94,7 +94,7 @@ def calc_results():
 
 
 def is_winner(winner, tip):
-    return (winner == True and tip == "1") or (winner == False and tip == "2") or (winner == None and tip == "X")
+    return (winner is True and tip == "1") or (winner is False and tip == "2") or (winner is None and tip == "X")
 
 
 def gen_stats():
@@ -114,10 +114,10 @@ def gen_stats():
 
 
 if __name__ == "__main__":
-    start = time.time()
+    start = time.perf_counter()
     api_call(["standings", "fixtures"])
     sort_fixtures()
     calc_results()
     gen_stats()
-    end = time.time()
+    end = time.perf_counter()
     print("Finished in:", end - start)

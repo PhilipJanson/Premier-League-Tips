@@ -1,59 +1,67 @@
-{% extends "base.html" %} {% block title %}Statistik{% endblock %}{% block
-content %}
-<h1 class="pb-2 text-center">Statistik</h1>
-{% for u in users %} {% if not u.is_admin %}
-<div class="border text-responsive">
-  <h2 class="text-center">{{ u.username.capitalize() }}</h2>
-  <div class="row align-items-center">
-    <div class="col">
-      <div class="row">
-        {% for u1 in results_data %}{% if u1["name"] == u.username %}
-        <div class="col"></div>
-        <div class="col">
-          <div>Tips gjorda: {{ u.tips|length }}</div>
-          <div>Avslutade tips: {{ u1["finished"] }}</div>
-          <div>Antal rätt: {{ u1["score"] }}</div>
-          <div>Antal fel: {{ u1["finished"] - u1["score"] }}</div>
-        </div>
-        {% endif %}{% endfor %}
-      </div>
-    </div>
-    <div class="col text-center">
-      {% set errorimg = url_for('static', filename='images/statnotfound.png') %}
-      <img
-        class="img-fluid"
-        src="{{ url_for('static', filename='images/stats/' + u.username + '.png') }}"
-        onerror="this.onerror=null; this.src='{{ errorimg }}'"
-        alt="Pie chart showing {{ u.username }}'s statistics."
-      />
-    </div>
-  </div>
-  <br />
-  <div>
-    <div class="row align-items-center">
-      <div class="col-3"></div>
-      <div class="col">
-        <h4 class="text-center">Inte ännu avslutade</h4>
-        <div class="row align-items-center border-bottom font-weight-bold">
-          <div class="col">Match</div>
-          <div class="col text-right">Tips</div>
-        </div>
-        {% for tips in u.tips %}{% for fixtures in fixtures_data %}{% if
-        fixtures["fixture"]["status"]["short"] == "NS" and
-        fixtures["fixture"]["id"] == tips.fixture_id %}
-        <div class="row align-items-center border-bottom hover">
+{% extends "base.html" %}
+{% block title %}Statistik{% endblock %}
+{% block content %}
+  <h1 class="pb-2 text-center">Statistik</h1>
+  {% for u in users %}
+    {% if not u.is_admin %}
+      <div class="border text-responsive">
+        <h2 class="text-center">{{ u.username.capitalize() }}</h2>
+        <div class="row align-items-center">
           <div class="col">
-            {{ fixtures["teams"]["home"]["name"] }} - {{
-            fixtures["teams"]["away"]["name"] }}
+            <div class="row">
+              {% for u1 in results_data %}
+                {% if u1["name"] == u.username %}
+                  <div class="col"></div>
+                  <div class="col">
+                    <div>Tips gjorda:
+                      {{ u.tips|length }}</div>
+                    <div>Avslutade tips:
+                      {{ u1["finished"] }}</div>
+                    <div>Antal rätt:
+                      {{ u1["score"] }}</div>
+                    <div>Antal fel:
+                      {{ u1["finished"] - u1["score"] }}</div>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
           </div>
-          <div class="col text-right">{{ tips.tip }}</div>
+          <div class="col text-center">
+            {% set errorimg = url_for('static', filename = 'images/statnotfound.png') %}
+            <img class="img-fluid" src="{{ url_for('static', filename='images/stats/' + u.username + '.png') }}" onerror="this.onerror=null; this.src='{{ errorimg }}'" alt="Pie chart showing {{ u.username }}'s statistics."/>
+          </div>
         </div>
-        {% endif %} {% endfor %} {% endfor %}
+        <br/>
+        <div>
+          <div class="row align-items-center">
+            <div class="col-3"></div>
+            <div class="col">
+              <h4 class="text-center">Inte ännu avslutade</h4>
+              <div class="row align-items-center border-bottom font-weight-bold">
+                <div class="col">Match</div>
+                <div class="col text-right">Tips</div>
+              </div>
+              {% for tips in u.tips %}
+                {% for fixtures in fixtures_data %}
+                  {% if fixtures["fixture"]["status"]["short"] == "NS" and fixtures["fixture"]["id"] == tips.fixture_id %}
+                    <div class="row align-items-center border-bottom hover">
+                      <div class="col">
+                        {{ fixtures["teams"]["home"]["name"] }}
+                        -
+                        {{ fixtures["teams"]["away"]["name"] }}
+                      </div>
+                      <div class="col text-right">{{ tips.tip }}</div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              {% endfor %}
+            </div>
+            <div class="col-3"></div>
+          </div>
+        </div>
+        <br/>
       </div>
-      <div class="col-3"></div>
-    </div>
-  </div>
-  <br />
-</div>
-<br />
-{% endif %} {% endfor %} {% endblock %}
+      <br/>
+    {% endif %}
+  {% endfor %}
+{% endblock %}

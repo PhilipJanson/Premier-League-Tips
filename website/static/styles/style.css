@@ -20,6 +20,12 @@
   height: auto;
 }
 
+.img-thumbnail-custom-2 {
+  width: 30px;
+  height: 30px;
+  display: inline-block;
+}
+
 @media (min-width: 0px) {
   .text-responsive {
     font-size: 10px;
