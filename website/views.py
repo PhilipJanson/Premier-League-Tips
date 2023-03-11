@@ -27,29 +27,34 @@ def home():
     return render_template("index.html", user=current_user, date=[start_date, end_date], fixtures_data=fixtures_data["response"])
 
 
-@views.route("/tip")
+@views.route("/tip/<response>")
 @login_required
-def tip():
+def tip(response):
+    if response == "register":
+        flash("Tippning regristrerad")
+
     date = datetime.datetime.now()
 
     with open(fixture_file) as f:
-        fixtures_data = json.load(f)    
+        fixtures_data = json.load(f)["response"]    
 
-    id = getIdFromDate(fixtures_data, date)
+    return render_template("tip.html", id=getIdFromDate(fixtures_data, date), user=current_user, fixtures_data=fixtures_data)
 
-    return render_template("tip.html", id=id, user=current_user, fixtures_data=fixtures_data["response"])
+
+@views.route("/register-tips", methods=["POST"])
+def register_tips():
+    tips = json.loads(request.data)
+    print(tips)
+
+    return jsonify({})
+
 
 def getIdFromDate(fixtures_data, date):
-    dates = []
-
-    for fixtures in fixtures_data["response"]:
-        datestr = fixtures["fixture"]["date"].split("+")[0]
-        dates.append(datetime.datetime.strptime(datestr, '%Y-%m-%dT%H:%M:%S'))
+    dates = [datetime.datetime.strptime(fixtures["fixture"]["date"].split("+")[0], '%Y-%m-%dT%H:%M:%S') for fixtures in fixtures_data]
 
     nearest = min(dates, key=lambda x: abs(x - date))
-    id = ""
 
-    for fixtures in fixtures_data["response"]:
+    for fixtures in fixtures_data:
         datestr = fixtures["fixture"]["date"].split("+")[0]
 
         if nearest == datetime.datetime.strptime(datestr, '%Y-%m-%dT%H:%M:%S'):
@@ -110,9 +115,9 @@ def fixtures():
 @login_required
 def standings():
     with open(standings_file) as f:
-        standings_data = json.load(f)
+        standings_data = json.load(f)["response"]
 
-    return render_template("standings.html", user=current_user, standings_data=standings_data["response"])
+    return render_template("standings.html", user=current_user, standings_data=standings_data)
 
 
 @views.route("/stats")

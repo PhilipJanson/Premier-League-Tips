@@ -31,6 +31,19 @@
   display: inline-block;
 }
 
+.nav-sticky-bottom {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: 5;
+}
+
+.alert-fixed {
+  position:fixed; 
+  width: 100%;
+  z-index: 10; 
+}
 
 @media (min-width: 0px) {
   .text-responsive {
