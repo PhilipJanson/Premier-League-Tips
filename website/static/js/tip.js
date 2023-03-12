@@ -16,13 +16,14 @@ function tipSelected(button, enabled) {
     id = button.id.split('-')[1];
     value = button.id.split('-')[2];
     tips.set(id, value);
-  }
 
-  for (const [key, value] of tips) {
-    console.log(`${key} = ${value}`);
-  }
+    for (const [key, value] of tips) {
+      console.log(`${key} = ${value}`);
+    }
 
-  document.getElementById('nav-bottom-button').hidden = false;
+    var bottomNav = document.getElementById('nav-bottom-button');
+    bottomNav.classList.add('visible');
+  }
 }
 
 function tipButtonPressed() {

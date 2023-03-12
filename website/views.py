@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from .models import User, Tip
 from . import db
 import datetime
+import time
 import json
 import os
 
@@ -43,9 +44,32 @@ def tip(response):
 
 @views.route("/register-tips", methods=["POST"])
 def register_tips():
+    start = time.perf_counter()
     tips = json.loads(request.data)
-    print(tips)
+    
+    for tip in tips:
+        fixture_id = tip[0].strip()
+        value = tip[1].strip()
+        in_database = False
 
+        for usertips in current_user.tips:
+            if int(fixture_id) == usertips.fixture_id:
+                in_database = True
+
+        if not in_database:
+            new_tip = Tip(fixture_id=fixture_id, tip=value, user_id=current_user.id)
+            db.session.add(new_tip)
+        else:
+            new_tip = Tip.query.filter_by(fixture_id=int(fixture_id)).first()
+            new_tip.tip = value
+
+        db.session.commit()
+
+            
+    write_tip()
+    end = time.perf_counter()
+    print(f"Finished in: {end - start}s")
+        
     return jsonify({})
 
 
@@ -209,8 +233,7 @@ def load_tips():
         data = str(line).split(":")
         fixture_id = data[0]
         tip = data[1].replace("\n", "")
-        new_tip = Tip(fixture_id=fixture_id, tip=tip,
-                      user_id=user.id)
+        new_tip = Tip(fixture_id=fixture_id, tip=tip, user_id=user.id)
         db.session.add(new_tip)
 
     db.session.commit()

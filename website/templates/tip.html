@@ -33,7 +33,7 @@
         {% set home = fixtures["teams"]["home"] %}
         {% set away = fixtures["teams"]["away"] %}
 
-        <div id="{{ fixture['id'] }}" class="col" tabindex="0">
+        <div id="{{ fixture['id'] }}" class="col shadow" tabindex="0">
           <div class="row border hover p-2">
             <!--Teams-->
             <div class="col">
@@ -116,7 +116,7 @@
                 {% set enabled = "true" %}
               {% endif %}
 
-              <div class="btn-group btn-group-toggle" data-toggle="buttons">
+              <div class="btn-group btn-group-toggle shadow-sm" data-toggle="buttons">
                 <label class="btn {{ button1 }}" id="tipbutton-{{ fixture['id'] }}-1" onclick="tipSelected(this, '{{ enabled }}')">
                   <input type="radio" name="{{ fixture['id'] }}-buttons" id="{{ fixture['id'] }}-tips-1">
                   1
@@ -140,7 +140,7 @@
       {% endfor %}
     </div>
   </div>
-  <div id="nav-bottom-button" class="nav-sticky-bottom text-right border bg-white p-2 pr-4" hidden="true">
+  <div id="nav-bottom-button" class="nav-sticky-bottom text-right border bg-light p-2 pr-4 shadow">
     <button class="btn btn-primary" type="button" onclick="tipButtonPressed()">
       Tippa
     </button>

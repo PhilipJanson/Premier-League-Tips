@@ -37,6 +37,12 @@
   bottom: 0;
   width: 100%;
   z-index: 5;
+  translate: 0 60px;
+  transition: all 0.5s ease-in-out;
+}
+
+.visible {
+  translate: 0 0;
 }
 
 .alert-fixed {
