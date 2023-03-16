@@ -1,49 +1,59 @@
 {% extends "base.html" %}
 {% block title %}Tabell{% endblock %}
-{% block container_class %}
-  class="container border shadow bg-white">
-{% endblock container_class %}
 {% block content%}
-  <div class="text-center text-responsive p-2">
-    <div class="row align-items-center border-bottom hover">
-      <div class="col-sm-1"></div>
-      <div class="col-1"></div>
-      <div class="col-2">Team</div>
-      <div class="col-sm-1">S</div>
-      <div class="col-sm-1">W</div>
-      <div class="col-sm-1">O</div>
-      <div class="col-sm-1">L</div>
-      <div class="col-sm-1">GM</div>
-      <div class="col-sm-1">IM</div>
-      <div class="col-sm-1">MS</div>
-      <div class="col-sm-1">
-        <strong>P</strong>
+  <h1 class="pb-2 text-center">Tabell</h1>
+  <div class="text-responsive border shadow p-2 bg-white">
+    {% for team in teams %}
+      {% if loop.index == 1 %}
+        <div class="row m-0 border-bottom text-center align-items-center small pb-2">
+          <div class="col text-left">#</div>
+          <div class="col p-0"></div>
+          <div class="col-3 text-left">Lag</div>
+          <div class="col">MP</div>
+          <div class="col">W</div>
+          <div class="col">D</div>
+          <div class="col">L</div>
+          <div class="col">GF</div>
+          <div class="col">GA</div>
+          <div class="col">GD</div>
+          <div class="col font-weight-bold">Poäng</div>
+          <div class="col-2">Form</div>
+          <div class="w-100"></div>
+        </div>
+      {% endif %}
+      <div class="row m-0 border-bottom hover text-center align-items-center small">
+        <div class="col text-left">{{ team.rank }}</div>
+        <div class="col p-0">
+          <img class="img-thumbnail-custom-2 float-start p-1" src="{{ team.logo }}" alt="{{ team.name }}'s Logo"/>
+        </div>
+        <div class="col-3 text-left">{{ team.name }}</div>
+        <div class="col">{{ team.games_played }}</div>
+        <div class="col">{{ team.wins}}</div>
+        <div class="col">{{ team.draws }}</div>
+        <div class="col">{{ team.losses }}</div>
+        <div class="col">{{ team.goals_scored }}</div>
+        <div class="col">{{ team.goals_conceded }}</div>
+        <div class="col">{{ team.goals_scored - team.goals_conceded }}</div>
+        <div class="col font-weight-bold">{{ team.points }}</div>
+        <div class="col-2">
+          {% for c in team.form %}
+            {% if c == "W" %}
+              <span class="text-success">
+                <i class="fa fa-check-circle"></i>
+              </span>
+            {% elif c == "L" %}
+              <span class="text-danger">
+                <i class="fa fa-times-circle"></i>
+              </span>
+            {% elif c == "D" %}
+              <span class="text-warning">
+                <i class="fa fa-minus-circle"></i>
+              </span>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <div class="w-100"></div>
       </div>
-    </div>
-    {% for leagues in standings_data %}
-      {% for temp in leagues["league"]["standings"] %}
-        {% for team in temp %}
-          <div class="row align-items-center border-bottom hover small">
-            <div class="col-md-auto text-left">{{ team["rank"] }}</div>
-            <div class="col-md-auto">
-              <img class="img-thumbnail-custom-2 float-start" src="{{ team['team']['logo'] }}" alt="{{ team['team']['name'] }}'s Logo"/>
-            </div>
-            <div class="col text-left">{{ team["team"]["name"] }}</div>
-            <div class="col col-lg-1">{{ team["all"]["played"] }}</div>
-            <div class="col col-lg-1">{{ team["all"]["win"] }}</div>
-            <div class="col col-lg-1">{{ team["all"]["draw"] }}</div>
-            <div class="col col-lg-1">{{ team["all"]["lose"] }}</div>
-            <div class="col col-lg-1">{{ team["all"]["goals"]["for"] }}</div>
-            <div class="col col-lg-1">{{ team["all"]["goals"]["against"] }}</div>
-            <div class="col col-lg-1">
-              {{ team["all"]["goals"]["for"] - team["all"]["goals"]["against"] }}
-            </div>
-            <div class="col col-lg-1">
-              <strong>{{ team["points"] }}</strong>
-            </div>
-          </div>
-        {% endfor %}
-      {% endfor %}
     {% endfor %}
   </div>
-{% endblock %}
+{% endblock content %}

@@ -17,6 +17,9 @@
 .bg-danger-light {
   background-color: #ff5e5e;
 }
+.disabled {
+  cursor: default;
+}
 
 .img-thumbnail-custom {
   padding: 0.25rem;

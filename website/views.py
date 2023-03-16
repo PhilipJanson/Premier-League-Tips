@@ -1,9 +1,9 @@
 from flask import Blueprint, flash, render_template, request, jsonify, redirect, url_for
 from flask_login import login_required, current_user
-from .models import User, Tip
+from .models import User, Tip, Fixture, Team
+from datetime import datetime, timedelta, date
+from .info import SEASON
 from . import db
-import datetime
-import time
 import json
 import os
 
@@ -19,13 +19,7 @@ t_file = os.path.join(curr_folder, 'data/old/t.txt')
 
 @views.route("/")
 def home():
-    with open(fixture_file) as f:
-        fixtures_data = json.load(f)
-
-    time = datetime.datetime.now()
-    start_date, end_date = get_dates(time, 7)
-
-    return render_template("index.html", user=current_user, date=[start_date, end_date], fixtures_data=fixtures_data["response"])
+    return render_template("index.html", user=current_user, dates=get_week_dates(), fixtures=Fixture.query.all())
 
 
 @views.route("/tip/<response>")
@@ -34,114 +28,39 @@ def tip(response):
     if response == "register":
         flash("Tippning regristrerad")
 
-    date = datetime.datetime.now()
-
-    with open(fixture_file) as f:
-        fixtures_data = json.load(f)["response"]    
-
-    return render_template("tip.html", id=getIdFromDate(fixtures_data, date), user=current_user, fixtures_data=fixtures_data)
+    return render_template("tip.html", user=current_user, id=getIdFromDate(datetime.now()), fixtures=Fixture.query.filter_by(season=SEASON))
 
 
 @views.route("/register-tips", methods=["POST"])
 def register_tips():
-    start = time.perf_counter()
     tips = json.loads(request.data)
     
     for tip in tips:
-        fixture_id = tip[0].strip()
+        fixture_id = int(tip[0].strip())
         value = tip[1].strip()
-        in_database = False
+        prev_tip = Tip.query.filter_by(user_id=current_user.id).filter_by(fixture_id=fixture_id).first()
 
-        for usertips in current_user.tips:
-            if int(fixture_id) == usertips.fixture_id:
-                in_database = True
-
-        if not in_database:
+        if prev_tip is None:
             new_tip = Tip(fixture_id=fixture_id, tip=value, user_id=current_user.id)
             db.session.add(new_tip)
         else:
-            new_tip = Tip.query.filter_by(fixture_id=int(fixture_id)).first()
-            new_tip.tip = value
+            prev_tip.tip = value
 
         db.session.commit()
 
-            
-    write_tip()
-    end = time.perf_counter()
-    print(f"Finished in: {end - start}s")
-        
     return jsonify({})
-
-
-def getIdFromDate(fixtures_data, date):
-    dates = [datetime.datetime.strptime(fixtures["fixture"]["date"].split("+")[0], '%Y-%m-%dT%H:%M:%S') for fixtures in fixtures_data]
-
-    nearest = min(dates, key=lambda x: abs(x - date))
-
-    for fixtures in fixtures_data:
-        datestr = fixtures["fixture"]["date"].split("+")[0]
-
-        if nearest == datetime.datetime.strptime(datestr, '%Y-%m-%dT%H:%M:%S'):
-            id = fixtures["fixture"]["id"]
-
-    return id
 
 
 @views.route("/fixtures", methods=["GET", "POST"])
 @login_required
 def fixtures():
-    with open(fixture_file) as f:
-        fixtures_data = json.load(f)
-
-    time = datetime.datetime.now()
-    start_date, end_date = get_dates(time, 14)
-
-    if request.method == "POST":
-        form = request.form
-
-        for key in form:
-            if key == "date-start":
-                start_date = form[key]
-            elif key == "date-end":
-                end_date = form[key]
-            else:
-                fixture_id = int(key.split("-")[1])
-                tip = form[key]
-
-                if (len(tip) < 1 or len(tip) > 1):
-                    flash("Något gick fel", category="error")
-                else:
-                    in_database = False
-
-                    for usertips in current_user.tips:
-                        if fixture_id == usertips.fixture_id:
-                            in_database = True
-
-                    if in_database:
-                        flash("Du har redan tippat den här matchen",
-                              category="error")
-                    else:
-                        new_tip = Tip(fixture_id=fixture_id, tip=tip,
-                                      user_id=current_user.id)
-                        db.session.add(new_tip)
-                        db.session.commit()
-                        write_tip()
-                        flash("Tippning regristrerad", category="success")
-
-    if start_date > end_date:
-        flash("Slutdatum kan inte vara innan startdatum", category="error")
-        start_date, end_date = get_dates(time, 14)
-
-    return render_template("fixtures.html", user=current_user, date=[start_date, end_date], fixtures_data=fixtures_data["response"], users=User.query.all())
+    return render_template("fixtures.html", user=current_user, fixtures=Fixture.query.all(), users=User.query.all())
 
 
 @views.route("/standings")
 @login_required
 def standings():
-    with open(standings_file) as f:
-        standings_data = json.load(f)["response"]
-
-    return render_template("standings.html", user=current_user, standings_data=standings_data)
+    return render_template("standings.html", user=current_user, teams=Team.query.all())
 
 
 @views.route("/stats")
@@ -266,11 +185,19 @@ def write_tip():
         json.dump(data, f)
 
 
-def get_dates(time, days):
-    y = time.strftime("%Y")
-    m = time.strftime("%m")
-    d = time.strftime("%d")
-    start_date = "{}-{}-{}".format(y, m, d)
-    end_date = str(time + datetime.timedelta(days=days)).split()[0]
+def get_week_dates():
+    today = date.today()
+    start = today - timedelta(days=today.weekday())
+    end = start + timedelta(days=6)
+    return [str(start), str(end)]
 
-    return start_date, end_date
+
+def getIdFromDate(date):
+    dates = [datetime.strptime(fixture.date + fixture.time, '%Y-%m-%d%H:%M') for fixture in Fixture.query.all()]
+    nearest = min(dates, key=lambda x: abs(x - date))
+
+    for fixture in Fixture.query.all():
+        if nearest == datetime.strptime(fixture.date + fixture.time, '%Y-%m-%d%H:%M'):
+            id = fixture.fixture_id
+
+    return id
