@@ -1,10 +1,12 @@
 from website import create_app
-from website.models import User, Fixture, Team
+from website.models import User, Fixture, Team, Tip, Result
 from website import db
 from keys import API_KEY
 from website.info import SEASON
 import requests
+import json
 import time
+import os
 
 # Premier League
 LEAGUE_ID = 39
@@ -110,13 +112,90 @@ def handle_fixture(fixtures):
 
 def calc_results():
     for user in User.query.all():
+        total = 0
+        finished = 0
+        correct = 0
+        incorrect = 0
+
         for tip in user.tips:
-            print(user.username, tip.fixture_id, tip.tip)
+            fixture = Fixture.query.filter_by(season=SEASON).filter_by(fixture_id=tip.fixture_id).first()
+            total += 1
+
+            if fixture.status == "FT":
+                finished += 1
+
+                if is_winner(fixture, tip.tip):
+                    correct += 1
+                    tip.correct = 1
+                else:
+                    incorrect += 1
+                    tip.correct = -1
+
+        result = Result.query.filter_by(season=SEASON).filter_by(user_id=user.id).first()
+
+        if result is None:
+            new_result = Result(season=SEASON, total=total, finished=finished, correct=correct, incorrect=incorrect, user_id=user.id)
+            db.session.add(new_result)
+        else:
+            result.total = total
+            result.finished = finished
+            result.correct = correct
+            result.incorrect = incorrect
+    
+    db.session.commit()
+            
+            
+def is_winner(fixture, tip):
+    score = int(fixture.home_score) - int(fixture.away_score)
+    return (score > 0 and tip == "1") or (score < 0 and tip == "2") or (score == 0 and tip == "X")
+
+
+def load_old_data():
+    curr_folder = os.path.dirname(os.path.abspath(__file__))
+    tips_file = os.path.join(curr_folder, 'website/data/tips.json')
+    fixture_file = os.path.join(curr_folder, 'website/data/fixtures.json')
+    standings_file = os.path.join(curr_folder, 'website/data/standings.json')
+
+    with open(standings_file) as f:
+        standings_data = json.load(f)
+    add_standings(standings_data["response"])
+
+    with open(fixture_file) as f:
+        fixture_data = json.load(f)
+    add_fixtures(fixture_data["response"])
+
+    with open(tips_file) as f:
+        tips_data = json.load(f)
+
+    for username in tips_data["users"]:
+        user = User.query.filter_by(username=username["name"]).first()
+
+        for tip in username["tips"]:
+            fixture_id = tip["fixture_id"]
+            value = tip["tip"]
+            fixture = Fixture.query.filter_by(fixture_id=fixture_id).first()
+
+            if fixture is not None:
+                new_tip = Tip.query.filter_by(user_id=user.id).filter_by(fixture_id=fixture_id).first()
+
+                if new_tip is None:
+                    new_tip = Tip(tip=value, correct=0, fixture_id=fixture_id, user_id=user.id)
+                    db.session.add(new_tip)
+                else:
+                    new_tip.tip = value
+
+    db.session.commit()
+
+
+def printtips():
+    for user in User.query.all():
+        for tip in user.tips:
+            print(tip.fixture_id, tip.correct)
 
 if __name__ == "__main__":
     start = time.perf_counter()
     app = create_app()
-    update = True
+    update = False
 
     with app.app_context():
         if update:
@@ -126,7 +205,9 @@ if __name__ == "__main__":
             add_standings(standings_response)
             add_fixtures(fixture_response)
 
+        #load_old_data()
         calc_results()
+        printtips()
 
 
     end = time.perf_counter()

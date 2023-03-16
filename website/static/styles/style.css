@@ -17,6 +17,11 @@
 .bg-danger-light {
   background-color: #ff5e5e;
 }
+
+.bg-nav {
+  background-color: #212529;
+}
+
 .disabled {
   cursor: default;
 }

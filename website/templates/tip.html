@@ -69,10 +69,10 @@
             </div>
             <!--Buttons-->
             <div class="d-flex col col-lg-3 border-left align-items-center small">
-              {% set current_tip = namespace(tip = none) %}
-              {% for tips in user.tips %}
-                {% if tips.fixture_id == fixture.fixture_id %}
-                  {% set current_tip.tip = tips.tip %}
+              {% set current_tip = namespace(value = none) %}
+              {% for tip in user.tips %}
+                {% if tip.fixture_id == fixture.fixture_id %}
+                  {% set current_tip.value = tip.tip %}
                 {% endif %}
               {% endfor %}
 
@@ -82,11 +82,11 @@
               {% set enabled = "false" %}
 
               {% if fixture.status == "FT"%}
-                {% if current_tip.tip == "1" %}
+                {% if current_tip.value == "1" %}
                   {% set button1 = "btn-success" %}
-                {% elif current_tip.tip == "X" %}
+                {% elif current_tip.value == "X" %}
                   {% set buttonX = "btn-success" %}
-                {% elif current_tip.tip == "2" %}
+                {% elif current_tip.value == "2" %}
                   {% set button2 = "btn-success" %}
                 {% endif %}
                 {% set button1 = button1 + " disabled" %}
@@ -97,16 +97,15 @@
                 {% set buttonX = "btn-outline-warning disabled" %}
                 {% set button2 = "btn-outline-warning disabled" %}
               {% else %}
-                {% if current_tip.tip == "1" %}
+                {% if current_tip.value == "1" %}
                   {% set button1 = "btn-outline-success active" %}
-                {% elif current_tip.tip == "X" %}
+                {% elif current_tip.value == "X" %}
                   {% set buttonX = "btn-outline-success active" %}
-                {% elif current_tip.tip == "2" %}
+                {% elif current_tip.value == "2" %}
                   {% set button2 = "btn-outline-success active" %}
                 {% endif %}
                 {% set enabled = "true" %}
               {% endif %}
-
               <div class="btn-group btn-group-toggle shadow-sm" data-toggle="buttons">
                 <label class="btn {{ button1 }}" id="tipbutton-{{ fixture.fixture_id }}-1" onclick="tipSelected(this, '{{ enabled }}')">
                   <input type="radio" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-1">
@@ -131,7 +130,7 @@
       {% endfor %}
     </div>
   </div>
-  <div id="nav-bottom-button" class="nav-sticky-bottom text-right border bg-light p-2 pr-4 shadow">
+  <div id="nav-bottom-button" class="nav-sticky-bottom text-right bg-nav p-2 pr-4">
     <button class="btn btn-primary" type="button" onclick="tipButtonPressed()">
       Tippa
     </button>

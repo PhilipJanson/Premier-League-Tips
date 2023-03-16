@@ -14,27 +14,25 @@
     <h3>Matcher denna vecka</h3>
     <div class="row">
       {% for fixture in fixtures %}
-        {% if dates[0] <= fixture.date and dates[1] >= fixture.date %}
-          <div id="{{ fixture.fixture_id }}" class="col shadow m-2 align-items-center">
-            <div class="row border hover p-2">
-              <div class="col">{{ fixture.time }}</div>
-              <div class="w-100"></div>
-              <div class="col pb-2 border-bottom">{{ fixture.date }}</div>
-              <div class="w-100"></div>
-              <div class="col-md-auto pt-3">
-                <img class="img-thumbnail-custom-2 float-start" src="{{ fixture.home_team.logo }}" alt="Home team's logo"/>
-              </div>
-              <div class="col pt-3">{{ fixture.home_team.name }}</div>
-              <div class="col col-lg-1 pt-3">-</div>
-              <div class="col pt-3">{{ fixture.away_team.name }}</div>
-              <div class="col-md-auto pt-3">
-                <img class="img-thumbnail-custom-2 float-start" src="{{ fixture.away_team.logo }}" alt="Home team's logo"/>
-              </div>
+        <div id="{{ fixture.fixture_id }}" class="col shadow m-2 align-items-center">
+          <div class="row border hover p-2">
+            <div class="col">{{ fixture.time }}</div>
+            <div class="w-100"></div>
+            <div class="col pb-2 border-bottom">{{ fixture.date }}</div>
+            <div class="w-100"></div>
+            <div class="col-md-auto pt-3">
+              <img class="img-thumbnail-custom-2 float-start" src="{{ fixture.home_team.logo }}" alt="Home team's logo"/>
+            </div>
+            <div class="col pt-3">{{ fixture.home_team.name }}</div>
+            <div class="col col-lg-1 pt-3">-</div>
+            <div class="col pt-3">{{ fixture.away_team.name }}</div>
+            <div class="col-md-auto pt-3">
+              <img class="img-thumbnail-custom-2 float-start" src="{{ fixture.away_team.logo }}" alt="Home team's logo"/>
             </div>
           </div>
-          {% if loop.index % 2 == 0 %}
-            <div class="w-100"></div>
-          {% endif %}
+        </div>
+        {% if loop.index % 2 == 0 %}
+          <div class="w-100"></div>
         {% endif %}
       {% endfor %}
     </div>
