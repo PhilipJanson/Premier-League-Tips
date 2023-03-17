@@ -32,8 +32,8 @@ class Fixture(db.Model):
     away_team_id = db.Column(db.Integer, db.ForeignKey("team.id"))
     home_team = db.relationship("Team", foreign_keys=[home_team_id])
     away_team = db.relationship("Team", foreign_keys=[away_team_id])
-    home_score = db.Column(db.String(5))
-    away_score = db.Column(db.String(5))
+    home_score = db.Column(db.String(3))
+    away_score = db.Column(db.String(3))
 
 
 class Team(db.Model):
@@ -67,6 +67,10 @@ class Result(db.Model):
     finished = db.Column(db.Integer)
     correct = db.Column(db.Integer)
     incorrect = db.Column(db.Integer)
+    tip_1 = db.Column(db.Integer)
+    tip_X = db.Column(db.Integer)
+    tip_2 = db.Column(db.Integer)
+    round_scores = db.Column(db.String(500))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 

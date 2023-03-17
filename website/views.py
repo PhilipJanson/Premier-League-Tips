@@ -1,6 +1,6 @@
 from flask import Blueprint, flash, render_template, request, jsonify, redirect, url_for
 from flask_login import login_required, current_user
-from .models import User, Tip, Fixture, Team
+from .models import User, Tip, Fixture, Team, Result
 from datetime import datetime, timedelta, date
 from .info import SEASON
 from . import db
@@ -52,6 +52,12 @@ def register_tips():
     db.session.commit()
 
     return jsonify({})
+
+
+@views.route("/stats2")
+@login_required
+def stats2():
+    return render_template("stats2.html", user=current_user, users=User.query.all(), results=Result.query.filter_by(season=SEASON))
 
 
 @views.route("/fixtures", methods=["GET", "POST"])

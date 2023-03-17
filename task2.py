@@ -82,6 +82,7 @@ def add_fixtures(response):
 
     db.session.commit()
 
+
 def handle_fixture(fixtures):
     fixture = fixtures["fixture"]
     fixture_id = fixture["id"]
@@ -100,7 +101,7 @@ def handle_fixture(fixtures):
 
     if f is None:
         new_fixture = Fixture(fixture_id=fixture_id, season=SEASON, round=round, date=date, time=time, status=status,
-                                home_team_id=home_team_id, away_team_id=away_team_id, home_score=home_score, away_score=away_score)
+                              home_team_id=home_team_id, away_team_id=away_team_id, home_score=home_score, away_score=away_score)
         db.session.add(new_fixture)
     else:
         f.round = round
@@ -110,15 +111,21 @@ def handle_fixture(fixtures):
         f.home_score = home_score
         f.away_score = away_score
 
+
 def calc_results():
     for user in User.query.all():
         total = 0
         finished = 0
         correct = 0
         incorrect = 0
+        tip_1 = 0
+        tip_X = 0
+        tip_2 = 0
+        round_scores = ""
 
         for tip in user.tips:
-            fixture = Fixture.query.filter_by(season=SEASON).filter_by(fixture_id=tip.fixture_id).first()
+            fixture = Fixture.query.filter_by(season=SEASON).filter_by(
+                fixture_id=tip.fixture_id).first()
             total += 1
 
             if fixture.status == "FT":
@@ -131,20 +138,48 @@ def calc_results():
                     incorrect += 1
                     tip.correct = -1
 
-        result = Result.query.filter_by(season=SEASON).filter_by(user_id=user.id).first()
+            if tip.tip == "1":
+                tip_1 += 1
+            elif tip.tip == "X":
+                tip_X += 1
+            elif tip.tip == "2":
+                tip_2 += 1
+
+        curr_round = 1
+        curr_score = 0
+
+        for fixture in Fixture.query.filter_by(season=SEASON).order_by(Fixture.round):
+            tip = Tip.query.filter_by(user_id=user.id).filter_by(
+                fixture_id=fixture.fixture_id).first()
+
+            if curr_round != fixture.round:
+                round_scores += str(curr_score) + "-"
+                curr_round = fixture.round
+                curr_score = 0
+
+            if tip is not None and tip.correct == 1:
+                curr_score += 1
+
+        result = Result.query.filter_by(
+            season=SEASON).filter_by(user_id=user.id).first()
 
         if result is None:
-            new_result = Result(season=SEASON, total=total, finished=finished, correct=correct, incorrect=incorrect, user_id=user.id)
+            new_result = Result(season=SEASON, total=total, finished=finished, correct=correct,
+                                incorrect=incorrect, tip_1=tip_1, tip_X=tip_X, tip_2=tip_2, round_scores=round_scores, user_id=user.id)
             db.session.add(new_result)
         else:
             result.total = total
             result.finished = finished
             result.correct = correct
             result.incorrect = incorrect
-    
+            result.tip_1 = tip_1
+            result.tip_X = tip_X
+            result.tip_2 = tip_2
+            result.round_scores = round_scores
+
     db.session.commit()
-            
-            
+
+
 def is_winner(fixture, tip):
     score = int(fixture.home_score) - int(fixture.away_score)
     return (score > 0 and tip == "1") or (score < 0 and tip == "2") or (score == 0 and tip == "X")
@@ -176,21 +211,18 @@ def load_old_data():
             fixture = Fixture.query.filter_by(fixture_id=fixture_id).first()
 
             if fixture is not None:
-                new_tip = Tip.query.filter_by(user_id=user.id).filter_by(fixture_id=fixture_id).first()
+                new_tip = Tip.query.filter_by(user_id=user.id).filter_by(
+                    fixture_id=fixture_id).first()
 
                 if new_tip is None:
-                    new_tip = Tip(tip=value, correct=0, fixture_id=fixture_id, user_id=user.id)
+                    new_tip = Tip(fixture_id=fixture_id, tip=value,
+                                  correct=0, user_id=user.id)
                     db.session.add(new_tip)
                 else:
                     new_tip.tip = value
 
     db.session.commit()
 
-
-def printtips():
-    for user in User.query.all():
-        for tip in user.tips:
-            print(tip.fixture_id, tip.correct)
 
 if __name__ == "__main__":
     start = time.perf_counter()
@@ -207,8 +239,6 @@ if __name__ == "__main__":
 
         #load_old_data()
         calc_results()
-        printtips()
-
 
     end = time.perf_counter()
     print("Finished in:", end - start)
