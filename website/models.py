@@ -71,6 +71,7 @@ class Result(db.Model):
     tip_X = db.Column(db.Integer)
     tip_2 = db.Column(db.Integer)
     round_scores = db.Column(db.String(500))
+    placements = db.Column(db.String(500))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 

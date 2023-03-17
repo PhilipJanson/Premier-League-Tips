@@ -2,66 +2,92 @@
 {% block title %}Statistik{% endblock %}
 {% block content %}
   <h1 class="pb-2 text-center">Statistik</h1>
-  {% for u in users %}
-    {% if not u.is_admin %}
-      <div class="border text-responsive">
-        <h2 class="text-center">{{ u.username.capitalize() }}</h2>
-        <div class="row align-items-center">
-          <div class="col">
-            <div class="row">
-              {% for u1 in results_data %}
-                {% if u1["name"] == u.username %}
-                  <div class="col"></div>
-                  <div class="col">
-                    <div>Tips gjorda:
-                      {{ u.tips|length }}</div>
-                    <div>Avslutade tips:
-                      {{ u1["finished"] }}</div>
-                    <div>Antal rätt:
-                      {{ u1["score"] }}</div>
-                    <div>Antal fel:
-                      {{ u1["finished"] - u1["score"] }}</div>
-                  </div>
-                {% endif %}
-              {% endfor %}
-            </div>
-          </div>
-          <div class="col text-center">
-            {% set errorimg = url_for('static', filename = 'images/statnotfound.png') %}
-            <img class="img-fluid" src="{{ url_for('static', filename='images/stats/' + u.username + '.png') }}" onerror="this.onerror=null; this.src='{{ errorimg }}'" alt="Pie chart showing {{ u.username }}'s statistics."/>
-          </div>
-        </div>
-        <br/>
-        <div>
-          <div class="row align-items-center">
-            <div class="col-3"></div>
-            <div class="col">
-              <h4 class="text-center">Inte ännu avslutade</h4>
-              <div class="row align-items-center border-bottom font-weight-bold">
-                <div class="col">Match</div>
-                <div class="col text-right">Tips</div>
-              </div>
-              {% for tips in u.tips %}
-                {% for fixtures in fixtures_data %}
-                  {% if fixtures["fixture"]["status"]["short"] == "NS" and fixtures["fixture"]["id"] == tips.fixture_id %}
-                    <div class="row align-items-center border-bottom hover">
-                      <div class="col">
-                        {{ fixtures["teams"]["home"]["name"] }}
-                        -
-                        {{ fixtures["teams"]["away"]["name"] }}
-                      </div>
-                      <div class="col text-right">{{ tips.tip }}</div>
+  <div class="text-responsive">
+    {% for user in users %}
+      {% for result in results %}
+        {% if user.id == result.user_id %}
+          <h2 class="text-center p-1">{{ user.username.capitalize() }}</h2>
+          <div id="{{ user.id }}-carousel" class="carousel slide bg-white shadow border lazy-load" data-ride="carousel" data-interval="false" data-user-id="{{ user.id }}" data-total="{{ result.total }}">
+            <div class="carousel-inner">
+              <div class="carousel-item active">
+                <h3 class="text-center p-3">Översikt</h3>
+                <div class="row text-left border shadow p-2 small" style="max-width: 400px; margin-right: auto; margin-left: auto;">
+                  <div class="col border-bottom">
+                    <div class="row">
+                      <div class="col border-right">Gjorda tips:</div>
+                      <div class="col">{{ result.total }}</div>
                     </div>
-                  {% endif %}
-                {% endfor %}
-              {% endfor %}
+                  </div>
+                  <div class="w-100"></div>
+                  <div class="col border-bottom">
+                    <div class="row">
+                      <div class="col border-right">Avslutade tips:</div>
+                      <div class="col">{{ result.finished }}</div>
+                    </div>
+                  </div>
+                  <div class="w-100"></div>
+                  <div class="col border-bottom">
+                    <div class="row">
+                      <div class="col border-right">Antal rätt:</div>
+                      <div class="col">{{ result.correct }}</div>
+                    </div>
+                  </div>
+                  <div class="w-100"></div>
+                  <div class="col">
+                    <div class="row">
+                      <div class="col border-right">Antal fel:</div>
+                      <div class="col">{{ result.incorrect }}</div>
+                    </div>
+                  </div>
+                </div>
+                <br/>
+                <h5 class="text-center p-1">Inte spelade ännu</h5>
+                <div class="row overflow-auto border shadow p-2 small" style="max-width: 600px; max-height: 140px; margin-right: auto; margin-left: auto;">
+                  {% for fixture in fixtures %}
+                    {% for tip in user.tips %}
+                      {% if fixture.fixture_id == tip.fixture_id and fixture.status == "NS" %}
+                        <div class="col border-bottom">
+                          <div class="row">
+                            <div class="col border-right">{{ fixture.home_team.name }}
+                              -
+                              {{ fixture.away_team.name }}</div>
+                            <div class="col">{{ tip.tip }}</div>
+                          </div>
+                        </div>
+                        <div class="w-100"></div>
+                      {% endif %}
+                    {% endfor %}
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="carousel-item">
+                <h3 class="text-center p-3">Antal rätt</h3>
+                <canvas id="{{ user.id }}-correct-chart" class="pb-4" data-correct="{{ result.correct }}" data-incorrect="{{ result.incorrect }}" style="max-width: 300px; margin-right: auto; margin-left: auto;"></canvas>
+              </div>
+              <div class="carousel-item">
+                <h3 class="text-center p-3">Tipfördelning</h3>
+                <canvas id="{{ user.id }}-tip-chart" class="pb-4" data-tip-one="{{ result.tip_1 }}" data-tip-x="{{ result.tip_X }}" data-tip-two="{{ result.tip_2 }}" style="max-width: 300px; margin-right: auto; margin-left: auto;"></canvas>
+              </div>
+              <div class="carousel-item">
+                <h3 class="text-center p-3">Omgångsstatistik</h3>
+                <canvas id="{{ user.id }}-round-scores" data-rounds="{{ result.round_scores }}" style="max-width: 600px; margin-right: auto; margin-left: auto;"></canvas>
+              </div>
             </div>
-            <div class="col-3"></div>
+            <a class="carousel-control-prev" href="#{{ user.id }}-carousel" role="button" data-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true" style="filter: invert(100%);"></span>
+              <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#{{ user.id }}-carousel" role="button" data-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true" style="filter: invert(100%);"></span>
+              <span class="sr-only">Next</span>
+            </a>
           </div>
         </div>
-        <br/>
-      </div>
-      <br/>
-    {% endif %}
+      {% endif %}
+    {% endfor %}
   {% endfor %}
+{% endblock %}
+{% block script %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/stats.js') }}"></script>
 {% endblock %}
