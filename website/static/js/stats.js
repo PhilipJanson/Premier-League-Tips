@@ -1,4 +1,4 @@
-var username = 'totte';
+var username = 'philip';
 var total = document.getElementById(`${username}-total`).innerText.trim();
 
 var correctCtx = document.getElementById('correct-chart').getContext('2d');
@@ -66,8 +66,8 @@ var roundScoreChart = new Chart(roundsCtx, {
       {
         label: 'Antal rätt per omgång',
         data: roundScores.split('-'),
-        backgroundColor: ['rgba(105, 0, 132, .2)'],
-        borderColor: ['rgba(200, 99, 132, .7)'],
+        backgroundColor: 'rgba(105, 0, 132, .2)',
+        borderColor: 'rgba(200, 99, 132, .7)',
         borderWidth: 2,
       },
     ],
