@@ -54,10 +54,10 @@ def register_tips():
     return jsonify({})
 
 
-@views.route("/stats2")
+@views.route("/stats2/<season>")
 @login_required
-def stats2():
-    return render_template("stats2.html", user=current_user, users=User.query.all(), results=Result.query.filter_by(season=SEASON))
+def stats2(season):
+    return render_template("stats2.html", user=current_user, users=User.query.all(), results=Result.query.filter_by(season=season))
 
 
 @views.route("/fixtures", methods=["GET", "POST"])
@@ -66,10 +66,10 @@ def fixtures():
     return render_template("fixtures.html", user=current_user, fixtures=Fixture.query.all(), users=User.query.all())
 
 
-@views.route("/standings")
+@views.route("/standings/<season>")
 @login_required
-def standings():
-    return render_template("standings.html", user=current_user, teams=Team.query.all())
+def standings(season):
+    return render_template("standings.html", user=current_user, teams=Team.query.filter_by(season=season).order_by(Team.rank))
 
 
 @views.route("/stats")

@@ -54,14 +54,13 @@ def handle_team(team):
     goals_conceded = int(team["all"]["goals"]["against"])
     form = team["form"]
 
-    t = Team.query.filter_by(name=name).first()
+    t = Team.query.filter_by(season=SEASON).filter_by(name=name).first()
 
     if t is None:
         new_team = Team(season=SEASON, name=name, logo=logo, rank=rank, points=points, games_played=games_played, wins=wins,
                         draws=draws, losses=losses, goals_scored=goals_scored, goals_conceded=goals_conceded, form=form)
         db.session.add(new_team)
     else:
-        t.season = SEASON
         t.logo = logo
         t.rank = rank
         t.points = points
@@ -126,24 +125,26 @@ def calc_results():
         for tip in user.tips:
             fixture = Fixture.query.filter_by(season=SEASON).filter_by(
                 fixture_id=tip.fixture_id).first()
-            total += 1
 
-            if fixture.status == "FT":
-                finished += 1
+            if fixture is not None:
+                total += 1
 
-                if is_winner(fixture, tip.tip):
-                    correct += 1
-                    tip.correct = 1
-                else:
-                    incorrect += 1
-                    tip.correct = -1
+                if fixture.status == "FT":
+                    finished += 1
 
-            if tip.tip == "1":
-                tip_1 += 1
-            elif tip.tip == "X":
-                tip_X += 1
-            elif tip.tip == "2":
-                tip_2 += 1
+                    if is_winner(fixture, tip.tip):
+                        correct += 1
+                        tip.correct = 1
+                    else:
+                        incorrect += 1
+                        tip.correct = -1
+
+                if tip.tip == "1":
+                    tip_1 += 1
+                elif tip.tip == "X":
+                    tip_X += 1
+                elif tip.tip == "2":
+                    tip_2 += 1
 
         curr_round = 1
         curr_score = 0

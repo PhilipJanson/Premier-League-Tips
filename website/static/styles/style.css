@@ -59,6 +59,10 @@
   z-index: 10; 
 }
 
+.carousel-item {
+  height: 500px;
+}
+
 @media (min-width: 0px) {
   .text-responsive {
     font-size: 10px;

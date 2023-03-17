@@ -19,14 +19,15 @@
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
         <span class="navbar-toggler-icon"></span>
       </button>
+      {% set season = "2022" %}
       <div class="collapse navbar-collapse" id="navbar">
         {% if user.is_authenticated %}
           <a class="nav-item nav-link" id="home" href="/">Hem</a>
           <a class="nav-item nav-link" id="tip" href="/tip/default">Tippa</a>
           <a class="nav-item nav-link" id="fixtures" href="/fixtures">Matcher</a>
-          <a class="nav-item nav-link" id="standings" href="/standings">Tabell</a>
+          <a class="nav-item nav-link" id="standings" href="/standings/{{ season }}">Tabell</a>
           <a class="nav-item nav-link" id="stats" href="/stats">Statistik</a>
-          <a class="nav-item nav-link" id="stats" href="/stats2">Statistik 2</a>
+          <a class="nav-item nav-link" id="stats" href="/stats2/{{ season }}">Statistik 2</a>
           <a class="nav-item nav-link" id="tips" href="/tips">Tips</a>
           {% if user.is_admin %}
             <a class="nav-item nav-link" id="logout" href="/admin">Admin</a>
