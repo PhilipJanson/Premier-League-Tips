@@ -32,28 +32,6 @@ def tip(response):
     return render_template("tip.html", user=current_user, id=getIdFromDate(datetime.now()), fixtures=get_fixtures(SEASON))
 
 
-@views.route("/register-tips", methods=["POST"])
-def register_tips():
-    tips = json.loads(request.data)
-
-    for tip in tips:
-        fixture_id = int(tip[0].strip())
-        value = tip[1].strip()
-        prev_tip = Tip.query.filter_by(user_id=current_user.id).filter_by(
-            fixture_id=fixture_id).first()
-
-        if prev_tip is None:
-            new_tip = Tip(tip=value, correct=0,
-                          fixture_id=fixture_id, user_id=current_user.id)
-            db.session.add(new_tip)
-        else:
-            prev_tip.tip = value
-
-    db.session.commit()
-
-    return jsonify({})
-
-
 @views.route("/stats/<season>")
 @login_required
 def stats2(season):
@@ -108,52 +86,7 @@ def admin():
         return render_template("admin.html", user=current_user, users=User.query.all())
     else:
         return redirect(url_for("views.home"))
-
-
-@views.route("/delete-tip", methods=["POST"])
-def delete_tip():
-    tip = json.loads(request.data)
-    tip_id = tip["tip_id"]
-    tip = Tip.query.get(tip_id)
-
-    if tip:
-        if tip.user_id == current_user.id:
-            db.session.delete(tip)
-            db.session.commit()
-            write_tip()
-            flash("Tip borttaget", category="success")
-
-    return jsonify({})
-
-
-@views.route("/load-tips", methods=["POST"])
-def load_tips():
-    p = open(p_file, "r")
-    user = User.query.filter_by(username="philip").first()
-
-    for line in p:
-        data = str(line).split(":")
-        fixture_id = data[0]
-        tip = data[1].replace("\n", "")
-        new_tip = Tip(fixture_id=fixture_id, tip=tip,
-                      user_id=user.id)
-        db.session.add(new_tip)
-
-    t = open(t_file, "r")
-    user = User.query.filter_by(username="totte").first()
-
-    for line in t:
-        data = str(line).split(":")
-        fixture_id = data[0]
-        tip = data[1].replace("\n", "")
-        new_tip = Tip(fixture_id=fixture_id, tip=tip, user_id=user.id)
-        db.session.add(new_tip)
-
-    db.session.commit()
-    write_tip()
-
-    return jsonify({})
-
+    
 
 def write_tip():
     data = {}
@@ -177,6 +110,28 @@ def write_tip():
 
     with open(tips_file, "w") as f:
         json.dump(data, f)
+
+
+@views.route("/register-tips", methods=["POST"])
+def register_tips():
+    tips = json.loads(request.data)
+
+    for tip in tips:
+        fixture_id = int(tip[0].strip())
+        value = tip[1].strip()
+        prev_tip = Tip.query.filter_by(user_id=current_user.id).filter_by(
+            fixture_id=fixture_id).first()
+
+        if prev_tip is None:
+            new_tip = Tip(tip=value, correct=0,
+                          fixture_id=fixture_id, user_id=current_user.id)
+            db.session.add(new_tip)
+        else:
+            prev_tip.tip = value
+
+    db.session.commit()
+
+    return jsonify({})
 
 
 def get_date_fixtures(season, start, end):

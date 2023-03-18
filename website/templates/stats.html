@@ -11,47 +11,63 @@
             <div class="carousel-inner">
               <div class="carousel-item active">
                 <h3 class="text-center p-3">Översikt</h3>
-                <div class="row text-left border shadow p-2 small" style="max-width: 400px; margin-right: auto; margin-left: auto;">
+                <div class="row text-left border shadow stat stat-1 p-2 small">
                   <div class="col border-bottom">
                     <div class="row">
-                      <div class="col border-right">Gjorda tips:</div>
+                      <div class="col border-right">
+                        <span class="text-primary">
+                          <i class="fa fa-bars"></i>
+                        </span>Gjorda tips:
+                      </div>
                       <div class="col">{{ result.total }}</div>
                     </div>
                   </div>
                   <div class="w-100"></div>
                   <div class="col border-bottom">
                     <div class="row">
-                      <div class="col border-right">Avslutade tips:</div>
+                      <div class="col border-right">
+                        <span class="text-primary">
+                          <i class="fa fa-soccer-ball-o"></i>
+                        </span>Avslutade tips:
+                      </div>
                       <div class="col">{{ result.finished }}</div>
                     </div>
                   </div>
                   <div class="w-100"></div>
                   <div class="col border-bottom">
                     <div class="row">
-                      <div class="col border-right">Antal rätt:</div>
+                      <div class="col border-right">
+                        <span class="text-success">
+                          <i class="fa fa-check-circle"></i>
+                        </span>Antal rätt:
+                      </div>
                       <div class="col">{{ result.correct }}</div>
                     </div>
                   </div>
                   <div class="w-100"></div>
                   <div class="col">
                     <div class="row">
-                      <div class="col border-right">Antal fel:</div>
+                      <div class="col border-right">
+                        <span class="text-danger">
+                          <i class="fa fa-times-circle"></i>
+                        </span>Antal fel:
+                      </div>
                       <div class="col">{{ result.incorrect }}</div>
                     </div>
                   </div>
                 </div>
                 <br/>
-                <h5 class="text-center p-1">Inte spelade ännu</h5>
-                <div class="row overflow-auto border shadow p-2 small" style="max-width: 600px; max-height: 140px; margin-right: auto; margin-left: auto;">
+                <h5 class="text-center p-1">Ej spelade</h5>
+                <div class="row overflow-auto border shadow stat stat-2 p-2 small">
                   {% for fixture in fixtures %}
                     {% for tip in user.tips %}
                       {% if fixture.fixture_id == tip.fixture_id and fixture.status == "NS" %}
                         <div class="col border-bottom">
-                          <div class="row">
-                            <div class="col border-right">{{ fixture.home_team.name }}
+                          <div class="row text-center">
+                            <div class="col-10 border-right">{{ fixture.home_team.name }}
                               -
                               {{ fixture.away_team.name }}</div>
-                            <div class="col">{{ tip.tip }}</div>
+                            <div class="col-1">{{ tip.tip }}</div>
                           </div>
                         </div>
                         <div class="w-100"></div>
@@ -62,15 +78,15 @@
               </div>
               <div class="carousel-item">
                 <h3 class="text-center p-3">Antal rätt</h3>
-                <canvas id="{{ user.id }}-correct-chart" class="pb-4" data-correct="{{ result.correct }}" data-incorrect="{{ result.incorrect }}" style="max-width: 300px; margin-right: auto; margin-left: auto;"></canvas>
+                <canvas id="{{ user.id }}-correct-chart" class="stat pie-chart pb-4" data-correct="{{ result.correct }}" data-incorrect="{{ result.incorrect }}"></canvas>
               </div>
               <div class="carousel-item">
                 <h3 class="text-center p-3">Tipfördelning</h3>
-                <canvas id="{{ user.id }}-tip-chart" class="pb-4" data-tip-one="{{ result.tip_1 }}" data-tip-x="{{ result.tip_X }}" data-tip-two="{{ result.tip_2 }}" style="max-width: 300px; margin-right: auto; margin-left: auto;"></canvas>
+                <canvas id="{{ user.id }}-tip-chart" class="stat pie-chart pb-4" data-tip-one="{{ result.tip_1 }}" data-tip-x="{{ result.tip_X }}" data-tip-two="{{ result.tip_2 }}"></canvas>
               </div>
               <div class="carousel-item">
                 <h3 class="text-center p-3">Omgångsstatistik</h3>
-                <canvas id="{{ user.id }}-round-scores" data-rounds="{{ result.round_scores }}" style="max-width: 600px; margin-right: auto; margin-left: auto;"></canvas>
+                <canvas id="{{ user.id }}-round-scores" class="stat line-graph" data-rounds="{{ result.round_scores }}"></canvas>
               </div>
             </div>
             <a class="carousel-control-prev" href="#{{ user.id }}-carousel" role="button" data-slide="prev">

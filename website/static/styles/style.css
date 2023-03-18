@@ -49,18 +49,44 @@
   transition: all 0.5s ease-in-out;
 }
 
+.nav-link {
+  display: inline;
+}
+
 .visible {
   translate: 0 0;
 }
 
 .alert-fixed {
-  position:fixed; 
+  position: fixed;
   width: 100%;
-  z-index: 10; 
+  z-index: 10;
 }
 
 .carousel-item {
   height: 400px;
+}
+
+.stat {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.pie-chart {
+  max-width: 300px;
+}
+
+.line-graph {
+  max-width: 600px;
+}
+
+.stat-1 {
+  max-width: 400px;
+}
+
+.stat-2 {
+  max-width: 400px;
+  max-height: 140px;
 }
 
 @media (min-width: 0px) {
