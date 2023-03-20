@@ -8,32 +8,32 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous"/>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous"/>
     <link rel="stylesheet" href="{{ url_for('static',filename='styles/style.css') }}"/>
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static',filename='images/favicon.png') }}"/>
+    <link rel="icon" type="image/x-icon" href="https://media.api-sports.io/football/leagues/39.png"/>
     <title>
       {% block title %}Base{% endblock %}
     </title>
   </head>
 
   <body class="bg-light">
-    <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar shadow sticky-top navbar-expand-lg navbar-dark bg-dark">
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
         <span class="navbar-toggler-icon"></span>
       </button>
       {% set season = "2022" %}
       <div class="collapse navbar-collapse pt-1 pb-1" id="navbar">
-        <img src="https://media.api-sports.io/football/leagues/39.png" width="30" height="30" class="d-inline-block align-top" alt="" style="filter: brightness(10000%);">
+        <img src="https://media.api-sports.io/football/leagues/39.png" width="30" height="30" class="d-inline-block align-top mr-3 ml-1" alt="" style="filter: brightness(10000%);">
         <ul class="navbar-nav">
-          <li class="nav-item">
+          <li class="nav-item mr-2">
             <a class="nav-link" id="home" href="/">Hem</a>
           </li>
           {% if user.is_authenticated %}
-            <li class="nav-item">
+            <li class="nav-item mr-2">
               <a class="nav-link" id="tip" href="/tip/default">Tippa</a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item mr-2">
               <a class="nav-link" id="fixtures" href="/fixtures">Matcher</a>
             </li>
-            <li class="nav-item dropdown">
+            <li class="nav-item dropdown mr-2">
               <a class="nav-link" id="standings" href="/standings/{{ season }}" style="padding-right: 0;">Tabell</a>
               <a class="nav-link dropdown-toggle" id="standings-list" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="padding-left: 0;"></a>
               <div class="dropdown-menu" aria-labelledby="standings-list">
@@ -41,7 +41,7 @@
                 <a class="dropdown-item" href="/standings/2022">2022</a>
               </div>
             </li>
-            <li class="nav-item dropdown">
+            <li class="nav-item dropdown mr-2">
               <a class="nav-link" id="stats" href="/stats/{{ season }}" style="padding-right: 0;">Statistik</a>
               <a class="nav-link dropdown-toggle" id="stats-list" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="padding-left: 0;"></a>
               <div class="dropdown-menu" aria-labelledby="stats-list">
@@ -49,22 +49,25 @@
                 <a class="dropdown-item" href="/stats/2022">2022</a>
               </div>
             </li>
-            <li class="nav-item">
+            <li class="nav-item mr-2">
               <a class="nav-link" id="tips" href="/tips">Tips</a>
             </li>
+            <li class="nav-item mr-2">
+              <a class="nav-link" id="fixtures" href="/teampicker">Team Picker</a>
+            </li>
             {% if user.is_admin %}
-              <li class="nav-item">
+              <li class="nav-item mr-2">
                 <a class="nav-link" id="logout" href="/admin">Admin</a>
               </li>
             {% endif %}
-            <li class="nav-item">
+            <li class="nav-item mr-2">
               <a class="nav-link" id="admin" href="/logout">Logga Ut</a>
             </li>
           {% else %}
-            <li class="nav-item">
+            <li class="nav-item mr-2">
               <a class="nav-link" id="login" href="/login">Logga In</a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item mr-2">
               <a class="nav-link" id="signup" href="/signup">Skapa Konto</a>
             </li>
           {% endif %}

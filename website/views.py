@@ -50,6 +50,12 @@ def standings(season):
     return render_template("standings.html", user=current_user, teams=Team.query.filter_by(season=season).order_by(Team.rank))
 
 
+@views.route("/teampicker")
+@login_required
+def teampicker():
+    return render_template("teampicker.html", user=current_user, teams=Team.query.filter_by(season=SEASON).order_by(Team.name))
+
+
 @views.route("/tips", methods=["GET", "POST"])
 @login_required
 def tips():

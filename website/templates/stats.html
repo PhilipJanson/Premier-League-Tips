@@ -7,7 +7,7 @@
       {% for result in results %}
         {% if user.id == result.user_id %}
           <h2 class="text-center p-1">{{ user.username.capitalize() }}</h2>
-          <div id="{{ user.id }}-carousel" class="carousel slide bg-white shadow border lazy-load" data-ride="carousel" data-interval="false" data-user-id="{{ user.id }}" data-total="{{ result.total }}">
+          <div id="{{ user.id }}-carousel" class="carousel slide bg-white shadow border" data-ride="carousel" data-interval="false" data-user-id="{{ user.id }}" data-total="{{ result.total }}">
             <div class="carousel-inner">
               <div class="carousel-item active">
                 <h3 class="text-center p-3">Översikt</h3>

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Team Picker{% endblock %}
+{% block content %}
+  <h1 class="pb-2 text-center">Team Picker</h1>
+  <div class="row border shadow p-2">
+    <div class="col-md-auto pr-3 text-center">
+      {% for team in teams %}
+        <div style="height: 31px;">{{ loop.index }}.</div>
+        <div class="w-100"></div>
+      {% endfor %}
+    </div>
+    <div class="col pl-0">
+      <div class="" id="sortable" data-sortable-id="0" aria-dropeffect="move">
+        {% for team in teams %}
+          <div class="border-bottom" data-id="{{ team.id }}" data-item-sortable-id="0" draggable="true" role="option" aria-grabbed="false">
+            <div class="row">
+              <div class="col-md-auto pr-0">
+                <img class="img-thumbnail-custom-2 float-start p-1" src="{{ team.logo }}" alt="{{ team.name }}'s Logo"/>
+              </div>
+              <div class="col">{{ team.name }}</div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block script %}
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script>
+    $(function () {
+      $("#sortable").sortable();
+      $("#sortable").disableSelection();
+    });
+  </script>
+{% endblock %}
