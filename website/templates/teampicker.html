@@ -2,27 +2,17 @@
 {% block title %}Team Picker{% endblock %}
 {% block content %}
   <h1 class="pb-2 text-center">Team Picker</h1>
-  <div class="row border shadow p-2">
-    <div class="col-md-auto pr-3 text-center">
-      {% for team in teams %}
-        <div style="height: 31px;">{{ loop.index }}.</div>
-        <div class="w-100"></div>
-      {% endfor %}
-    </div>
-    <div class="col pl-0">
-      <div class="" id="sortable" data-sortable-id="0" aria-dropeffect="move">
-        {% for team in teams %}
-          <div class="border-bottom" data-id="{{ team.id }}" data-item-sortable-id="0" draggable="true" role="option" aria-grabbed="false">
-            <div class="row">
-              <div class="col-md-auto pr-0">
-                <img class="img-thumbnail-custom-2 float-start p-1" src="{{ team.logo }}" alt="{{ team.name }}'s Logo"/>
-              </div>
-              <div class="col">{{ team.name }}</div>
-            </div>
+  <div class="border rounded shadow p-4 bg-white" id="sortable" data-sortable-id="0" aria-dropeffect="move">
+    {% for team in teams %}
+      <div data-id="{{ team.id }}" data-item-sortable-id="0" draggable="true" role="option" aria-grabbed="false">
+        <div class="row p-1 border shadow hover team-picker">
+          <div class="col-md-auto pr-0">
+            <img class="img-thumbnail-custom-2 float-start" src="{{ team.logo }}" alt="{{ team.name }}'s Logo"/>
           </div>
-        {% endfor %}
+          <div class="col">{{ team.name }}</div>
+        </div>
       </div>
-    </div>
+    {% endfor %}
   </div>
 {% endblock %}
 {% block script %}

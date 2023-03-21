@@ -26,6 +26,10 @@
   cursor: default;
 }
 
+.team-picker {
+  cursor: move;
+}
+
 .img-thumbnail-custom {
   padding: 0.25rem;
   border-radius: 0.25rem;

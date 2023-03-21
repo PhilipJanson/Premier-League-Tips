@@ -61,7 +61,7 @@
                 <div class="row overflow-auto border shadow stat stat-2 p-2 small">
                   {% for fixture in fixtures %}
                     {% for tip in user.tips %}
-                      {% if fixture.fixture_id == tip.fixture_id and fixture.status == "NS" %}
+                      {% if fixture.fixture_id == tip.fixture_id %}
                         <div class="col border-bottom">
                           <div class="row text-center">
                             <div class="col-10 border-right">{{ fixture.home_team.name }}

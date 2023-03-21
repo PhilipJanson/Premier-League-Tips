@@ -5,16 +5,9 @@ from datetime import datetime, timedelta, date
 from .info import SEASON
 from . import db
 import json
-import os
+
 
 views = Blueprint("views", __name__)
-curr_folder = os.path.dirname(os.path.abspath(__file__))
-fixture_file = os.path.join(curr_folder, 'data/fixtures.json')
-standings_file = os.path.join(curr_folder, 'data/standings.json')
-tips_file = os.path.join(curr_folder, 'data/tips.json')
-results_file = os.path.join(curr_folder, 'data/results.json')
-p_file = os.path.join(curr_folder, 'data/old/p.txt')
-t_file = os.path.join(curr_folder, 'data/old/t.txt')
 
 
 @views.route("/")
@@ -34,8 +27,8 @@ def tip(response):
 
 @views.route("/stats/<season>")
 @login_required
-def stats2(season):
-    return render_template("stats.html", user=current_user, users=User.query.all(), fixtures=get_fixtures(season), results=Result.query.filter_by(season=season))
+def stats(season):
+    return render_template("stats.html", user=current_user, users=User.query.all(), fixtures=get_fixtures(season).filter_by(status="NS"), results=Result.query.filter_by(season=season))
 
 
 @views.route("/fixtures", methods=["GET", "POST"])
@@ -84,7 +77,6 @@ def admin():
                           user_id=user.id)
             db.session.add(new_tip)
             db.session.commit()
-            write_tip()
         else:
             flash("Ingen ID angiven", category="error")
 
@@ -93,30 +85,6 @@ def admin():
     else:
         return redirect(url_for("views.home"))
     
-
-def write_tip():
-    data = {}
-    user_list = []
-
-    for user in User.query.all():
-        user_data = {}
-        tip_list = []
-
-        for tip in user.tips:
-            tip_data = {}
-            tip_data["fixture_id"] = tip.fixture_id
-            tip_data["tip"] = tip.tip
-            tip_list.append(tip_data)
-
-        user_data["name"] = user.username
-        user_data["tips"] = tip_list
-        user_list.append(user_data)
-
-    data["users"] = user_list
-
-    with open(tips_file, "w") as f:
-        json.dump(data, f)
-
 
 @views.route("/register-tips", methods=["POST"])
 def register_tips():
