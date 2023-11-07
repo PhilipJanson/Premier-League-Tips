@@ -1,5 +1,4 @@
-flask == 2.0.3
+flask == 2.3.3
 flask-login == 0.6.2
-flask-sqlalchemy == 2.5.1
-requests == 2.27.1
-matplotlib == 3.5.1
+flask-sqlalchemy == 3.0.3
+requests == 2.31.0

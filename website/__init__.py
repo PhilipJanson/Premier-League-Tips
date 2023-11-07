@@ -4,10 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from os import path
 from keys import APP_SECRET_KEY
 
-
-db = SQLAlchemy()
+db: SQLAlchemy = SQLAlchemy()
 DB_NAME = "database.db"
-
 
 def create_app():
     app = Flask(__name__)
@@ -22,9 +20,10 @@ def create_app():
     app.register_blueprint(views, url_prefix="/")
     app.register_blueprint(auth, url_prefix="/")
 
-    from .models import User, Tip, Fixture, Team, Result
+    from .models import User, Tip, Fixture, Team, Result, General
     
-    create_database(app)
+    with app.app_context():
+        db.create_all()
 
     login_manager = LoginManager()
     login_manager.login_view = "auth.login"
@@ -39,9 +38,3 @@ def create_app():
         return render_template('404.html'), 404
 
     return app
-
-
-def create_database(app):
-    if not path.exists("website/" + DB_NAME):
-        db.create_all(app=app)
-        print("Created database")

@@ -4,104 +4,106 @@
   <h1 class="pb-2 text-center">Statistik</h1>
   <div class="text-responsive">
     {% for user in users %}
-      {% for result in results %}
-        {% if user.id == result.user_id %}
-          <h2 class="text-center p-1">{{ user.username.capitalize() }}</h2>
-          <div id="{{ user.id }}-carousel" class="carousel slide bg-white shadow border" data-ride="carousel" data-interval="false" data-user-id="{{ user.id }}" data-total="{{ result.total }}">
-            <div class="carousel-inner">
-              <div class="carousel-item active">
-                <h3 class="text-center p-3">Översikt</h3>
-                <div class="row text-left border shadow stat stat-1 p-2 small">
-                  <div class="col border-bottom">
-                    <div class="row">
-                      <div class="col border-right">
-                        <span class="text-primary">
-                          <i class="fa fa-bars"></i>
-                        </span>Gjorda tips:
-                      </div>
-                      <div class="col">{{ result.total }}</div>
-                    </div>
-                  </div>
-                  <div class="w-100"></div>
-                  <div class="col border-bottom">
-                    <div class="row">
-                      <div class="col border-right">
-                        <span class="text-primary">
-                          <i class="fa fa-soccer-ball-o"></i>
-                        </span>Avslutade tips:
-                      </div>
-                      <div class="col">{{ result.finished }}</div>
-                    </div>
-                  </div>
-                  <div class="w-100"></div>
-                  <div class="col border-bottom">
-                    <div class="row">
-                      <div class="col border-right">
-                        <span class="text-success">
-                          <i class="fa fa-check-circle"></i>
-                        </span>Antal rätt:
-                      </div>
-                      <div class="col">{{ result.correct }}</div>
-                    </div>
-                  </div>
-                  <div class="w-100"></div>
-                  <div class="col">
-                    <div class="row">
-                      <div class="col border-right">
-                        <span class="text-danger">
-                          <i class="fa fa-times-circle"></i>
-                        </span>Antal fel:
-                      </div>
-                      <div class="col">{{ result.incorrect }}</div>
-                    </div>
-                  </div>
-                </div>
-                <br/>
-                <h5 class="text-center p-1">Ej spelade</h5>
-                <div class="row overflow-auto border shadow stat stat-2 p-2 small">
-                  {% for fixture in fixtures %}
-                    {% for tip in user.tips %}
-                      {% if fixture.fixture_id == tip.fixture_id %}
-                        <div class="col border-bottom">
-                          <div class="row text-center">
-                            <div class="col-10 border-right">{{ fixture.home_team.name }}
-                              -
-                              {{ fixture.away_team.name }}</div>
-                            <div class="col-1">{{ tip.tip }}</div>
-                          </div>
+      {% if not user.is_admin %}
+        {% for result in results %}
+          {% if user.id == result.user_id %}
+            <h2 class="text-center p-1">{{ user.username.capitalize() }}</h2>
+            <div id="{{ user.id }}-carousel" class="carousel slide bg-white shadow border" data-ride="carousel" data-interval="false" data-user-id="{{ user.id }}" data-total="{{ result.total }}">
+              <div class="carousel-inner">
+                <div class="carousel-item active">
+                  <h3 class="text-center p-3">Översikt</h3>
+                  <div class="row text-left border shadow stat stat-1 p-2 small">
+                    <div class="col border-bottom">
+                      <div class="row">
+                        <div class="col border-right">
+                          <span class="text-primary">
+                            <i class="fa fa-bars"></i>
+                          </span>Gjorda tips:
                         </div>
-                        <div class="w-100"></div>
-                      {% endif %}
+                        <div class="col">{{ result.total }}</div>
+                      </div>
+                    </div>
+                    <div class="w-100"></div>
+                    <div class="col border-bottom">
+                      <div class="row">
+                        <div class="col border-right">
+                          <span class="text-primary">
+                            <i class="fa fa-soccer-ball-o"></i>
+                          </span>Avslutade tips:
+                        </div>
+                        <div class="col">{{ result.finished }}</div>
+                      </div>
+                    </div>
+                    <div class="w-100"></div>
+                    <div class="col border-bottom">
+                      <div class="row">
+                        <div class="col border-right">
+                          <span class="text-success">
+                            <i class="fa fa-check-circle"></i>
+                          </span>Antal rätt:
+                        </div>
+                        <div class="col">{{ result.correct }}</div>
+                      </div>
+                    </div>
+                    <div class="w-100"></div>
+                    <div class="col">
+                      <div class="row">
+                        <div class="col border-right">
+                          <span class="text-danger">
+                            <i class="fa fa-times-circle"></i>
+                          </span>Antal fel:
+                        </div>
+                        <div class="col">{{ result.incorrect }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <br/>
+                  <h5 class="text-center p-1">Ej spelade</h5>
+                  <div class="row overflow-auto border shadow stat stat-2 p-2 small">
+                    {% for fixture in fixtures %}
+                      {% for tip in user.tips %}
+                        {% if fixture.fixture_id == tip.fixture_id %}
+                          <div class="col border-bottom">
+                            <div class="row text-center">
+                              <div class="col-10 border-right">{{ fixture.home_team.name }}
+                                -
+                                {{ fixture.away_team.name }}</div>
+                              <div class="col-1">{{ tip.tip }}</div>
+                            </div>
+                          </div>
+                          <div class="w-100"></div>
+                        {% endif %}
+                      {% endfor %}
                     {% endfor %}
-                  {% endfor %}
+                  </div>
+                </div>
+                <div class="carousel-item">
+                  <h3 class="text-center p-3">Antal rätt</h3>
+                  <canvas id="{{ user.id }}-correct-chart" class="stat pie-chart pb-4" data-correct="{{ result.correct }}" data-incorrect="{{ result.incorrect }}" data-finished="{{ result.finished }}"></canvas>
+                </div>
+                <div class="carousel-item">
+                  <h3 class="text-center p-3">Tipfördelning</h3>
+                  <canvas id="{{ user.id }}-tip-chart" class="stat pie-chart pb-4" data-tip-one="{{ result.tip_1 }}" data-tip-x="{{ result.tip_X }}" data-tip-two="{{ result.tip_2 }}"></canvas>
+                </div>
+                <div class="carousel-item">
+                  <h3 class="text-center p-3">Omgångsstatistik</h3>
+                  <canvas id="{{ user.id }}-round-scores" class="stat line-graph" data-scores="{{ result.round_scores }}" data-guesses="{{ result.round_guesses }}"></canvas>
                 </div>
               </div>
-              <div class="carousel-item">
-                <h3 class="text-center p-3">Antal rätt</h3>
-                <canvas id="{{ user.id }}-correct-chart" class="stat pie-chart pb-4" data-correct="{{ result.correct }}" data-incorrect="{{ result.incorrect }}"></canvas>
-              </div>
-              <div class="carousel-item">
-                <h3 class="text-center p-3">Tipfördelning</h3>
-                <canvas id="{{ user.id }}-tip-chart" class="stat pie-chart pb-4" data-tip-one="{{ result.tip_1 }}" data-tip-x="{{ result.tip_X }}" data-tip-two="{{ result.tip_2 }}"></canvas>
-              </div>
-              <div class="carousel-item">
-                <h3 class="text-center p-3">Omgångsstatistik</h3>
-                <canvas id="{{ user.id }}-round-scores" class="stat line-graph" data-rounds="{{ result.round_scores }}"></canvas>
-              </div>
+              <a class="carousel-control-prev" href="#{{ user.id }}-carousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true" style="filter: invert(100%);"></span>
+                <span class="sr-only">Previous</span>
+              </a>
+              <a class="carousel-control-next" href="#{{ user.id }}-carousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true" style="filter: invert(100%);"></span>
+                <span class="sr-only">Next</span>
+              </a>
             </div>
-            <a class="carousel-control-prev" href="#{{ user.id }}-carousel" role="button" data-slide="prev">
-              <span class="carousel-control-prev-icon" aria-hidden="true" style="filter: invert(100%);"></span>
-              <span class="sr-only">Previous</span>
-            </a>
-            <a class="carousel-control-next" href="#{{ user.id }}-carousel" role="button" data-slide="next">
-              <span class="carousel-control-next-icon" aria-hidden="true" style="filter: invert(100%);"></span>
-              <span class="sr-only">Next</span>
-            </a>
-          </div>
-        </div>
+          {% endif %}
+        {% endfor %}
       {% endif %}
     {% endfor %}
-  {% endfor %}
+  </div>
 {% endblock %}
 {% block script %}
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>

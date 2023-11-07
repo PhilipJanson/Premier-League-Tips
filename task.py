@@ -1,18 +1,19 @@
 from website import create_app
-from website.models import User, Fixture, Team, Tip, Result
+from website.models import User, Fixture, Team, Tip, Result, General
 from website import db
 from keys import API_KEY
-from website.info import SEASON
+from jsonhandler import read_tip, write_tip
 import requests
 import time
-
 
 # Premier League
 LEAGUE_ID = 39
 
+# Do not change unless a new season is beginning
+SEASON = 2023
 
-def api_call(endpoint):
-    url = f"https://v3.football.api-sports.io/{endpoint}?season={SEASON}&league={LEAGUE_ID}"
+def api_call(endpoint, season):
+    url = f"https://v3.football.api-sports.io/{endpoint}?season={season}&league={LEAGUE_ID}"
 
     if endpoint == "fixtures":
         url = url + "&timezone=Europe/Stockholm"
@@ -26,21 +27,31 @@ def api_call(endpoint):
     }
 
     response = requests.request("GET", url, headers=headers, data=payload)
-    print(response.headers)
-
+    update_general(response.headers)
     return response.json()["response"]
 
+def update_general(headers):
+    general = General.query.first()
 
-def add_standings(response):
+    if general is None:
+        new_general = General(season=SEASON, last_update=headers["Date"], remaining_requests=int(headers["x-ratelimit-requests-remaining"]))
+        db.session.add(new_general)
+    else:
+        general.season = SEASON
+        general.last_update = headers["Date"]
+        general.remaining_requests = int(headers["x-ratelimit-requests-remaining"])
+    
+    db.session.commit()
+
+def add_standings(response, season):
     for leagues in response:
         for temp in leagues["league"]["standings"]:
             for team in temp:
-                handle_team(team)
+                handle_team(team, season)
 
     db.session.commit()
 
-
-def handle_team(team):
+def handle_team(team, season):
     name = team['team']['name']
     logo = team['team']['logo']
     rank = int(team['rank'])
@@ -53,10 +64,10 @@ def handle_team(team):
     goals_conceded = int(team["all"]["goals"]["against"])
     form = team["form"]
 
-    t = Team.query.filter_by(season=SEASON).filter_by(name=name).first()
+    t = Team.query.filter_by(season=season).filter_by(name=name).first()
 
     if t is None:
-        new_team = Team(season=SEASON, name=name, logo=logo, rank=rank, points=points, games_played=games_played, wins=wins,
+        new_team = Team(season=season, name=name, logo=logo, rank=rank, points=points, games_played=games_played, wins=wins,
                         draws=draws, losses=losses, goals_scored=goals_scored, goals_conceded=goals_conceded, form=form)
         db.session.add(new_team)
     else:
@@ -71,17 +82,15 @@ def handle_team(team):
         t.goals_conceded = goals_conceded
         t.form = form
 
-
-def add_fixtures(response):
+def add_fixtures(response, season):
     sorted_fixtures = sorted(response, key=lambda x: x['fixture']['date'])
 
     for fixtures in sorted_fixtures:
-        handle_fixture(fixtures)
+        handle_fixture(fixtures, season)
 
     db.session.commit()
 
-
-def handle_fixture(fixtures):
+def handle_fixture(fixtures, season):
     fixture = fixtures["fixture"]
     fixture_id = fixture["id"]
     round = int(fixtures["league"]["round"].split(" - ")[1])
@@ -98,7 +107,7 @@ def handle_fixture(fixtures):
     f = Fixture.query.filter_by(fixture_id=fixture_id).first()
 
     if f is None:
-        new_fixture = Fixture(fixture_id=fixture_id, season=SEASON, round=round, date=date, time=time, status=status,
+        new_fixture = Fixture(fixture_id=fixture_id, season=season, round=round, date=date, time=time, status=status,
                               home_team_id=home_team_id, away_team_id=away_team_id, home_score=home_score, away_score=away_score)
         db.session.add(new_fixture)
     else:
@@ -109,8 +118,7 @@ def handle_fixture(fixtures):
         f.home_score = home_score
         f.away_score = away_score
 
-
-def calc_results():
+def calc_results(season):
     for user in User.query.all():
         total = 0
         finished = 0
@@ -120,9 +128,10 @@ def calc_results():
         tip_X = 0
         tip_2 = 0
         round_scores = ""
+        round_guesses = ""
 
         for tip in user.tips:
-            fixture = Fixture.query.filter_by(season=SEASON).filter_by(
+            fixture = Fixture.query.filter_by(season=season).filter_by(
                 fixture_id=tip.fixture_id).first()
 
             if fixture is not None:
@@ -147,25 +156,35 @@ def calc_results():
 
         curr_round = 1
         curr_score = 0
+        curr_guess = 0
 
-        for fixture in Fixture.query.filter_by(season=SEASON).order_by(Fixture.round):
+        for fixture in Fixture.query.filter_by(season=season).order_by(Fixture.round):
             tip = Tip.query.filter_by(user_id=user.id).filter_by(
                 fixture_id=fixture.fixture_id).first()
 
             if curr_round != fixture.round:
                 round_scores += str(curr_score) + "-"
+                round_guesses += str(curr_guess) + "-"
                 curr_round = fixture.round
                 curr_score = 0
+                curr_guess = 0
 
-            if tip is not None and tip.correct == 1:
-                curr_score += 1
+            if tip is not None:
+                curr_guess += 1
+                if tip.correct == 1:
+                    curr_score += 1
+
+        round_scores += str(curr_score)
+        round_guesses += str(curr_guess)
 
         result = Result.query.filter_by(
-            season=SEASON).filter_by(user_id=user.id).first()
+            season=season).filter_by(user_id=user.id).first()
 
         if result is None:
-            new_result = Result(season=SEASON, total=total, finished=finished, correct=correct,
-                                incorrect=incorrect, tip_1=tip_1, tip_X=tip_X, tip_2=tip_2, round_scores=round_scores, user_id=user.id)
+            new_result = Result(season=season, total=total, finished=finished, correct=correct,
+                                incorrect=incorrect, tip_1=tip_1, tip_X=tip_X, tip_2=tip_2, 
+                                round_scores=round_scores, round_guesses=round_guesses, 
+                                user_id=user.id)
             db.session.add(new_result)
         else:
             result.total = total
@@ -176,29 +195,49 @@ def calc_results():
             result.tip_X = tip_X
             result.tip_2 = tip_2
             result.round_scores = round_scores
+            result.round_guesses = round_guesses
 
     db.session.commit()
-
 
 def is_winner(fixture, tip):
     score = int(fixture.home_score) - int(fixture.away_score)
     return (score > 0 and tip == "1") or (score < 0 and tip == "2") or (score == 0 and tip == "X")
 
+def get_season():
+    general = General.query.first()
+    
+    if general is None:
+        return SEASON
+    
+    return general.season
 
 if __name__ == "__main__":
     start = time.perf_counter()
     app = create_app()
-    update = False
+    read_old = False
+    update = True
 
     with app.app_context():
+        if read_old:
+            read_tip()
+
+        season = get_season()
+
+        # If we want to load previous seasons 
+        # fixtures and calculate their results:
+        #
+        # season = "2021"
+
         if update:
-            standings_response = api_call("standings")
-            fixture_response = api_call("fixtures")
+            standings_response = api_call("standings", season)
+            fixture_response = api_call("fixtures", season)
+            add_standings(standings_response, season)
+            add_fixtures(fixture_response, season)
 
-            add_standings(standings_response)
-            add_fixtures(fixture_response)
+        calc_results(season)
 
-        calc_results()
+        # FIX THIS
+        #write_tip()
 
     end = time.perf_counter()
     print("Finished in:", end - start)

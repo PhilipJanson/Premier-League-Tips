@@ -36,21 +36,23 @@
         <div class="col">{{ team.goals_scored - team.goals_conceded }}</div>
         <div class="col font-weight-bold">{{ team.points }}</div>
         <div class="col-2">
-          {% for c in team.form %}
-            {% if c == "W" %}
-              <span class="text-success">
-                <i class="fa fa-check-circle"></i>
-              </span>
-            {% elif c == "L" %}
-              <span class="text-danger">
-                <i class="fa fa-times-circle"></i>
-              </span>
-            {% elif c == "D" %}
-              <span class="text-secondary">
-                <i class="fa fa-minus-circle"></i>
-              </span>
-            {% endif %}
-          {% endfor %}
+          {% if team.form is not none %}
+            {% for c in team.form %}
+              {% if c == "W" %}
+                <span class="text-success">
+                  <i class="fa fa-check-circle"></i>
+                </span>
+              {% elif c == "L" %}
+                <span class="text-danger">
+                  <i class="fa fa-times-circle"></i>
+                </span>
+              {% elif c == "D" %}
+                <span class="text-secondary">
+                  <i class="fa fa-minus-circle"></i>
+                </span>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
         </div>
         <div class="w-100"></div>
       </div>

@@ -93,6 +93,10 @@
   max-height: 140px;
 }
 
+.test:focus {
+  z-index: 100;
+}
+
 @media (min-width: 0px) {
   .text-responsive {
     font-size: 10px;

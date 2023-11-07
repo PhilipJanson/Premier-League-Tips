@@ -63,6 +63,8 @@ class Tip(db.Model):
 class Result(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     season = db.Column(db.String(4))
+
+    # Tip
     total = db.Column(db.Integer)
     finished = db.Column(db.Integer)
     correct = db.Column(db.Integer)
@@ -71,9 +73,20 @@ class Result(db.Model):
     tip_X = db.Column(db.Integer)
     tip_2 = db.Column(db.Integer)
     round_scores = db.Column(db.String(500))
+    round_guesses = db.Column(db.String(500))
+
+    # Placements
     placements = db.Column(db.String(500))
+    placements_total = db.Column(db.Integer)
+    
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
+
+class General(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    season = db.Column(db.String(4))
+    last_update = db.Column(db.String(40))
+    remaining_requests = db.Column(db.Integer)
 
 
 

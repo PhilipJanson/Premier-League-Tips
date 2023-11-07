@@ -1,12 +1,13 @@
 var carousels = document.getElementsByClassName('carousel');
 
 for (const carousel of carousels) {
-  var userId = carousel.dataset.userId;
-  var total = carousel.dataset.total;
+  const userId = carousel.dataset.userId;
+  const total = carousel.dataset.total;
 
-  var correctCtx = document.getElementById(`${userId}-correct-chart`);
-  var correct = correctCtx.dataset.correct;
-  var incorrect = correctCtx.dataset.incorrect;
+  const correctCtx = document.getElementById(`${userId}-correct-chart`);
+  const correct = correctCtx.dataset.correct;
+  const incorrect = correctCtx.dataset.incorrect;
+  const notPlayed = total - correctCtx.dataset.finished;
 
   var correctPieChart = new Chart(correctCtx.getContext('2d'), {
     type: 'pie',
@@ -14,12 +15,13 @@ for (const carousel of carousels) {
       labels: [
         'Antal rätt ' + percentage(correct, total),
         'Antal fel ' + percentage(incorrect, total),
+        'Ej spelade ' + percentage(notPlayed, total),
       ],
       datasets: [
         {
-          data: [correct, incorrect],
-          backgroundColor: ['#46BFBD', '#F7464A'],
-          hoverBackgroundColor: ['#5AD3D1', '#FF5A5E'],
+          data: [correct, incorrect, notPlayed],
+          backgroundColor: ['#46BFBD', '#F7464A', '#FDB45C'],
+          hoverBackgroundColor: ['#5AD3D1', '#FF5A5E', '#FFC870'],
         },
       ],
     },
@@ -28,10 +30,10 @@ for (const carousel of carousels) {
     },
   });
 
-  var tipCtx = document.getElementById(`${userId}-tip-chart`);
-  var tip1 = tipCtx.dataset.tipOne;
-  var tipX = tipCtx.dataset.tipX;
-  var tip2 = tipCtx.dataset.tipTwo;
+  const tipCtx = document.getElementById(`${userId}-tip-chart`);
+  const tip1 = tipCtx.dataset.tipOne;
+  const tipX = tipCtx.dataset.tipX;
+  const tip2 = tipCtx.dataset.tipTwo;
 
   var tipPieChart = new Chart(tipCtx.getContext('2d'), {
     type: 'pie',
@@ -54,8 +56,9 @@ for (const carousel of carousels) {
     },
   });
 
-  var roundsCtx = document.getElementById(`${userId}-round-scores`);
-  var roundScores = roundsCtx.dataset.rounds;
+  const roundsCtx = document.getElementById(`${userId}-round-scores`);
+  const roundScores = roundsCtx.dataset.scores;
+  const roundGuesses = roundsCtx.dataset.guesses;
 
   var roundScoreChart = new Chart(roundsCtx.getContext('2d'), {
     type: 'line',
@@ -67,6 +70,14 @@ for (const carousel of carousels) {
           data: roundScores.split('-'),
           backgroundColor: 'rgba(105, 0, 132, .2)',
           borderColor: 'rgba(200, 99, 132, .7)',
+          borderWidth: 2,
+          lineTension: 0,
+        },
+        {
+          label: 'Tips Gjorda',
+          data: roundGuesses.split('-'),
+          backgroundColor: 'rgba(2, 0, 132, .2)',
+          borderColor: 'rgba(2, 99, 132, .7)',
           borderWidth: 2,
           lineTension: 0,
         },

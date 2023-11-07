@@ -1,18 +1,7 @@
 const tips = new Map();
 
-window.onload = function () {
-  var id = document.getElementById('dateid').innerText.trim();
-
-  var fixture = document.getElementById(id);
-  fixture.scrollIntoView({
-    alignToTop: true,
-    block: 'center',
-    behavior: 'smooth',
-  });
-};
-
 function tipSelected(button, enabled) {
-  if (enabled == 'true') {
+  if (enabled === 'true') {
     id = button.id.split('-')[1];
     value = button.id.split('-')[2];
     tips.set(id, value);

@@ -1,10 +1,10 @@
 from website import db
 from website.models import User, Fixture, Tip
-import os
 import json
+import os
 
 curr_folder = os.path.dirname(os.path.abspath(__file__))
-tip_file = os.path.join(curr_folder, 'website/data/tips.json')
+tip_file = os.path.join(curr_folder, 'website/data/tip.json')
 
 def read_tip():
     with open(tip_file) as f:
