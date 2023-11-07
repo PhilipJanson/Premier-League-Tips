@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Tippa Matcher{% endblock %}
+{% block content %}
+  <h1 class="pb-2 text-center">Tippa matcher</h1>
+  <div class="text-responive">
+    <div class="row">
+      {% set prev_round = namespace(round = "0") %}
+      {% set index = namespace(value = 1) %}
+
+      {% for fixture in fixtures %}
+        {% set round = fixture.round %}
+        {% if round != prev_round.round %}
+          {% set prev_round.round = round %}
+          {% if index.value % 2 == 0 %}
+            <div class="col"></div>
+            <div class="w-100"></div>
+            {% set index.value = index.value + 1 %}
+          {% endif %}
+          <div class="p-2 font-weight-bold">
+            Omgång
+            {{ round }}
+            av 38
+          </div>
+          <div class="w-100"></div>
+        {% endif %}
+
+        <div id="{{ fixture.fixture_id }}" class="col shadow" tabindex="0">
+          <div class="row border hover p-2">
+            <!--Teams-->
+            <div class="col">
+              <!--Home team-->
+              <div class="row align-items-center">
+                <div class="col col-lg-1 p-1">
+                  <img class="img-thumbnail-custom-2 float-start" src="{{ fixture.home_team.logo }}" alt="Home team's logo"/>
+                </div>
+                <div class="col text-left small">{{ fixture.home_team.name }}</div>
+                <div class="col-md-auto text-right small">
+                  {% if fixture.status == "FT" %}
+                    {{ fixtures.home_score }}
+                  {% endif %}
+                </div>
+              </div>
+              <!--Away team-->
+              <div class="row align-items-center">
+                <div class="col col-lg-1 p-1">
+                  <img class="img-thumbnail-custom-2 float-start" src="{{ fixture.away_team.logo }}" alt="Away team's logo"/>
+                </div>
+                <div class="col text-left small">{{ fixture.away_team.name }}</div>
+                <div class="col-md-auto text-right small">
+                  {% if fixture.status == "FT" %}
+                    {{ fixtures.away_score }}
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <!--Time-->
+            <div class="d-flex col-md-auto border-left text-center align-items-center small">
+              {% if fixture.status == "FT" %}
+                Slut
+              {% elif fixture.status == "PST" %}
+                <div class="text-warning">Uppskjuten</div>
+              {% else %}
+                {{ fixture.time }}
+              {% endif %}
+              <br/>
+              {% if fixture.status != "PST" %}
+                {{ fixture.date }}
+              {% endif %}
+              {% if user.is_admin %}
+                <br/>
+                ID:
+                {{ fixture.fixture_id }}
+              {% endif %}
+            </div>
+            <!--Buttons-->
+            <div class="d-flex col col-lg-3 border-left align-items-center small">
+              {% set current_tip = namespace(value = none) %}
+              {% for tip in user.tips %}
+                {% if tip.fixture_id == fixture.fixture_id %}
+                  {% set current_tip.value = tip.tip %}
+                {% endif %}
+              {% endfor %}
+
+              {% set button1 = "btn-outline-success" %}
+              {% set buttonX = "btn-outline-success" %}
+              {% set button2 = "btn-outline-success" %}
+              {% set enabled = "false" %}
+
+              {% if fixture.status == "FT" and not allow_post %}
+                {% if current_tip.value == "1" %}
+                  {% set button1 = "btn-success" %}
+                {% elif current_tip.value == "X" %}
+                  {% set buttonX = "btn-success" %}
+                {% elif current_tip.value == "2" %}
+                  {% set button2 = "btn-success" %}
+                {% endif %}
+                {% set button1 = button1 + " disabled" %}
+                {% set buttonX = buttonX + " disabled" %}
+                {% set button2 = button2 + " disabled" %}
+              {% elif fixture.status == "PST" and not allow_post %}
+                {% set button1 = "btn-outline-warning disabled" %}
+                {% set buttonX = "btn-outline-warning disabled" %}
+                {% set button2 = "btn-outline-warning disabled" %}
+              {% else %}
+                {% if current_tip.value == "1" %}
+                  {% set button1 = "btn-outline-success active" %}
+                {% elif current_tip.value == "X" %}
+                  {% set buttonX = "btn-outline-success active" %}
+                {% elif current_tip.value == "2" %}
+                  {% set button2 = "btn-outline-success active" %}
+                {% endif %}
+                {% set enabled = "true" %}
+              {% endif %}
+              <div class="btn-group btn-group-toggle shadow-sm" data-toggle="buttons">
+                <label class="btn {{ button1 }}" id="tipbutton-{{ fixture.fixture_id }}-1" onclick="tipSelected(this, '{{ enabled }}')">
+                  <input type="radio" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-1">
+                  1
+                </label>
+                <label class="btn {{ buttonX }}" id="tipbutton-{{ fixture.fixture_id }}-X" onclick="tipSelected(this, '{{ enabled }}')">
+                  <input type="radio" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-X">
+                  X
+                </label>
+                <label class="btn {{ button2 }}" id="tipbutton-{{ fixture.fixture_id }}-2" onclick="tipSelected(this, '{{ enabled }}')">
+                  <input type="radio" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-2">
+                  2
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% if index.value % 2 == 0 %}
+          <div class="w-100"></div>
+        {% endif %}
+        {% set index.value = index.value + 1 %}
+      {% endfor %}
+    </div>
+  </div>
+  <div id="nav-bottom-button" class="nav-sticky-bottom text-right bg-nav p-2 pr-4">
+    <button class="btn btn-primary" type="button" onclick="tipButtonPressed()">
+      Tippa
+    </button>
+  </div>
+  <!--The fixture_id of the closest fixture in time-->
+  <p id="dateid" hidden="hidden">
+    {{ id }}
+  </p>
+{% endblock %}
+{% block script %}
+  <script type="text/javascript" src="{{ url_for('static', filename='js/tip.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/scrollto.js') }}"></script>
+{% endblock %}

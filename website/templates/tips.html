@@ -1,64 +1,76 @@
-{% extends "base.html" %} {% block title %}Tips{% endblock %}{% block content %}
-<h1 class="pb-2 text-center">Tips</h1>
-<div class="border">
-  <br />
-  <div class="row align-items-center text-center">
-    <div class="col"></div>
-    <div class="col">
-      <div>Visar {{ u.username.capitalize() }}s tips</div>
-      <br />
-      <form method="POST">
-        <select
-          class="form-control form-control"
-          name="form-username"
-          id="form-username"
-        >
-          {% for u1 in users %} {% if not u1.is_admin %}
-          <option value="{{ u1.username }}">
-            {{ u1.username.capitalize() }}
-          </option>
-          {% endif %}{% endfor %}
-        </select>
-        <br />
-        <button type="submit" class="btn btn-outline-primary">Visa</button>
-      </form>
-    </div>
-    <div class="col"></div>
-  </div>
-  <br />
-  <div class="row align-items-center">
-    <div class="col-1"></div>
-    <div class="col border border-dark text-responsive">
-      <div class="row border-bottom font-weight-bold">
-        <div class="col">Match</div>
-        <div class="col-1 text-center">Resultat</div>
-        <div class="col-1"></div>
-        <div class="col-1 text-center">Tips</div>
-        <div class="col text-right">Datum</div>
+{% extends "base.html" %}
+{% block title %}Tips{% endblock %}
+{% block content %}
+  <h1 class="pb-2 text-center">Tips</h1>
+  <div class="border">
+    <br/>
+    <div class="row align-items-center text-center">
+      <div class="col"></div>
+      <div class="col">
+        <div>Visar
+          {{ u.username.capitalize() }}s tips</div>
+        <br/>
+        <form method="POST">
+          <select class="form-control form-control" name="form-username" id="form-username">
+            {% for u1 in users %}
+              {% if not u1.is_admin %}
+                <option value="{{ u1.username }}">
+                  {{ u1.username.capitalize() }}
+                </option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          <br/>
+          <button type="submit" class="btn btn-outline-primary">Visa</button>
+        </form>
       </div>
-      {% for fixtures in fixtures_data %} {% set fixture = fixtures["fixture"]
-      %} {% set home = fixtures["teams"]["home"] %} {% set away =
-      fixtures["teams"]["away"] %}{% for tips in u.tips %} {% if tips.fixture_id
-      == fixture["id"] %} {% set status = fixture["status"]["short"] %} {% set
-      color = "bg-white" %} {% if status == "FT" %} {% set winner =
-      fixtures["teams"]["home"]["winner"] %} {% if (winner == true and tips.tip
-      == "1") or (winner == false and tips.tip == "2") or (winner == None and
-      tips.tip == "X") %} {% set color = "bg-success-light" %} {% else %} {% set
-      color = "bg-danger-light" %} {% endif %} {% endif %}
-      <div class="row border-bottom border-dark {{ color }}">
-        <div class="col">{{ home["name"] }} - {{ away["name"] }}</div>
-        <div class="col-1 text-center">
-          {% if status == "FT" %} {{ fixtures["goals"]["home"] }}-{{
-          fixtures["goals"]["away"] }} {% else %} -{% endif %}
+      <div class="col"></div>
+    </div>
+    <br/>
+    <div class="row align-items-center">
+      <div class="col-1"></div>
+      <div class="col border border-dark text-responsive">
+        <div class="row border-bottom font-weight-bold">
+          <div class="col">Match</div>
+          <div class="col-1 text-center">Resultat</div>
+          <div class="col-1"></div>
+          <div class="col-1 text-center">Tips</div>
+          <div class="col text-right">Datum</div>
         </div>
-        <div class="col-1"></div>
-        <div class="col-1 text-center">{{ tips.tip }}</div>
-        <div class="col text-right">{{ fixture["date"].split("T")[0] }}</div>
+        {% for fixture in fixtures %}
+          {% for tip in u.tips %}
+            {% if tip.fixture_id == fixture.fixture_id %}
+              {% set color = "bg-white" %}
+
+              {% if tip.correct == 1 %}
+                {% set color = "bg-success-light" %}
+              {% elif tip.correct == -1 %}
+                {% set color = "bg-danger-light" %}
+              {% endif %}
+
+              <div class="row border-bottom border-dark {{ color }}">
+                <div class="col">
+                  {{ fixture.home_team.name }}
+                  -
+                  {{ fixture.away_team.name }}
+                </div>
+                <div class="col-1 text-center">
+                  {% if fixture.status == "FT" %}
+                    {{ fixture.home_score }}-{{ fixture.away_score }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </div>
+                <div class="col-1"></div>
+                <div class="col-1 text-center">{{ tip.tip }}</div>
+                <div class="col text-right">{{ fixture.date }}</div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
       </div>
-      {% endif %} {% endfor %} {% endfor %}
+      <div class="col-1"></div>
     </div>
-    <div class="col-1"></div>
+    <br/>
   </div>
-  <br />
-</div>
 {% endblock %}

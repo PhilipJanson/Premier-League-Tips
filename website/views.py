@@ -1,115 +1,65 @@
 from flask import Blueprint, flash, render_template, request, jsonify, redirect, url_for
 from flask_login import login_required, current_user
-from .models import User, Tip
+from .models import User, Tip, Fixture, Team, Result, General
+from datetime import datetime, timedelta, date
 from . import db
-import datetime
 import json
-import os
 
 views = Blueprint("views", __name__)
-curr_folder = os.path.dirname(os.path.abspath(__file__))
-fixture_file = os.path.join(curr_folder, 'data/fixtures.json')
-standings_file = os.path.join(curr_folder, 'data/standings.json')
-tips_file = os.path.join(curr_folder, 'data/tips.json')
-results_file = os.path.join(curr_folder, 'data/results.json')
-p_file = os.path.join(curr_folder, 'data/old/p.txt')
-t_file = os.path.join(curr_folder, 'data/old/t.txt')
-
 
 @views.route("/")
 def home():
-    with open(fixture_file) as f:
-        fixtures_data = json.load(f)
+    start, end = get_week_dates()
+    fixtures = get_date_fixtures(get_season(), start, end)
+    return render("index", user=current_user, fixtures=fixtures)
 
-    time = datetime.datetime.now()
-    start_date, end_date = get_dates(time, 7)
+@views.route("/tip/<response>")
+@login_required
+def tip(response):
+    if response == "register":
+        flash("Tippning regristrerad")
 
-    return render_template("index.html", user=current_user, date=[start_date, end_date], fixtures_data=fixtures_data["response"])
+    id = get_nearest_fixture(datetime.now())
+    fixtures = get_fixtures(get_season())
+    return render("tip", user=current_user, id=id, fixtures=fixtures, allow_post=False)
 
-
-@views.route("/fixtures", methods=["GET", "POST"])
+@views.route("/fixtures")
 @login_required
 def fixtures():
-    with open(fixture_file) as f:
-        fixtures_data = json.load(f)
+    id = get_nearest_fixture(datetime.now())
+    fixtures = get_fixtures(get_season())
+    tip_ids = [tip.fixture_id for tip in current_user.tips]
+    return render("fixtures", user=current_user, users=User.query.all(), tip_ids=tip_ids, id=id, fixtures=fixtures)
 
-    time = datetime.datetime.now()
-    start_date, end_date = get_dates(time, 14)
-
-    if request.method == "POST":
-        form = request.form
-
-        for key in form:
-            if key == "date-start":
-                start_date = form[key]
-            elif key == "date-end":
-                end_date = form[key]
-            else:
-                fixture_id = int(key.split("-")[1])
-                tip = form[key]
-
-                if (len(tip) < 1 or len(tip) > 1):
-                    flash("Något gick fel", category="error")
-                else:
-                    in_database = False
-
-                    for usertips in current_user.tips:
-                        if fixture_id == usertips.fixture_id:
-                            in_database = True
-
-                    if in_database:
-                        flash("Du har redan tippat den här matchen",
-                              category="error")
-                    else:
-                        new_tip = Tip(fixture_id=fixture_id, tip=tip,
-                                      user_id=current_user.id)
-                        db.session.add(new_tip)
-                        db.session.commit()
-                        write_tip()
-                        flash("Tippning regristrerad", category="success")
-
-    if start_date > end_date:
-        flash("Slutdatum kan inte vara innan startdatum", category="error")
-        start_date, end_date = get_dates(time, 14)
-
-    return render_template("fixtures.html", user=current_user, date=[start_date, end_date], fixtures_data=fixtures_data["response"], users=User.query.all())
-
-
-@views.route("/standings")
+@views.route("/standings/<season>")
 @login_required
-def standings():
-    with open(standings_file) as f:
-        standings_data = json.load(f)
+def standings(season):
+    teams = Team.query.filter_by(season=season).order_by(Team.rank)
+    return render("standings", user=current_user, teams=teams)
 
-    return render_template("standings.html", user=current_user, standings_data=standings_data["response"])
-
-
-@views.route("/stats")
+@views.route("/stats/<season>")
 @login_required
-def stats():
-    with open(fixture_file) as f:
-        fixtures_data = json.load(f)
-
-    with open(results_file) as f:
-        results_data = json.load(f)
-
-    return render_template("stats.html", user=current_user, fixtures_data=fixtures_data["response"], results_data=results_data["users"], users=User.query.all())
-
+def stats(season):
+    fixtures = get_fixtures(season).filter_by(status="NS")
+    results = Result.query.filter_by(season=season)
+    return render("stats", user=current_user, users=User.query.all(), fixtures=fixtures, results=results)
 
 @views.route("/tips", methods=["GET", "POST"])
 @login_required
 def tips():
-    with open(fixture_file) as f:
-        fixtures_data = json.load(f)
-
     u = current_user
 
     if request.method == "POST":
         username = request.form["form-username"]
         u = User.query.filter_by(username=username).first()
 
-    return render_template("tips.html", user=current_user, fixtures_data=fixtures_data["response"], u=u, users=User.query.all())
+    return render("tips", user=current_user, fixtures=get_fixtures(get_season()), u=u, users=User.query.all())
 
+@views.route("/teampicker")
+@login_required
+def teampicker():
+    teams = Team.query.filter_by(season=get_season()).order_by(Team.name)
+    return render("teampicker", user=current_user, teams=teams)
 
 @views.route("/admin", methods=["GET", "POST"])
 @login_required
@@ -127,91 +77,65 @@ def admin():
                           user_id=user.id)
             db.session.add(new_tip)
             db.session.commit()
-            write_tip()
         else:
             flash("Ingen ID angiven", category="error")
 
     if (current_user.is_admin):
-        return render_template("admin.html", user=current_user, users=User.query.all())
+        return render("admin", user=current_user, users=User.query.all())
     else:
         return redirect(url_for("views.home"))
+    
+@views.route("/register-tips", methods=["POST"])
+def register_tips():
+    tips = json.loads(request.data)
 
+    for tip in tips:
+        fixture_id = int(tip[0].strip())
+        value = tip[1].strip()
+        prev_tip = Tip.query.filter_by(user_id=current_user.id).filter_by(
+            fixture_id=fixture_id).first()
 
-@views.route("/delete-tip", methods=["POST"])
-def delete_tip():
-    tip = json.loads(request.data)
-    tip_id = tip["tip_id"]
-    tip = Tip.query.get(tip_id)
-
-    if tip:
-        if tip.user_id == current_user.id:
-            db.session.delete(tip)
-            db.session.commit()
-            write_tip()
-            flash("Tip borttaget", category="success")
-
-    return jsonify({})
-
-
-@views.route("/load-tips", methods=["POST"])
-def load_tips():
-    p = open(p_file, "r")
-    user = User.query.filter_by(username="philip").first()
-
-    for line in p:
-        data = str(line).split(":")
-        fixture_id = data[0]
-        tip = data[1].replace("\n", "")
-        new_tip = Tip(fixture_id=fixture_id, tip=tip,
-                      user_id=user.id)
-        db.session.add(new_tip)
-
-    t = open(t_file, "r")
-    user = User.query.filter_by(username="totte").first()
-
-    for line in t:
-        data = str(line).split(":")
-        fixture_id = data[0]
-        tip = data[1].replace("\n", "")
-        new_tip = Tip(fixture_id=fixture_id, tip=tip,
-                      user_id=user.id)
-        db.session.add(new_tip)
+        if prev_tip is None:
+            new_tip = Tip(tip=value, correct=0,
+                          fixture_id=fixture_id, user_id=current_user.id)
+            db.session.add(new_tip)
+        else:
+            prev_tip.tip = value
 
     db.session.commit()
-    write_tip()
 
     return jsonify({})
 
+def get_date_fixtures(season, start, end):
+    return get_fixtures(season).filter(Fixture.date >= start).filter(Fixture.date <= end)
 
-def write_tip():
-    data = {}
-    user_list = []
+def get_fixtures(season):
+    return Fixture.query.filter_by(season=season)
 
-    for user in User.query.all():
-        user_data = {}
-        tip_list = []
+def get_week_dates():
+    today = date.today()
+    start = today - timedelta(days=today.weekday())
+    end = start + timedelta(days=6)
+    return str(start), str(end)
 
-        for tip in user.tips:
-            tip_data = {}
-            tip_data["fixture_id"] = tip.fixture_id
-            tip_data["tip"] = tip.tip
-            tip_list.append(tip_data)
+def get_nearest_fixture(date):
+    dates = [datetime.strptime(fixture.date + fixture.time, '%Y-%m-%d%H:%M')
+             for fixture in Fixture.query.all()]
+    nearest = min(dates, key=lambda x: abs(x - date))
 
-        user_data["name"] = user.username
-        user_data["tips"] = tip_list
-        user_list.append(user_data)
+    for fixture in Fixture.query.all():
+        if nearest == datetime.strptime(fixture.date + fixture.time, '%Y-%m-%d%H:%M'):
+            id = fixture.fixture_id
 
-    data["users"] = user_list
+    return id
 
-    with open(tips_file, "w") as f:
-        json.dump(data, f)
+def get_season():
+    general = General.query.first()
+    
+    if general is None:
+        return "2023"
+    
+    return general.season
 
-
-def get_dates(time, days):
-    y = time.strftime("%Y")
-    m = time.strftime("%m")
-    d = time.strftime("%d")
-    start_date = "{}-{}-{}".format(y, m, d)
-    end_date = str(time + datetime.timedelta(days=days)).split()[0]
-
-    return start_date, end_date
+def render(html_name, **kwargs):
+    return render_template(f"{html_name}.html", season=get_season(), **kwargs)

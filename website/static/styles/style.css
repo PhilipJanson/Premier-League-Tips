@@ -1,6 +1,11 @@
 .hover {
   background: #fff;
 }
+
+.bg-white {
+  background: #fff;
+}
+
 .hover:hover {
   background: #f5f5f5;
 }
@@ -13,11 +18,83 @@
   background-color: #ff5e5e;
 }
 
+.bg-nav {
+  background-color: #343a40;
+}
+
+.disabled {
+  cursor: default;
+}
+
+.team-picker {
+  cursor: move;
+}
+
 .img-thumbnail-custom {
   padding: 0.25rem;
   border-radius: 0.25rem;
   max-width: 100%;
   height: auto;
+}
+
+.img-thumbnail-custom-2 {
+  width: 30px;
+  height: 30px;
+  display: inline-block;
+}
+
+.nav-sticky-bottom {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: 5;
+  translate: 0 60px;
+  transition: all 0.5s ease-in-out;
+}
+
+.nav-link {
+  display: inline;
+}
+
+.visible {
+  translate: 0 0;
+}
+
+.alert-fixed {
+  position: fixed;
+  width: 100%;
+  z-index: 10;
+}
+
+.carousel-item {
+  height: 400px;
+}
+
+.stat {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.pie-chart {
+  max-width: 300px;
+}
+
+.line-graph {
+  max-width: 600px;
+}
+
+.stat-1 {
+  max-width: 400px;
+}
+
+.stat-2 {
+  max-width: 400px;
+  max-height: 140px;
+}
+
+.test:focus {
+  z-index: 100;
 }
 
 @media (min-width: 0px) {

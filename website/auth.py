@@ -54,10 +54,7 @@ def signup():
         elif password != password_repeat:
             flash("Lösenorden stämmer inte överens", category="error")
         else:
-            new_user = User(username=username, password=generate_password_hash(
-                password, method="sha256"), is_admin=username == "admin")
-            db.session.add(new_user)
-            db.session.commit()
+            new_user = User.create(username, generate_password_hash(password, method="sha256"))
 
             login_user(new_user, remember=True)
             flash("Konto skapat!", category="success")
