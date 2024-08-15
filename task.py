@@ -10,7 +10,7 @@ import time
 LEAGUE_ID = 39
 
 # Do not change unless a new season is beginning
-SEASON = 2023
+SEASON = 2024
 
 def api_call(endpoint, season):
     url = f"https://v3.football.api-sports.io/{endpoint}?season={season}&league={LEAGUE_ID}"
@@ -40,7 +40,7 @@ def update_general(headers):
         general.season = SEASON
         general.last_update = headers["Date"]
         general.remaining_requests = int(headers["x-ratelimit-requests-remaining"])
-    
+
     db.session.commit()
 
 def add_standings(response, season):
@@ -182,8 +182,8 @@ def calc_results(season):
 
         if result is None:
             new_result = Result(season=season, total=total, finished=finished, correct=correct,
-                                incorrect=incorrect, tip_1=tip_1, tip_X=tip_X, tip_2=tip_2, 
-                                round_scores=round_scores, round_guesses=round_guesses, 
+                                incorrect=incorrect, tip_1=tip_1, tip_X=tip_X, tip_2=tip_2,
+                                round_scores=round_scores, round_guesses=round_guesses,
                                 user_id=user.id)
             db.session.add(new_result)
         else:
@@ -205,10 +205,10 @@ def is_winner(fixture, tip):
 
 def get_season():
     general = General.query.first()
-    
+
     if general is None:
         return SEASON
-    
+
     return general.season
 
 if __name__ == "__main__":
@@ -223,7 +223,7 @@ if __name__ == "__main__":
 
         season = get_season()
 
-        # If we want to load previous seasons 
+        # If we want to load previous seasons
         # fixtures and calculate their results:
         #
         # season = "2021"

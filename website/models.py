@@ -1,7 +1,6 @@
 from . import db
 from flask_login import UserMixin
 
-
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True)
@@ -19,7 +18,6 @@ class User(db.Model, UserMixin):
 
         return new_user
 
-
 class Fixture(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fixture_id = db.Column(db.Integer)
@@ -34,7 +32,6 @@ class Fixture(db.Model):
     away_team = db.relationship("Team", foreign_keys=[away_team_id])
     home_score = db.Column(db.String(3))
     away_score = db.Column(db.String(3))
-
 
 class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,14 +48,12 @@ class Team(db.Model):
     goals_conceded = db.Column(db.Integer)
     form = db.Column(db.String(5))
 
-
 class Tip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fixture_id = db.Column(db.Integer)
     tip = db.Column(db.String(1))
     correct = db.Column(db.Integer)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
 
 class Result(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -81,12 +76,8 @@ class Result(db.Model):
     
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-
 class General(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     season = db.Column(db.String(4))
     last_update = db.Column(db.String(40))
     remaining_requests = db.Column(db.Integer)
-
-
-

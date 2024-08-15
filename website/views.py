@@ -8,14 +8,14 @@ import json
 views = Blueprint("views", __name__)
 
 @views.route("/")
-def home():
+def home() -> str:
     start, end = get_week_dates()
     fixtures = get_date_fixtures(get_season(), start, end)
     return render("index", user=current_user, fixtures=fixtures)
 
 @views.route("/tip/<response>")
 @login_required
-def tip(response):
+def tip(response) -> str:
     if response == "register":
         flash("Tippning regristrerad")
 
@@ -25,7 +25,7 @@ def tip(response):
 
 @views.route("/fixtures")
 @login_required
-def fixtures():
+def fixtures() -> str:
     id = get_nearest_fixture(datetime.now())
     fixtures = get_fixtures(get_season())
     tip_ids = [tip.fixture_id for tip in current_user.tips]
@@ -33,20 +33,20 @@ def fixtures():
 
 @views.route("/standings/<season>")
 @login_required
-def standings(season):
+def standings(season) -> str:
     teams = Team.query.filter_by(season=season).order_by(Team.rank)
     return render("standings", user=current_user, teams=teams)
 
 @views.route("/stats/<season>")
 @login_required
-def stats(season):
+def stats(season) -> str:
     fixtures = get_fixtures(season).filter_by(status="NS")
     results = Result.query.filter_by(season=season)
     return render("stats", user=current_user, users=User.query.all(), fixtures=fixtures, results=results)
 
 @views.route("/tips", methods=["GET", "POST"])
 @login_required
-def tips():
+def tips() -> str:
     u = current_user
 
     if request.method == "POST":
@@ -57,13 +57,13 @@ def tips():
 
 @views.route("/teampicker")
 @login_required
-def teampicker():
+def teampicker() -> str:
     teams = Team.query.filter_by(season=get_season()).order_by(Team.name)
     return render("teampicker", user=current_user, teams=teams)
 
 @views.route("/admin", methods=["GET", "POST"])
 @login_required
-def admin():
+def admin() -> str:
     if request.method == "POST":
         form = request.form
         data = []
@@ -86,7 +86,7 @@ def admin():
         return redirect(url_for("views.home"))
     
 @views.route("/register-tips", methods=["POST"])
-def register_tips():
+def register_tips() -> str:
     tips = json.loads(request.data)
 
     for tip in tips:
@@ -133,7 +133,7 @@ def get_season():
     general = General.query.first()
     
     if general is None:
-        return "2023"
+        return "2024"
     
     return general.season
 
