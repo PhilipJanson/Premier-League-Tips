@@ -3,7 +3,7 @@
 {% block content %}
   <h1 class="pb-2 text-center">Statistik</h1>
   <div class="text-responsive">
-    {% for user in users %}
+    {% for user in all_users %}
       {% if not user.is_admin %}
         {% for result in results %}
           {% if user.id == result.user_id %}

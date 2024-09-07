@@ -1,64 +1,69 @@
+"""Auth."""
+
 from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import User
-from . import db
 
-auth = Blueprint("auth", __name__)
+auth = Blueprint('auth', __name__)
 
+@auth.route('/login', methods=['GET', 'POST'])
+def login() -> str:
+    """The log in page for the website. Check if the user is already logged in, otherwise check the
+    user login credentials."""
 
-@auth.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
+    if current_user.is_authenticated:
+        return redirect(url_for('views.home'))
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User.by_username(username)
 
-        user = User.query.filter_by(username=username).first()
-
-        if user:
-            if check_password_hash(user.password, password):
-                flash("Inloggad!", category="success")
-                login_user(user, remember=True)
-
-                return redirect(url_for("views.home"))
-            else:
-                flash("Ogiltigt lösenord", category="error")
+        if not user:
+            flash("Användarnamnet existerar inte", category='error')
+        elif not check_password_hash(user.password, password):
+            flash("Ogiltigt lösenord", category='error')
+        elif not login_user(user, remember=True):
+            flash("Något gick fel vid inloggning", category='error')
         else:
-            flash("Användarnamnet existerar inte", category="error")
+            flash("Inloggad!", category='success')
+            return redirect(url_for('views.home'))
 
-    return render_template("login.html", user=current_user)
+    return render_template('login.html', user=None)
 
-
-@auth.route("/logout")
+@auth.route('/logout')
 @login_required
-def logout():
+def logout() -> str:
+    """Log out the user and redirect to the log in page."""
+
     logout_user()
-    return redirect(url_for("auth.login"))
+    return redirect(url_for('auth.login'))
 
+@auth.route('/signup', methods=['GET', 'POST'])
+def signup() -> str:
+    """The sign up page for the website. Check if the user is already logged in, otherwise check the
+    user login credentials."""
 
-@auth.route("/signup", methods=["GET", "POST"])
-def signup():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        password_repeat = request.form.get("repeatPassword")
-
-        user = User.query.filter_by(username=username).first()
+    if current_user.is_authenticated:
+        return redirect(url_for('views.home'))
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        password_repeat = request.form.get('repeatPassword')
+        user = User.by_username(username)
 
         if user:
-            flash("Användarnamnet är taget", category="error")
+            flash("Användarnamnet är taget", category='error')
         elif len(username) == 0:
-            flash("Ogiltigt användarnamn", category="error")
+            flash("Ogiltigt användarnamn", category='error')
         elif len(password) < 5:
-            flash("Lösenordet måste vara minst 5 tecken", category="error")
+            flash("Lösenordet måste vara minst 5 tecken", category='error')
         elif password != password_repeat:
-            flash("Lösenorden stämmer inte överens", category="error")
+            flash("Lösenorden stämmer inte överens", category='error')
         else:
-            new_user = User.create(username, generate_password_hash(password, method="sha256"))
-
+            new_user = User.create(username, generate_password_hash(password, method='scrypt'))
             login_user(new_user, remember=True)
-            flash("Konto skapat!", category="success")
+            flash("Konto skapat!", category='success')
+            return redirect(url_for('views.home'))
 
-            return redirect(url_for("views.home"))
-
-    return render_template("signup.html", user=current_user)
+    return render_template('signup.html', user=None)

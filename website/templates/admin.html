@@ -30,7 +30,7 @@
           <form method="POST">
             <div class="form-group">
               <select class="form-control form-control" name="form-username" id="form-username">
-                {% for u in users %}
+                {% for u in all_users %}
                   {% if not u.is_admin %}
                     <option value="{{ u.username }}">{{ u.username }}</option>
                   {% endif %}

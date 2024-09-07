@@ -1,83 +1,166 @@
-from . import db
+"""Models."""
+
+from __future__ import annotations
 from flask_login import UserMixin
+from sqlalchemy import Boolean, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from . import db
 
 class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(100))
-    is_admin = db.Column(db.Boolean)
-    tips = db.relationship('Tip')
-    result = db.relationship('Result')
+    """User."""    
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(String(100), unique=True)
+    password: Mapped[str] = mapped_column(String(500))
+    is_admin: Mapped[bool] = mapped_column(Boolean)
+    tips: Mapped[list['Tip']] = relationship(back_populates='user')
+    #TODO: rename to results, since it holds one for each season
+    result: Mapped[list['Result']] = relationship(back_populates='user')
 
     @staticmethod
-    def create(username, password):
-        new_user = User(username=username, password=password,
-                        is_admin=(username == "admin"))
-        db.session.add(new_user)
-        db.session.commit()
+    def create(username: str, password: str) -> User:
+        """Create a new user with a username and a password and add it to the database. Return the
+        created user."""
 
-        return new_user
+        user = User(username=username, password=password, is_admin=username == 'admin')
+        db.session.add(user)
+        db.session.commit()
+        return user
+
+    @staticmethod
+    def all() -> list[User]:
+        """Return the list of all users."""
+
+        return db.session.execute(db.select(User)).scalars().all()
+
+    @staticmethod
+    def by_username(username: str) -> User:
+        """Return a user given a username."""
+
+        return db.session.execute(db.select(User).filter_by(username=username)).scalar()
 
 class Fixture(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    fixture_id = db.Column(db.Integer)
-    season = db.Column(db.String(4))
-    round = db.Column(db.Integer)
-    date = db.Column(db.String(10))
-    time = db.Column(db.String(10))
-    status = db.Column(db.String(10))
-    home_team_id = db.Column(db.Integer, db.ForeignKey("team.id"))
-    away_team_id = db.Column(db.Integer, db.ForeignKey("team.id"))
-    home_team = db.relationship("Team", foreign_keys=[home_team_id])
-    away_team = db.relationship("Team", foreign_keys=[away_team_id])
-    home_score = db.Column(db.String(3))
-    away_score = db.Column(db.String(3))
+    """Fixture."""    
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    fixture_id: Mapped[int] = mapped_column(Integer)
+    season: Mapped[str] = mapped_column(String(4))
+    round: Mapped[int] = mapped_column(Integer)
+
+    #TODO: change to datetime
+    date: Mapped[str] = mapped_column(String(10))
+    time: Mapped[str] = mapped_column(String(10))
+
+    status: Mapped[str] = mapped_column(String(10))
+    home_team_id: Mapped[int] = mapped_column(ForeignKey('team.id'))
+    away_team_id: Mapped[int] = mapped_column(ForeignKey('team.id'))
+    home_team: Mapped['Team'] = relationship("Team", foreign_keys=[home_team_id])
+    away_team: Mapped['Team'] = relationship("Team", foreign_keys=[away_team_id])
+    home_score = mapped_column(String(3))
+    away_score = mapped_column(String(3))
+
+    @staticmethod
+    def by_season(season: str) -> list[Fixture]:
+        """Return the list of fixtures in a given season."""
+
+        return db.session.execute(db.select(Fixture).filter_by(season=season)).scalars().all()
+
+    @staticmethod
+    def by_dates(season: str, start_date: str, end_date: str) -> list[Fixture]:
+        """Return the list of fixtures in a given season between two dates."""
+
+        return db.session.execute(db.select(Fixture)
+                                  .filter_by(season=season)
+                                  .filter(Fixture.date >= start_date)
+                                  .filter(Fixture.date <= end_date)).scalars().all()
 
 class Team(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    season = db.Column(db.String(4))
-    name = db.Column(db.String(100))
-    logo = db.Column(db.String(200))
-    rank = db.Column(db.Integer)
-    points = db.Column(db.Integer)
-    games_played = db.Column(db.Integer)
-    wins = db.Column(db.Integer)
-    draws = db.Column(db.Integer)
-    losses = db.Column(db.Integer)
-    goals_scored = db.Column(db.Integer)
-    goals_conceded = db.Column(db.Integer)
-    form = db.Column(db.String(5))
+    """Team."""    
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    season: Mapped[str] = mapped_column(String(4))
+    name: Mapped[str] = mapped_column(String(100))
+    logo: Mapped[str] = mapped_column(String(200))
+    rank: Mapped[int] = mapped_column(Integer)
+    points: Mapped[int] = mapped_column(Integer)
+    games_played: Mapped[int] = mapped_column(Integer)
+    wins: Mapped[int] = mapped_column(Integer)
+    draws: Mapped[int] = mapped_column(Integer)
+    losses: Mapped[int] = mapped_column(Integer)
+    goals_scored: Mapped[int] = mapped_column(Integer)
+    goals_conceded: Mapped[int] = mapped_column(Integer)
+    form: Mapped[str] = mapped_column(String(5))
+
+    @staticmethod
+    def by_rank(season: str) -> list[Team]:
+        """Return the list of teams in a given season ordered by their rank."""
+
+        return db.session.execute(db.select(Team)
+                                  .filter_by(season=season)
+                                  .order_by(Team.rank)).scalars().all()
+
+    @staticmethod
+    def by_name(season: str) -> list[Team]:
+        """Return the list of teams in a given season ordered by their name."""
+
+        return db.session.execute(db.select(Team)
+                                  .filter_by(season=season)
+                                  .order_by(Team.name)).scalars().all()
 
 class Tip(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    fixture_id = db.Column(db.Integer)
-    tip = db.Column(db.String(1))
-    correct = db.Column(db.Integer)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    """Tip."""    
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    fixture_id: Mapped[int] = mapped_column(Integer)
+    tip: Mapped[str] = mapped_column(String(1))
+    correct: Mapped[int] = mapped_column(Integer)
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
+    user: Mapped['User'] = relationship(back_populates='tips')
+
+    @staticmethod
+    def by_fixure_id(user: User, fixture_id: int) -> Tip:
+        """Return the tip in a given a user and a fixture ID."""
+
+        return db.session.execute(db.select(Tip)
+                                  .filter_by(user_id=user.id)
+                                  .filter_by(fixture_id=fixture_id)).scalar()
 
 class Result(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    season = db.Column(db.String(4))
+    """Result."""    
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    season: Mapped[str] = mapped_column(String(4))
 
     # Tip
-    total = db.Column(db.Integer)
-    finished = db.Column(db.Integer)
-    correct = db.Column(db.Integer)
-    incorrect = db.Column(db.Integer)
-    tip_1 = db.Column(db.Integer)
-    tip_X = db.Column(db.Integer)
-    tip_2 = db.Column(db.Integer)
-    round_scores = db.Column(db.String(500))
-    round_guesses = db.Column(db.String(500))
+    total: Mapped[int] = mapped_column(Integer)
+    finished: Mapped[int] = mapped_column(Integer)
+    correct: Mapped[int] = mapped_column(Integer)
+    incorrect: Mapped[int] = mapped_column(Integer)
+    tip_1: Mapped[int] = mapped_column(Integer)
+    tip_X: Mapped[int] = mapped_column(Integer)
+    tip_2: Mapped[int] = mapped_column(Integer)
+    round_scores: Mapped[str] = mapped_column(String(500))
+    round_guesses: Mapped[str] = mapped_column(String(500))
 
     # Placements
-    placements = db.Column(db.String(500))
-    placements_total = db.Column(db.Integer)
+    placements: Mapped[int] = mapped_column(String(500))
+    placements_total: Mapped[int] = mapped_column(Integer)
     
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
+    user: Mapped['User'] = relationship(back_populates='result')
+
+    @staticmethod
+    def by_season(season: str) -> list[Result]:
+        """Return the list of results in a given season."""
+
+        return db.session.execute(db.select(Result).filter_by(season=season)).scalars().all()
 
 class General(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    season = db.Column(db.String(4))
-    last_update = db.Column(db.String(40))
-    remaining_requests = db.Column(db.Integer)
+    """General."""    
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    season: Mapped[str] = mapped_column(String(4))
+
+    #TODO: change to date time?
+    last_update: Mapped[str] = mapped_column(String(40))
+    remaining_requests: Mapped[int] = mapped_column(Integer)

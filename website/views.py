@@ -1,70 +1,144 @@
-from flask import Blueprint, flash, render_template, request, jsonify, redirect, url_for
+"""Views."""
+
+import json
+from datetime import datetime
+from flask import Blueprint, Response, flash, render_template, jsonify, redirect, url_for, request
 from flask_login import login_required, current_user
 from .models import User, Tip, Fixture, Team, Result, General
-from datetime import datetime, timedelta, date
+from .utils import get_week_dates, calculate_next_fixture
 from . import db
-import json
 
-views = Blueprint("views", __name__)
+views = Blueprint('views', __name__)
 
 @views.route("/")
 def home() -> str:
-    start, end = get_week_dates()
-    fixtures = get_date_fixtures(get_season(), start, end)
-    return render("index", user=current_user, fixtures=fixtures)
+    """Home page for the website."""
 
-@views.route("/tip/<response>")
+    season = get_season()
+    start, end = get_week_dates()
+    fixtures = Fixture.by_dates(season, start, end)
+    options = {
+        'season': season,
+        'user': current_user,
+        'fixtures': fixtures
+    }
+
+    return render_template('index.html', **options)
+
+@views.route('/tip/<response>')
 @login_required
-def tip(response) -> str:
-    if response == "register":
+def tip(response: str) -> str:
+    """Page to display upcoming fixtures and allow users to register new tips."""
+
+    if response == 'register':
         flash("Tippning regristrerad")
 
-    id = get_nearest_fixture(datetime.now())
-    fixtures = get_fixtures(get_season())
-    return render("tip", user=current_user, id=id, fixtures=fixtures, allow_post=False)
+    season = get_season()
+    fixtures = Fixture.by_season(season)
+    options = {
+        'season': season,
+        'user': current_user,
+        'fixtures': fixtures,
+        'next_fixture': calculate_next_fixture(fixtures, datetime.now()),
+        'allow_post': False
+    }
 
-@views.route("/fixtures")
+    return render_template('tip.html', **options)
+
+@views.route('/fixtures')
 @login_required
 def fixtures() -> str:
-    id = get_nearest_fixture(datetime.now())
-    fixtures = get_fixtures(get_season())
-    tip_ids = [tip.fixture_id for tip in current_user.tips]
-    return render("fixtures", user=current_user, users=User.query.all(), tip_ids=tip_ids, id=id, fixtures=fixtures)
+    """Page to dislay all fixtures for the current season and view other user's tips."""
 
-@views.route("/standings/<season>")
+    season = get_season()
+    fixtures = Fixture.by_season(season)
+    options = {
+        'season': season,
+        'user': current_user,
+        'all_users': User.all(),
+        'fixtures': fixtures,
+        'next_fixture': calculate_next_fixture(fixtures, datetime.now()),
+        'tip_ids': [tip.fixture_id for tip in current_user.tips]
+    }
+
+    return render_template('fixtures.html', **options)
+
+@views.route('/standings/<season>')
 @login_required
-def standings(season) -> str:
-    teams = Team.query.filter_by(season=season).order_by(Team.rank)
-    return render("standings", user=current_user, teams=teams)
+def standings(season: str) -> str:
+    """Page to display all teams in a given season ordered by their rank."""
 
-@views.route("/stats/<season>")
+    options = {
+        'season': season,
+        'user': current_user,
+        'teams': Team.by_rank(season)
+    }
+
+    return render_template('standings.html', **options)
+
+@views.route('/stats/<season>')
 @login_required
-def stats(season) -> str:
-    fixtures = get_fixtures(season).filter_by(status="NS")
-    results = Result.query.filter_by(season=season)
-    return render("stats", user=current_user, users=User.query.all(), fixtures=fixtures, results=results)
+def stats(season: str) -> str:
+    """Page to display statistics for all users."""
 
-@views.route("/tips", methods=["GET", "POST"])
+    fixtures = db.session.execute(db.select(Fixture)
+                                  .filter_by(season=season)
+                                  .filter_by(status='ns')).scalars().all()
+    options = {
+        'season': season,
+        'user': current_user,
+        'all_users': User.all(),
+        'fixtures': fixtures,
+        'results': Result.by_season(season)
+    }
+
+    return render_template('stats.html', **options)
+
+@views.route('/tips', methods=['GET', 'POST'])
 @login_required
 def tips() -> str:
-    u = current_user
+    """Page to display all tips in a season for a specific user."""
 
-    if request.method == "POST":
-        username = request.form["form-username"]
-        u = User.query.filter_by(username=username).first()
+    display_user = current_user
 
-    return render("tips", user=current_user, fixtures=get_fixtures(get_season()), u=u, users=User.query.all())
+    if request.method == 'POST':
+        username = request.form['form-username']
+        display_user = User.by_username(username)
 
-@views.route("/teampicker")
+    season = get_season()
+    options = {
+        'season': season,
+        'user': current_user,
+        'all_users': User.all(),
+        'display_user': display_user,
+        'fixtures': Fixture.by_season(season)
+    }
+
+    return render_template('tips.html', **options)
+
+@views.route('/teampicker')
 @login_required
 def teampicker() -> str:
-    teams = Team.query.filter_by(season=get_season()).order_by(Team.name)
-    return render("teampicker", user=current_user, teams=teams)
+    """Work in progress page to rank the teams."""
 
-@views.route("/admin", methods=["GET", "POST"])
+    season = get_season()
+    options = {
+        'season': season,
+        'user': current_user,
+        'teams': Team.by_name(season)
+    }
+
+    return render_template('teampicker.html', **options)
+
+@views.route('/admin', methods=['GET', 'POST'])
 @login_required
 def admin() -> str:
-    if request.method == "POST":
+    """Page to display options for an admin user."""
+
+    if not current_user.is_admin:
+        return redirect(url_for('views.home'))
+
+    if request.method == 'POST':
         form = request.form
         data = []
 
@@ -72,32 +146,33 @@ def admin() -> str:
             data.append(form[key])
 
         if data[1]:
-            user = User.query.filter_by(username=data[0]).first()
-            new_tip = Tip(fixture_id=data[1], tip=data[2],
-                          user_id=user.id)
+            user = User.by_username(data[0])
+            new_tip = Tip(fixture_id=data[1], tip=data[2], user_id=user.id)
             db.session.add(new_tip)
             db.session.commit()
         else:
-            flash("Ingen ID angiven", category="error")
+            flash("Ingen ID angiven", category='error')
 
-    if (current_user.is_admin):
-        return render("admin", user=current_user, users=User.query.all())
-    else:
-        return redirect(url_for("views.home"))
-    
-@views.route("/register-tips", methods=["POST"])
-def register_tips() -> str:
+    options = {
+        'user': current_user,
+        'all_users': User.all()
+    }
+
+    return render_template('admin.html', **options)
+
+@views.route('/register-tips', methods=['POST'])
+def register_tips() -> Response:
+    """Endpoint for registering a new tip for the current user."""
+
     tips = json.loads(request.data)
 
     for tip in tips:
-        fixture_id = int(tip[0].strip())
-        value = tip[1].strip()
-        prev_tip = Tip.query.filter_by(user_id=current_user.id).filter_by(
-            fixture_id=fixture_id).first()
+        fixture_id = int(str(tip['fixtureId']).strip())
+        value = str(tip['value']).strip()
+        prev_tip = Tip.by_fixure_id(current_user, fixture_id)
 
         if prev_tip is None:
-            new_tip = Tip(tip=value, correct=0,
-                          fixture_id=fixture_id, user_id=current_user.id)
+            new_tip = Tip(fixture_id=fixture_id, tip=value, correct=0, user_id=current_user.id)
             db.session.add(new_tip)
         else:
             prev_tip.tip = value
@@ -106,36 +181,12 @@ def register_tips() -> str:
 
     return jsonify({})
 
-def get_date_fixtures(season, start, end):
-    return get_fixtures(season).filter(Fixture.date >= start).filter(Fixture.date <= end)
+def get_season() -> str:
+    """Return the current active season."""
 
-def get_fixtures(season):
-    return Fixture.query.filter_by(season=season)
+    general = db.session.execute(db.select(General)).scalar()
 
-def get_week_dates():
-    today = date.today()
-    start = today - timedelta(days=today.weekday())
-    end = start + timedelta(days=6)
-    return str(start), str(end)
+    if general:
+        return general.season
 
-def get_nearest_fixture(date):
-    dates = [datetime.strptime(fixture.date + fixture.time, '%Y-%m-%d%H:%M')
-             for fixture in Fixture.query.all()]
-    nearest = min(dates, key=lambda x: abs(x - date))
-
-    for fixture in Fixture.query.all():
-        if nearest == datetime.strptime(fixture.date + fixture.time, '%Y-%m-%d%H:%M'):
-            id = fixture.fixture_id
-
-    return id
-
-def get_season():
-    general = General.query.first()
-    
-    if general is None:
-        return "2024"
-    
-    return general.season
-
-def render(html_name, **kwargs):
-    return render_template(f"{html_name}.html", season=get_season(), **kwargs)
+    return '2024'

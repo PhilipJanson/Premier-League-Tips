@@ -234,7 +234,7 @@ if __name__ == "__main__":
             add_standings(standings_response, season)
             add_fixtures(fixture_response, season)
 
-        calc_results(season)
+        #calc_results(season)
 
         # FIX THIS
         #write_tip()

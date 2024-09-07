@@ -129,6 +129,8 @@ dmypy.json
 .pyre/
 
 # Extra
+.vscode
+.venv
 *.db
 *.json
 keys.py

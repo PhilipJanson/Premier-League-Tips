@@ -8,14 +8,14 @@
       <div class="col"></div>
       <div class="col">
         <div>Visar
-          {{ u.username.capitalize() }}s tips</div>
+          {{ display_user.username.capitalize() }}s tips</div>
         <br/>
         <form method="POST">
           <select class="form-control form-control" name="form-username" id="form-username">
-            {% for u1 in users %}
-              {% if not u1.is_admin %}
-                <option value="{{ u1.username }}">
-                  {{ u1.username.capitalize() }}
+            {% for user in all_users %}
+              {% if not user.is_admin %}
+                <option value="{{ user.username }}">
+                  {{ user.username.capitalize() }}
                 </option>
               {% endif %}
             {% endfor %}
@@ -38,7 +38,7 @@
           <div class="col text-right">Datum</div>
         </div>
         {% for fixture in fixtures %}
-          {% for tip in u.tips %}
+          {% for tip in display_user.tips %}
             {% if tip.fixture_id == fixture.fixture_id %}
               {% set color = "bg-white" %}
 

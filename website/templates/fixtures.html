@@ -67,7 +67,7 @@
                 {% else %}
                   <div class="col">
                     <div class="row text-left">
-                      {% for u in users %}
+                      {% for u in all_users %}
                         {% for tip in u.tips %}
                           {% if tip.fixture_id == fixture.fixture_id %}
                             <div class="col">{{u.username}}:
@@ -91,8 +91,8 @@
     </div>
   </div>
   <!--The fixture_id of the closest fixture in time-->
-  <p id="dateid" hidden="hidden">
-    {{ id }}
+  <p id="next-fixture-id" hidden="hidden">
+    {{ next_fixture.fixture_id }}
   </p>
 {% endblock %}
 {% block script %}
