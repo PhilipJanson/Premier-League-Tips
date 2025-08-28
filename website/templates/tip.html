@@ -86,7 +86,7 @@
               {% set button2 = "btn-outline-success" %}
               {% set enabled = "false" %}
 
-              {% if fixture.status == "FT" and not allow_post %}
+              {% if fixture.status == "FT" and not allow_late_modification %}
                 {% if current_tip.value == "1" %}
                   {% set button1 = "btn-success" %}
                 {% elif current_tip.value == "X" %}
@@ -97,7 +97,7 @@
                 {% set button1 = button1 + " disabled" %}
                 {% set buttonX = buttonX + " disabled" %}
                 {% set button2 = button2 + " disabled" %}
-              {% elif fixture.status == "PST" and not allow_post %}
+              {% elif fixture.status == "PST" and not allow_late_modification %}
                 {% set button1 = "btn-outline-warning disabled" %}
                 {% set buttonX = "btn-outline-warning disabled" %}
                 {% set button2 = "btn-outline-warning disabled" %}

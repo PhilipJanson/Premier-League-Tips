@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime
 from flask import current_app
 from flask_login import UserMixin
-from sqlalchemy import Boolean, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Boolean, ForeignKey, Integer, String, DateTime, Table, Column, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship, joinedload
 from . import db, ACTIVE_SEASON
 
@@ -15,10 +15,11 @@ class Updateable:
     """Mixin class to add update_attributes method to models."""
 
     def update_attributes(self, data: dict) -> None:
-        """Update the attributes of the instance with the given data dictionary."""
-
+        """Update the attributes of the instance with the given data dictionary.
+           Ignore None values.
+        """
         for key, value in data.items():
-            if hasattr(self, key):
+            if hasattr(self, key) and value is not None:
                 setattr(self, key, value)
 
 class User(db.Model, UserMixin):
@@ -28,8 +29,8 @@ class User(db.Model, UserMixin):
     is_admin: Mapped[bool] = mapped_column(Boolean)
     email: Mapped[str] = mapped_column(String(100), nullable=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
-    tips: Mapped[list['Tip']] = relationship(back_populates='user')
-    results: Mapped[list['Result']] = relationship(back_populates='user')
+    tips: Mapped[list['Tip']] = relationship("Tip", back_populates='user')
+    results: Mapped[list['Result']] = relationship("Result", back_populates='user')
     favorite_team_id: Mapped[int] = mapped_column(ForeignKey('team.team_id'), nullable=True)
     favorite_team: Mapped['Team'] = relationship("Team", foreign_keys=[favorite_team_id])
 
@@ -57,10 +58,11 @@ class User(db.Model, UserMixin):
 
 class Fixture(db.Model, Updateable):
     fixture_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    season: Mapped[str] = mapped_column(String(4))
-    round: Mapped[int] = mapped_column(Integer)
-    date_time: Mapped[DateTime] = mapped_column(DateTime)
-    status: Mapped[str] = mapped_column(String(10))
+    season: Mapped[str] = mapped_column(String(4), nullable=False)
+    round: Mapped[int] = mapped_column(Integer, nullable=True)
+    date_time: Mapped[DateTime] = mapped_column(DateTime, nullable=True)
+    # Status of the fixture. 'FT': full time, 'NS': not started, 'PST': postponed.
+    status: Mapped[str] = mapped_column(String(10), nullable=False, default='NS')
     home_team_id: Mapped[int] = mapped_column(ForeignKey('team.team_id'))
     away_team_id: Mapped[int] = mapped_column(ForeignKey('team.team_id'))
     home_team: Mapped['Team'] = relationship("Team", foreign_keys=[home_team_id])
@@ -103,8 +105,8 @@ class Fixture(db.Model, Updateable):
 
 class Team(db.Model, Updateable):
     team_id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100))
-    logo: Mapped[str] = mapped_column(String(200))
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    logo: Mapped[str] = mapped_column(String(200), nullable=True, default=None)
     standings: Mapped[list['TeamStanding']] = relationship("TeamStanding", back_populates='team')
 
     @staticmethod
@@ -154,21 +156,24 @@ class Team(db.Model, Updateable):
 
 class TeamStanding(db.Model, Updateable):
     id: Mapped[int] = mapped_column(primary_key=True)
-    season: Mapped[str] = mapped_column(String(4))
-    rank: Mapped[int] = mapped_column(Integer, nullable=True)
-    points: Mapped[int] = mapped_column(Integer, nullable=True)
-    games_played: Mapped[int] = mapped_column(Integer, nullable=True)
-    wins: Mapped[int] = mapped_column(Integer, nullable=True)
-    draws: Mapped[int] = mapped_column(Integer, nullable=True)
-    losses: Mapped[int] = mapped_column(Integer, nullable=True)
-    goals_scored: Mapped[int] = mapped_column(Integer, nullable=True)
-    goals_conceded: Mapped[int] = mapped_column(Integer, nullable=True)
-    form: Mapped[str] = mapped_column(String(5), nullable=True)
-    status: Mapped[str] = mapped_column(String(20), nullable=True)
-    promotion: Mapped[str] = mapped_column(String(50), nullable=True)
+    season: Mapped[str] = mapped_column(String(4), nullable=False)
+    rank: Mapped[int] = mapped_column(Integer, nullable=False)
+    points: Mapped[int] = mapped_column(Integer, default=0)
+    games_played: Mapped[int] = mapped_column(Integer, default=0)
+    wins: Mapped[int] = mapped_column(Integer, default=0)
+    draws: Mapped[int] = mapped_column(Integer, default=0)
+    losses: Mapped[int] = mapped_column(Integer, default=0)
+    goals_scored: Mapped[int] = mapped_column(Integer, default=0)
+    goals_conceded: Mapped[int] = mapped_column(Integer, default=0)
+    # Recent form of the team, e.g. "WWDLW", min leghth 0, max length 5
+    form: Mapped[str] = mapped_column(String(5), default='')
+    # Current status of the team in table. Always 'same'.
+    status: Mapped[str] = mapped_column(String(20), default='')
+    # Promotion status for a team. Valid values are 'CL', 'EL', 'ELC', 'R' or None.
+    promotion: Mapped[str] = mapped_column(String(50), nullable=True, default=None)
     last_update: Mapped[datetime] = mapped_column(DateTime)
     team_id: Mapped[int] = mapped_column(ForeignKey('team.team_id'))
-    team: Mapped['Team'] = relationship(back_populates='standings')
+    team: Mapped['Team'] = relationship("Team", back_populates='standings')
 
     @staticmethod
     def by_season(season: str) -> list[TeamStanding]:
@@ -181,10 +186,12 @@ class TeamStanding(db.Model, Updateable):
 class Tip(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     fixture_id: Mapped[int] = mapped_column(Integer)
+    # Valid values are '1', 'X' or '2'
     tip: Mapped[str] = mapped_column(String(1))
-    correct: Mapped[int] = mapped_column(Integer, nullable=True)
+    # Status of the tip. 1: correct, -1: incorrect, 0: not yet decided
+    correct: Mapped[bool] = mapped_column(Integer, default=0)
     user_id: Mapped[str] = mapped_column(ForeignKey('user.id'))
-    user: Mapped['User'] = relationship(back_populates='tips')
+    user: Mapped['User'] = relationship("User", back_populates='tips')
 
     @staticmethod
     def by_fixure_id(user: User, fixture_id: int) -> Tip:
@@ -194,27 +201,39 @@ class Tip(db.Model):
                                   .filter_by(user_id=user.id)
                                   .filter_by(fixture_id=fixture_id)).scalar()
 
-class Result(db.Model):
+# Association table to link Result and Team with an additional 'rank' column
+result_team_association = Table(
+    'result_team_association',
+    db.metadata,
+    Column('result_id', ForeignKey('result.id'), primary_key=True),
+    Column('team_id', ForeignKey('team.team_id'), primary_key=True),
+    Column('rank', Integer, nullable=False)
+)
+
+class Result(db.Model, Updateable):
     id: Mapped[int] = mapped_column(primary_key=True)
-    season: Mapped[str] = mapped_column(String(4))
-
-    # Tip
-    total: Mapped[int] = mapped_column(Integer)
-    finished: Mapped[int] = mapped_column(Integer)
-    correct: Mapped[int] = mapped_column(Integer)
-    incorrect: Mapped[int] = mapped_column(Integer)
-    tip_1: Mapped[int] = mapped_column(Integer)
-    tip_X: Mapped[int] = mapped_column(Integer)
-    tip_2: Mapped[int] = mapped_column(Integer)
-    round_scores: Mapped[str] = mapped_column(String(500))
-    round_guesses: Mapped[str] = mapped_column(String(500))
-
-    # Placements
-    placements: Mapped[int] = mapped_column(String(500))
-    placements_total: Mapped[int] = mapped_column(Integer)
-
+    season: Mapped[str] = mapped_column(String(4), nullable=False)
+    # Total tips made
+    total: Mapped[int] = mapped_column(Integer, default=0)
+    # Tips that have been decided
+    finished: Mapped[int] = mapped_column(Integer, default=0)
+    correct: Mapped[int] = mapped_column(Integer, default=0)
+    incorrect: Mapped[int] = mapped_column(Integer, default=0)
+    tip_1: Mapped[int] = mapped_column(Integer, default=0)
+    tip_X: Mapped[int] = mapped_column(Integer, default=0)
+    tip_2: Mapped[int] = mapped_column(Integer, default=0)
+    # Round stats stored as JSON string in the format:
+    # {"<round>": {"tips": <value>, "correct": <value>}
+    round_stats: Mapped[str] = mapped_column(Text, default='')
+    # Teams ordered by the user's ranking
+    team_rankings: Mapped[list['Team']] = relationship("Team",
+                                                       secondary=result_team_association,
+                                                       order_by=result_team_association.c.rank)
+    # Total score for team rankings
+    placements_total: Mapped[int] = mapped_column(Integer, default=0)
+    last_update: Mapped[datetime] = mapped_column(DateTime)
     user_id: Mapped[str] = mapped_column(ForeignKey('user.id'))
-    user: Mapped['User'] = relationship(back_populates='results')
+    user: Mapped['User'] = relationship("User", back_populates='results')
 
     @staticmethod
     def by_season(season: str) -> list[Result]:
@@ -222,11 +241,26 @@ class Result(db.Model):
 
         return db.session.execute(db.select(Result).filter_by(season=season)).scalars().all()
 
+    @staticmethod
+    def create_or_update(result: Result) -> None:
+        """Create or update a fixture."""
+
+        existing_result: Result = db.session.execute(db.select(Result)
+                                                     .filter_by(season=result.season)
+                                                     .filter_by(user_id=result.user_id)).scalar()
+        if existing_result is not None:
+            existing_result.update_attributes(result.__dict__)
+            current_app.logger.debug(f"Updated fixture: {result.id}")
+        else:
+            db.session.add(result)
+            current_app.logger.debug(f"Added fixture: {result.id}")
+
 class General(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    season: Mapped[str] = mapped_column(String(4))
+    season: Mapped[str] = mapped_column(String(4), nullable=False)
     last_update: Mapped[datetime] = mapped_column(DateTime)
     remaining_requests: Mapped[int] = mapped_column(Integer)
+    allow_late_modification: Mapped[bool] = mapped_column(Boolean, default=False)
 
     @staticmethod
     def get() -> General:

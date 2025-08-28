@@ -6,12 +6,15 @@ import time
 from flask import Blueprint, Response, render_template, flash, redirect, jsonify, url_for
 from flask_login import login_required, current_user
 
-from .models import User, General, Fixture, Team
+from .models import User, General, Fixture, Team, Result
 from .schemas import FixtureSchema, TeamSchema
-from .utils import api_call
+from .utils import api_call, calculate_user_result
 from . import db
 
 admin = Blueprint('admin', __name__)
+# TODO: add a toggle for allowing late modification of tips
+# TODO: add a way to select season for the tasks
+# TODO: add a way for admin to set admin privileges for other users
 
 @admin.route('/')
 @login_required
@@ -97,6 +100,33 @@ def endpoint_fetch_api_standings() -> Response:
         flash(f"Task failed in {(end_time - start_time):.2f} seconds: "
               f"{type(error).__name__}", category='error')
         print(error)
+
+    return jsonify({})
+
+@admin.route('/calculate-results', methods=['POST'])
+def endpoint_calculate_results() -> Response:
+    """Fetch standings data from the API and update the database."""
+
+    if not current_user.is_admin:
+        flash("Adminprivilegier krävs", category='error')
+        return jsonify({})
+
+    print("Starting task to calculate results...")
+    # TODO: Make season selectable from the admin page
+    season = '2025'
+    start_time = time.perf_counter()
+
+    for user in User.all():
+        if user.username == 'admin':
+            continue
+        result = calculate_user_result(user, season)
+        Result.create_or_update(result)
+
+    db.session.commit()
+    end_time = time.perf_counter()
+    status = f"Task finished in {(end_time - start_time):.2f} seconds."
+    flash(status, category='success')
+    print(status)
 
     return jsonify({})
 

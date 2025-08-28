@@ -10,6 +10,7 @@ from .utils import get_week_dates, calculate_next_fixture
 from . import db
 
 views = Blueprint('views', __name__)
+current_user: User
 
 @views.route('/')
 def endpoint_home() -> str:
@@ -40,7 +41,7 @@ def endpoint_tip(response: str) -> str:
         'user': current_user,
         'fixtures': fixtures,
         'next_fixture': calculate_next_fixture(fixtures, datetime.now()),
-        'allow_post': False
+        'allow_late_modification': General.get().allow_late_modification or True
     }
     return render_template('tip.html', **kwargs)
 
@@ -123,7 +124,7 @@ def endpoint_team_ranker() -> str:
         'user': current_user,
         'teams': Team.by_season(season)
     }
-    return render_template('teampicker.html', **kwargs)
+    return render_template('teamranker.html', **kwargs)
 
 @views.route('/register-tips', methods=['POST'])
 def endpoint_register_tips() -> Response:

@@ -56,18 +56,29 @@ for (const carousel of carousels) {
     },
   });
 
-  const roundsCtx = document.getElementById(`${userId}-round-scores`);
-  const roundScores = roundsCtx.dataset.scores;
-  const roundGuesses = roundsCtx.dataset.guesses;
+  const roundsCtx = document.getElementById(`${userId}-round-stats`);
+  const roundStats = JSON.parse(roundsCtx.dataset.stats);
+  const roundScores = [];
+  const roundGuesses = [];
+  for (let i = 1; i <= 38; i++) {
+    const round = String(i);
+    if (roundStats[round]) {
+      roundScores.push(roundStats[round].correct);
+      roundGuesses.push(roundStats[round].tips);
+    } else {
+      roundScores.push(0);
+      roundGuesses.push(0);
+    }
+  }
 
-  var roundScoreChart = new Chart(roundsCtx.getContext('2d'), {
+  var roundStatChart = new Chart(roundsCtx.getContext('2d'), {
     type: 'line',
     data: {
       labels: range(1, 38),
       datasets: [
         {
           label: 'Antal rätt',
-          data: roundScores.split('-'),
+          data: roundScores,
           backgroundColor: 'rgba(105, 0, 132, .2)',
           borderColor: 'rgba(200, 99, 132, .7)',
           borderWidth: 2,
@@ -75,7 +86,7 @@ for (const carousel of carousels) {
         },
         {
           label: 'Tips Gjorda',
-          data: roundGuesses.split('-'),
+          data: roundGuesses,
           backgroundColor: 'rgba(2, 0, 132, .2)',
           borderColor: 'rgba(2, 99, 132, .7)',
           borderWidth: 2,
