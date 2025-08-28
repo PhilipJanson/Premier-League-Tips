@@ -8,12 +8,12 @@ from .models import User
 auth = Blueprint('auth', __name__)
 
 @auth.route('/login', methods=['GET', 'POST'])
-def login() -> str:
+def endpoint_login() -> str:
     """The log in page for the website. Check if the user is already logged in, otherwise check the
     user login credentials."""
 
     if current_user.is_authenticated:
-        return redirect(url_for('views.home'))
+        return redirect(url_for('views.endpoint_home'))
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -27,25 +27,25 @@ def login() -> str:
             flash("Något gick fel vid inloggning", category='error')
         else:
             flash("Inloggad!", category='success')
-            return redirect(url_for('views.home'))
+            return redirect(url_for('views.endpoint_home'))
 
     return render_template('login.html', user=None)
 
 @auth.route('/logout')
 @login_required
-def logout() -> str:
+def endpoint_logout() -> str:
     """Log out the user and redirect to the log in page."""
 
     logout_user()
-    return redirect(url_for('auth.login'))
+    return redirect(url_for('auth.endpoint_login'))
 
 @auth.route('/signup', methods=['GET', 'POST'])
-def signup() -> str:
+def endpoint_signup() -> str:
     """The sign up page for the website. Check if the user is already logged in, otherwise check the
     user login credentials."""
 
     if current_user.is_authenticated:
-        return redirect(url_for('views.home'))
+        return redirect(url_for('views.endpoint_home'))
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -64,6 +64,6 @@ def signup() -> str:
             new_user = User.create(username, generate_password_hash(password, method='scrypt'))
             login_user(new_user, remember=True)
             flash("Konto skapat!", category='success')
-            return redirect(url_for('views.home'))
+            return redirect(url_for('views.endpoint_home'))
 
     return render_template('signup.html', user=None)

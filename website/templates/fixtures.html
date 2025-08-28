@@ -34,7 +34,7 @@
               {% if fixture.status == 'FT' %}
                 Slut
               {% else %}
-                {{ fixture.time }}
+                {{ fixture.date_time }}
               {% endif %}
             </div>
             <div class="w-100"></div>
@@ -55,7 +55,7 @@
                 </div>
                 <div class="col pt-3">{{ fixture.away_team.name }}</div>
                 <div class="col-md-auto pt-3">
-                  <img class="img-thumbnail-custom-2 float-start" src="{{ fixture.away_team.logo }}" alt="Home team's logo"/>
+                  <img class="img-thumbnail-custom-2 float-start" src="{{ fixture.away_team.logo }}" alt="Away team's logo"/>
                 </div>
               </div>
             </div>

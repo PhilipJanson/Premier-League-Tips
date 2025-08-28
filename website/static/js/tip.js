@@ -9,7 +9,7 @@ let tips = new Array();
 
 function tipSelected(button, enabled) {
   if (enabled === 'true') {
-    // Button ID format: tipbutton-<fixtureId>-<tip>
+    // Button ID format: tipbutton-<fixtureId>-<value>
     let fixtureId = button.id.split('-')[1];
     let value = button.id.split('-')[2];
     let tip = new Tip(fixtureId, value);
