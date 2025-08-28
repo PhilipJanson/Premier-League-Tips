@@ -1,9 +1,11 @@
 """Schemas for serializing and deserializing API data using Marshmallow."""
 
+import datetime
+
 from typing import Any
 from marshmallow import Schema, fields, post_load, EXCLUDE
 from marshmallow.utils import get_value, set_value
-from .models import Fixture
+from .models import Fixture, Team, TeamStanding
 from . import ACTIVE_SEASON
 
 class Reach(fields.Field):
@@ -51,9 +53,10 @@ class FixtureSchema(Schema):
     fixture_round = Reach(fields.Str(), data_key='league', path='round')
 
     @post_load
-    def make_fixture(self, data: Any, **_kwargs) -> Fixture:
+    def make_fixture(self, data: dict[str, Any], **_kwargs) -> Fixture:
+        season = self.context.get("season", ACTIVE_SEASON)
         fixture_round = int(data['fixture_round'].split(' - ')[1])
-        fixture = Fixture(season=self.context.get("season", ACTIVE_SEASON),
+        fixture = Fixture(season=season,
                           round=fixture_round,
                           **data['fixture'],
                           **data['teams'],
@@ -63,3 +66,70 @@ class FixtureSchema(Schema):
     class Meta:
         unknown = EXCLUDE
 
+class TeamNestedSchema(Schema):
+    team_id = fields.Int(data_key='id')
+    name = fields.Str()
+    logo = fields.Str()
+
+class TeamGoalsSchema(Schema):
+    goals_scored = fields.Int(data_key='for')
+    goals_conceded = fields.Int(data_key='against')
+
+class TeamAllSchema(Schema):
+    games_played = fields.Int(data_key='played')
+    wins = fields.Int(data_key='win')
+    draws = fields.Int(data_key='draw')
+    losses = fields.Int(data_key='lose')
+    goals = fields.Nested(TeamGoalsSchema)
+
+    class Meta:
+        unknown = EXCLUDE
+
+class TeamSchema(Schema):
+    team = fields.Nested(TeamNestedSchema)
+    all = fields.Nested(TeamAllSchema)
+    rank = fields.Int()
+    points = fields.Int(allow_none=True)
+    form = fields.Str(allow_none=True)
+    status = fields.Str(allow_none=True)
+    description = fields.Str(allow_none=True)
+
+    @post_load
+    def make_team(self, data: dict[str, Any], **_kwargs) -> tuple[Team, TeamStanding]:
+        team = Team(**data['team'])
+
+        season = self.context.get("season", ACTIVE_SEASON)
+        last_update = datetime.datetime.now()
+
+        # Deserialize promotion from description
+        promotion = data.get('description', None)
+        if promotion:
+            if "Champions League" in promotion:
+                promotion = 'CL'
+            elif "Europa League" in promotion:
+                promotion = 'EL'
+            elif "Conference League" in promotion:
+                promotion = 'ECL'
+            elif "Relegation" in promotion:
+                promotion = 'R'
+
+        # Extract goals scored and conceded from nested 'all' dictionary
+        goals = data['all'].pop('goals')
+        goals_scored = goals.get('goals_scored', 0)
+        goals_conceded = goals.get('goals_conceded', 0)
+
+        standing = TeamStanding(season=season,
+                                rank=data['rank'],
+                                points=data.get('points', 0),
+                                goals_scored=goals_scored,
+                                goals_conceded=goals_conceded,
+                                form=data.get('form', ''),
+                                status=data.get('status', ''),
+                                promotion=promotion,
+                                last_update=last_update,
+                                team_id=team.team_id,
+                                **data['all'])
+        return team, standing
+
+    class Meta:
+        unknown = EXCLUDE

@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 from flask import Blueprint, Response, flash, render_template, jsonify, request
 from flask_login import login_required, current_user
-from .models import User, Tip, Fixture, Team, Result, General
+from .models import User, Tip, Fixture, Team, TeamStanding, Result, General
 from .utils import get_week_dates, calculate_next_fixture
 from . import db
 
@@ -69,8 +69,9 @@ def endpoint_standings(season: str) -> str:
     kwargs = {
         'season': season,
         'user': current_user,
-        'teams': Team.by_rank(season)
+        'team_standings': TeamStanding.by_season(season)
     }
+
     return render_template('standings.html', **kwargs)
 
 @views.route('/stats/<season>')
@@ -120,7 +121,7 @@ def endpoint_team_ranker() -> str:
     kwargs = {
         'season': season,
         'user': current_user,
-        'teams': Team.by_name(season)
+        'teams': Team.by_season(season)
     }
     return render_template('teampicker.html', **kwargs)
 

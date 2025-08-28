@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import User
+from . import db
 
 auth = Blueprint('auth', __name__)
 
@@ -62,6 +63,7 @@ def endpoint_signup() -> str:
             flash("Lösenorden stämmer inte överens", category='error')
         else:
             new_user = User.create(username, generate_password_hash(password, method='scrypt'))
+            db.session.commit()
             login_user(new_user, remember=True)
             flash("Konto skapat!", category='success')
             return redirect(url_for('views.endpoint_home'))

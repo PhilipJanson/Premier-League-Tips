@@ -1,5 +1,6 @@
 """Utils."""
 
+import json
 import requests
 
 from datetime import date, datetime, timedelta
@@ -9,6 +10,8 @@ from .models import Fixture
 from . import LEAGUE_ID
 
 URL = 'https://v3.football.api-sports.io/'
+# Dump API response data to console for debugging
+DUMP_DATA = False
 
 def get_week_dates() -> tuple[str, str]:
     """Return the start and end dates in string format for the current week."""
@@ -48,4 +51,6 @@ def api_call(endpoint: str, season: str) -> tuple[dict, Any]:
     }
 
     response = requests.request('GET', url, headers=headers)
+    if DUMP_DATA:
+        print(json.dumps(response.json(), indent=4))
     return dict(response.headers), response.json()

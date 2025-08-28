@@ -1,6 +1,6 @@
 # Premier-League-Tips
 
-Website written in Python powered by Flask and api-sports.io to display Premier League fixtures and 
+Website written in Python powered by Flask and api-sports.io to display Premier League fixtures and
 to place simple bets on them.
 
 Currently a work-in-progress
@@ -28,5 +28,5 @@ Linting rules specified in [`.pylintrc`](./.pylintrc)
 pylint ${PWD}
 ```
 
-### Notes 
+### Notes
 `./keys.py` is omitted to protect `API_KEY` and `APP_SECRET_KEY`

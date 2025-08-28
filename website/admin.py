@@ -6,9 +6,10 @@ import time
 from flask import Blueprint, Response, render_template, flash, redirect, jsonify, url_for
 from flask_login import login_required, current_user
 
-from .models import User, General, Fixture
-from .schemas import FixtureSchema
+from .models import User, General, Fixture, Team
+from .schemas import FixtureSchema, TeamSchema
 from .utils import api_call
+from . import db
 
 admin = Blueprint('admin', __name__)
 
@@ -29,15 +30,15 @@ def endpoint_admin() -> str:
     }
     return render_template('admin.html', **kwargs)
 
-@admin.route('/fetch-api-data', methods=['POST'])
-def endpoint_fetch_api_data() -> Response:
-    """Fetch data from the API and update the database."""
+@admin.route('/fetch-api-fixtures', methods=['POST'])
+def endpoint_fetch_api_fixtures() -> Response:
+    """Fetch fixture data from the API and update the database."""
 
     if not current_user.is_admin:
         flash("Adminprivilegier krävs", category='error')
         return jsonify({})
 
-    print("Strarting task to fetch API data...")
+    print("Starting task to fetch API fixture data...")
     # TODO: Make season selectable from the admin page
     season = '2025'
     start_time = time.perf_counter()
@@ -51,15 +52,52 @@ def endpoint_fetch_api_data() -> Response:
             fixture = schema.load(fixture_json)
             Fixture.create_or_update(fixture)
 
+        db.session.commit()
         end_time = time.perf_counter()
-        flash(f"Task finished in {(end_time - start_time):.2f} seconds.", category='success')
+        status = f"Task finished in {(end_time - start_time):.2f} seconds."
+        flash(status, category='success')
+        print(status)
     except Exception as error:
         end_time = time.perf_counter()
         flash(f"Task failed in {(end_time - start_time):.2f} seconds: "
               f"{type(error).__name__}", category='error')
         print(error)
 
-    print(f"Task finished in {(end_time - start_time):.2f} seconds.")
+    return jsonify({})
+
+@admin.route('/fetch-api-standings', methods=['POST'])
+def endpoint_fetch_api_standings() -> Response:
+    """Fetch standings data from the API and update the database."""
+
+    if not current_user.is_admin:
+        flash("Adminprivilegier krävs", category='error')
+        return jsonify({})
+
+    print("Starting task to fetch API standings data...")
+    # TODO: Make season selectable from the admin page
+    season = '2025'
+    start_time = time.perf_counter()
+
+    try:
+        headers, standings_response = api_call('standings', season)
+        schema = TeamSchema(context={"season": season})
+        __parse_headers(headers)
+
+        for team_json in standings_response['response'][0]['league']['standings'][0]:
+            team, standings = schema.load(team_json)
+            Team.create_or_update_team_and_standing(team, standings)
+
+        db.session.commit()
+        end_time = time.perf_counter()
+        status = f"Task finished in {(end_time - start_time):.2f} seconds."
+        flash(status, category='success')
+        print(status)
+    except Exception as error:
+        end_time = time.perf_counter()
+        flash(f"Task failed in {(end_time - start_time):.2f} seconds: "
+              f"{type(error).__name__}", category='error')
+        print(error)
+
     return jsonify({})
 
 def __parse_headers(headers: dict) -> None:
@@ -71,3 +109,4 @@ def __parse_headers(headers: dict) -> None:
         'remaining_requests':  headers['x-ratelimit-requests-remaining']
     }
     General.update(**data)
+    db.session.commit()

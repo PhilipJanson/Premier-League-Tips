@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import uuid
 
-from typing import Any
 from datetime import datetime
+from flask import current_app
 from flask_login import UserMixin
 from sqlalchemy import Boolean, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship, joinedload
@@ -40,7 +40,7 @@ class User(db.Model, UserMixin):
 
         user = User(username=username, password=password, is_admin=username == 'admin')
         db.session.add(user)
-        db.session.commit()
+        current_app.logger.debug(f"Created user: {user.username} ({user.id})")
         return user
 
     @staticmethod
@@ -84,7 +84,6 @@ class Fixture(db.Model, Updateable):
     def by_dates(season: str, start_date: str, end_date: str) -> list[Fixture]:
         """Return the list of fixtures in a given season between two dates."""
 
-        # TODO: check if I should use select or query
         return db.session.execute(db.select(Fixture)
                                   .filter_by(season=season)
                                   .filter(Fixture.date_time >= start_date)
@@ -92,14 +91,15 @@ class Fixture(db.Model, Updateable):
 
     @staticmethod
     def create_or_update(fixture: Fixture) -> None:
-        """Create or update a fixture and commit it to the database."""
+        """Create or update a fixture."""
 
         existing_fixture = Fixture.by_id(fixture.fixture_id)
         if existing_fixture is not None:
             existing_fixture.update_attributes(fixture.__dict__)
+            current_app.logger.debug(f"Updated fixture: {fixture.fixture_id}")
         else:
             db.session.add(fixture)
-        db.session.commit()
+            current_app.logger.debug(f"Added fixture: {fixture.fixture_id}")
 
 class Team(db.Model, Updateable):
     team_id: Mapped[int] = mapped_column(primary_key=True)
@@ -108,18 +108,13 @@ class Team(db.Model, Updateable):
     standings: Mapped[list['TeamStanding']] = relationship("TeamStanding", back_populates='team')
 
     @staticmethod
-    def by_rank(season: str) -> list[Team]:
-        """Return the list of teams in a given season ordered by their rank."""
+    def by_id(team_id: int) -> Team:
+        """Return the fixture given an ID."""
 
-        return (db.session.query(Team)
-                .join(Team.standings)
-                .filter(TeamStanding.season == season)
-                .order_by(TeamStanding.rank)
-                .options(joinedload(Team.standings))
-                .all())
+        return db.session.execute(db.select(Team).filter_by(team_id=team_id)).scalar()
 
     @staticmethod
-    def by_name(season: str) -> list[Team]:
+    def by_season(season: str) -> list[Team]:
         """Return the list of teams in a given season ordered by their name."""
 
         return (db.session.query(Team)
@@ -129,57 +124,35 @@ class Team(db.Model, Updateable):
                 .options(joinedload(Team.standings))
                 .all())
 
-    # TODO: handle the standings
     @staticmethod
-    def create_or_update(team: Team) -> None:
-        """Create or update a team and commit it to the database."""
+    def create_or_update_team_and_standing(team: Team, standings: TeamStanding) -> None:
+        """Create or update a team and its standing for a season."""
 
-        existing_team = Fixture.by_id(team.team_id)
+        # Check if team exists, else create it
+        existing_team = Team.by_id(team.team_id)
         if existing_team is not None:
             existing_team.update_attributes(team.__dict__)
+            current_app.logger.debug(f"Updated team: {team.name} ({team.team_id})")
         else:
             db.session.add(team)
-        db.session.commit()
+            current_app.logger.debug(f"Added team: {team.name} ({team.team_id})")
 
-    @staticmethod
-    def parse_json(standings_response: Any, season: str) -> None:
-        """"""
+        # Check if standings exists for this team and season
+        exisiting_standings: TeamStanding = db.session.execute(db.select(TeamStanding)
+                                                      .filter_by(team_id=team.team_id,
+                                                                 season=standings.season)).scalar()
+        if exisiting_standings is not None:
+            print(exisiting_standings.goals_scored)
+            print(standings.goals_scored)
+            exisiting_standings.update_attributes(standings.__dict__)
+            current_app.logger.debug(f"Updated standings for team: {team.name} "
+                                     f"(ID: {team.team_id}, season: {standings.season})")
+        else:
+            db.session.add(standings)
+            current_app.logger.debug(f"Added standings for team: {team.name} "
+                                     f"(ID: {team.team_id}, season: {standings.season})")
 
-        for team_json in standings_response['response'][0]['league']['standings']:
-            team_obj = team_json['team']
-            all_obj = team_json['all']
-            team_id = team_obj['id']
-
-            team_data = {
-                'team_id': team_id,
-                'name': team_obj['name'],
-                'logo': team_obj['logo'],
-            }
-
-            standings_data = {
-                'season': season,
-                'rank': team_json['rank'],
-                'points': team_json['points'],
-                'games_played': all_obj['played'],
-                'wins': all_obj['win'],
-                'draws': all_obj['draw'],
-                'losses': all_obj['lose'],
-                'goals_scored': all_obj['goals']['for'],
-                'goals_conceded': all_obj['goals']['against'],
-                'form': team_json['form'],
-                'team_id': team_id
-            }
-
-            print(f"Parsing team ID {team_id}")
-            team = Team.by_id(team_id)
-
-            if not team:
-                team = Team(season=season, **team_data)
-                db.session.add(team)
-            else:
-                team.update_attributes(team_data)
-
-class TeamStanding(db.Model):
+class TeamStanding(db.Model, Updateable):
     id: Mapped[int] = mapped_column(primary_key=True)
     season: Mapped[str] = mapped_column(String(4))
     rank: Mapped[int] = mapped_column(Integer, nullable=True)
@@ -191,8 +164,19 @@ class TeamStanding(db.Model):
     goals_scored: Mapped[int] = mapped_column(Integer, nullable=True)
     goals_conceded: Mapped[int] = mapped_column(Integer, nullable=True)
     form: Mapped[str] = mapped_column(String(5), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=True)
+    promotion: Mapped[str] = mapped_column(String(50), nullable=True)
+    last_update: Mapped[datetime] = mapped_column(DateTime)
     team_id: Mapped[int] = mapped_column(ForeignKey('team.team_id'))
     team: Mapped['Team'] = relationship(back_populates='standings')
+
+    @staticmethod
+    def by_season(season: str) -> list[TeamStanding]:
+        """Return the list of teams in a given season ordered by their rank."""
+
+        return db.session.execute(db.select(TeamStanding)
+                                  .filter_by(season=season)
+                                  .order_by(TeamStanding.rank)).scalars().all()
 
 class Tip(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -266,7 +250,6 @@ class General(db.Model):
                               last_update=last_update,
                               remaining_requests=remaining_requests)
             db.session.add(general)
-        db.session.commit()
 
     @staticmethod
     def get_active_season() -> str:

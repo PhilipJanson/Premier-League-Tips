@@ -3,7 +3,7 @@
 {% block content%}
   <h1 class="pb-2 text-center">Tabell</h1>
   <div class="text-responsive border shadow p-2 bg-white">
-    {% for team in teams %}
+    {% for standing in team_standings %}
       {% if loop.index == 1 %}
         <div class="row m-0 border-bottom text-center align-items-center small pb-2">
           <div class="col text-left">#</div>
@@ -22,31 +22,31 @@
         </div>
       {% endif %}
       <div class="row m-0 border-bottom hover text-center align-items-center small">
-        <div class="col text-left">{{ team.rank }}</div>
+        <div class="col text-left">{{ standing.rank }}</div>
         <div class="col p-0">
-          <img class="img-thumbnail-custom-2 float-start p-1" src="{{ team.logo }}" alt="{{ team.name }}'s Logo"/>
+          <img class="img-thumbnail-custom-2 float-start p-1" src="{{ standing.team.logo }}" alt="{{ standing.team.name }}'s Logo"/>
         </div>
-        <div class="col-3 text-left">{{ team.name }}</div>
-        <div class="col">{{ team.games_played }}</div>
-        <div class="col">{{ team.wins}}</div>
-        <div class="col">{{ team.draws }}</div>
-        <div class="col">{{ team.losses }}</div>
-        <div class="col">{{ team.goals_scored }}</div>
-        <div class="col">{{ team.goals_conceded }}</div>
-        <div class="col">{{ team.goals_scored - team.goals_conceded }}</div>
-        <div class="col font-weight-bold">{{ team.points }}</div>
+        <div class="col-3 text-left">{{ standing.team.name }}</div>
+        <div class="col">{{ standing.games_played }}</div>
+        <div class="col">{{ standing.wins}}</div>
+        <div class="col">{{ standing.draws }}</div>
+        <div class="col">{{ standing.losses }}</div>
+        <div class="col">{{ standing.goals_scored }}</div>
+        <div class="col">{{ standing.goals_conceded }}</div>
+        <div class="col">{{ standing.goals_scored - standing.goals_conceded }}</div>
+        <div class="col font-weight-bold">{{ standing.points }}</div>
         <div class="col-2">
-          {% if team.form is not none %}
-            {% for c in team.form %}
-              {% if c == "W" %}
+          {% if standing.form is not none %}
+            {% for char in standing.form %}
+              {% if char == "W" %}
                 <span class="text-success">
                   <i class="fa fa-check-circle"></i>
                 </span>
-              {% elif c == "L" %}
+              {% elif char == "L" %}
                 <span class="text-danger">
                   <i class="fa fa-times-circle"></i>
                 </span>
-              {% elif c == "D" %}
+              {% elif char == "D" %}
                 <span class="text-secondary">
                   <i class="fa fa-minus-circle"></i>
                 </span>
