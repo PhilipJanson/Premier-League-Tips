@@ -1,0 +1,21 @@
+
+- User page. Set favourite team. Change password. Set email.
+- Team pages
+- Team ranker. Pick each team's rank and calculate scores.
+- Layout overhaul, animations, better css, remove breaklines, mobile integration, text sizes,
+  custom style rewrite.
+- Fix layout in fixtures (scores not aligned, some team icons are scaled wrong)
+- Stats page rewrite. Have side by side boxes instead of carousels
+- Tips page rewrite. Not used
+- Migration from old db to new one
+- Standings rewrite. Team status. Promotions. Better layout. Last updated.
+- Admin page layout.
+- Login/signup box size, link to signup/login in the boxes.
+- Automatic task
+- [DONE]: Remove json handler
+- Upgrade to Bootstrap 5 and FontAwesome 6
+- tips/default redirect
+- pythonanywhere admin. Link to repo, setup fast-served css, tasks, venv.
+- Email functionality.
+- Keys in environment
+- Fix readme, venv.
