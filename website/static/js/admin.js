@@ -1,26 +1,40 @@
-function fetchApiFixtures() {
-  fetch('/admin/fetch-api-fixtures', {
+function triggerAdminAction(endpoint) {
+  fetch(endpoint, {
     method: 'POST',
   }).then((_res) => {
-    tips = [];
     window.location.href = '/admin';
   });
 }
 
-function fetchApiStandings() {
-  fetch('/admin/fetch-api-standings', {
+function addSeason() {
+  const season = document.getElementById('add-season-input').value;
+  if (!season) return;
+  fetch('/admin/add-season', {
     method: 'POST',
+    body: JSON.stringify(season),
   }).then((_res) => {
-    tips = [];
     window.location.href = '/admin';
   });
 }
 
-function calculateResults() {
-  fetch('/admin/calculate-results', {
+function setActiveSeason() {
+  const season = document.getElementById('set-active-season-select').value;
+  if (!season) return;
+  fetch('/admin/set-active-season', {
     method: 'POST',
+    body: JSON.stringify(season),
   }).then((_res) => {
-    tips = [];
+    window.location.href = '/admin';
+  });
+}
+
+function setUserAdmin() {
+  const uuid = document.getElementById('user-uuid-input').value;
+  if (!uuid) return;
+  fetch('/admin/set-user-admin', {
+    method: 'POST',
+    body: JSON.stringify(uuid),
+  }).then((_res) => {
     window.location.href = '/admin';
   });
 }

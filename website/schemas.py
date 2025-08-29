@@ -5,8 +5,7 @@ import datetime
 from typing import Any
 from marshmallow import Schema, fields, post_load, EXCLUDE
 from marshmallow.utils import get_value, set_value
-from .models import Fixture, Team, TeamStanding
-from . import ACTIVE_SEASON
+from .models import Fixture, Team, TeamStanding, Season
 
 class Reach(fields.Field):
     """Field that can reach into nested dictionaries to get or set a value."""
@@ -54,9 +53,9 @@ class FixtureSchema(Schema):
 
     @post_load
     def make_fixture(self, data: dict[str, Any], **_kwargs) -> Fixture:
-        season = self.context.get("season", ACTIVE_SEASON)
+        season: Season = self.context.get("season")
         fixture_round = int(data['fixture_round'].split(' - ')[1])
-        fixture = Fixture(season=season,
+        fixture = Fixture(season_id=season.id,
                           round=fixture_round,
                           **data['fixture'],
                           **data['teams'],
@@ -98,7 +97,7 @@ class TeamSchema(Schema):
     def make_team(self, data: dict[str, Any], **_kwargs) -> tuple[Team, TeamStanding]:
         team = Team(**data['team'])
 
-        season = self.context.get("season", ACTIVE_SEASON)
+        season: Season = self.context.get("season")
         last_update = datetime.datetime.now()
 
         # Deserialize promotion from description
@@ -118,7 +117,7 @@ class TeamSchema(Schema):
         goals_scored = goals.get('goals_scored', 0)
         goals_conceded = goals.get('goals_conceded', 0)
 
-        standing = TeamStanding(season=season,
+        standing = TeamStanding(season_id=season.id,
                                 rank=data['rank'],
                                 points=data.get('points', 0),
                                 goals_scored=goals_scored,

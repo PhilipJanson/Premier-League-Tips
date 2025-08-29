@@ -33,25 +33,29 @@
               <a class="nav-link" id="fixtures" href="/fixtures">Matcher</a>
             </li>
             <li class="nav-item dropdown mr-2">
-              <a class="nav-link" id="standings" href="/standings/{{ season }}" style="padding-right: 0;">Tabell</a>
+              <a class="nav-link" id="standings" href="/standings/{{ season_data['active_season'].season }}" style="padding-right: 0;">Tabell</a>
               <a class="nav-link dropdown-toggle" id="standings-list" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="padding-left: 0;"></a>
               <div class="dropdown-menu" aria-labelledby="standings-list">
-                <a class="dropdown-item border-bottom" href="/standings/2021">2021</a>
-                <a class="dropdown-item border-bottom" href="/standings/2022">2022</a>
-                <a class="dropdown-item border-bottom" href="/standings/2023">2023</a>
-                <a class="dropdown-item border-bottom" href="/standings/2024">2024</a>
-                <a class="dropdown-item" href="/standings/2025">2025</a>
+              {% for season in season_data['all_seasons'] %}
+                {% if not loop.last %}
+                  <a class="dropdown-item border-bottom" href="/standings/{{ season.season }}">{{ season.display_name }}</a>
+                {% else %}
+                  <a class="dropdown-item" href="/standings/{{ season.season }}">{{ season.display_name }}</a>
+                {% endif %}
+              {% endfor %}
               </div>
             </li>
             <li class="nav-item dropdown mr-2">
-              <a class="nav-link" id="stats" href="/stats/{{ season }}" style="padding-right: 0;">Statistik</a>
+              <a class="nav-link" id="stats" href="/stats/{{ season_data['active_season'].season }}" style="padding-right: 0;">Statistik</a>
               <a class="nav-link dropdown-toggle" id="stats-list" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="padding-left: 0;"></a>
               <div class="dropdown-menu" aria-labelledby="stats-list">
-                <a class="dropdown-item border-bottom" href="/stats/2021">2021</a>
-                <a class="dropdown-item border-bottom" href="/stats/2022">2022</a>
-                <a class="dropdown-item border-bottom" href="/stats/2023">2023</a>
-                <a class="dropdown-item border-bottom" href="/stats/2024">2024</a>
-                <a class="dropdown-item" href="/stats/2025">2025</a>
+              {% for season in season_data['all_seasons'] %}
+                {% if not loop.last %}
+                  <a class="dropdown-item border-bottom" href="/stats/{{ season.season }}">{{ season.display_name }}</a>
+                {% else %}
+                  <a class="dropdown-item" href="/stats/{{ season.season }}">{{ season.display_name }}</a>
+                {% endif %}
+              {% endfor %}
               </div>
             </li>
             <li class="nav-item mr-2">

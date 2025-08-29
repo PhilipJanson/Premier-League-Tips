@@ -7,7 +7,7 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta
 from typing import Any
 from keys import API_KEY
-from .models import Fixture, User, Result, Tip
+from .models import Fixture, User, Result, Tip, Season
 from . import LEAGUE_ID
 
 URL = 'https://v3.football.api-sports.io/'
@@ -37,11 +37,11 @@ def calculate_next_fixture(fixtures: list[Fixture], selected_date: datetime) -> 
 
     return None
 
-def api_call(endpoint: str, season: str) -> tuple[dict, Any]:
+def api_call(endpoint: str, season: Season) -> tuple[dict, Any]:
     """Fetch data from the API and return a tuple containing the response headers and data as
     json objects."""
 
-    url = f"{URL}/{endpoint}?season={season}&league={LEAGUE_ID}"
+    url = f"{URL}/{endpoint}?season={season.season}&league={LEAGUE_ID}"
 
     if endpoint == 'fixtures':
         url += '&timezone=Europe/Stockholm'
@@ -57,7 +57,7 @@ def api_call(endpoint: str, season: str) -> tuple[dict, Any]:
     return dict(response.headers), response.json()
 
 
-def calculate_user_result(user: User, season: str) -> Result:
+def calculate_user_result(user: User, season: Season) -> Result:
     """Calculate the result for a user in a given season. Return a Result object."""
 
     # TODO: Impement team ranking score calculation
@@ -66,7 +66,7 @@ def calculate_user_result(user: User, season: str) -> Result:
 
     round_stats = defaultdict(lambda: {"tips": 0, "correct": 0})
     result = Result(user_id=user.id,
-                    season=season,
+                    season_id=season.id,
                     total=0,
                     finished=0,
                     correct=0,

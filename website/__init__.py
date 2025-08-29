@@ -14,6 +14,7 @@ LEAGUE_ID = 39
 # The current active season
 # Note: Only used as a fallback in case no active season is set in the database
 ACTIVE_SEASON = '2025'
+SEASON_DISPLAY_NAME = '2025-26'
 
 db: SQLAlchemy = SQLAlchemy()
 

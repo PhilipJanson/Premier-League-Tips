@@ -4,22 +4,23 @@ from __future__ import annotations
 
 import uuid
 
-from datetime import datetime
+from datetime import datetime, timezone
 from flask import current_app
 from flask_login import UserMixin
 from sqlalchemy import Boolean, ForeignKey, Integer, String, DateTime, Table, Column, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship, joinedload
-from . import db, ACTIVE_SEASON
+from typing import Any
+from . import db, ACTIVE_SEASON, SEASON_DISPLAY_NAME
 
 class Updateable:
     """Mixin class to add update_attributes method to models."""
 
     def update_attributes(self, data: dict) -> None:
         """Update the attributes of the instance with the given data dictionary.
-           Ignore None values.
+           Ignore None and private values.
         """
         for key, value in data.items():
-            if hasattr(self, key) and value is not None:
+            if not str(key).startswith('_') and hasattr(self, key) and value is not None:
                 setattr(self, key, value)
 
 class User(db.Model, UserMixin):
@@ -28,7 +29,8 @@ class User(db.Model, UserMixin):
     password: Mapped[str] = mapped_column(String(500))
     is_admin: Mapped[bool] = mapped_column(Boolean)
     email: Mapped[str] = mapped_column(String(100), nullable=True)
-    timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True),
+                                                default=lambda: datetime.now(timezone.utc))
     tips: Mapped[list['Tip']] = relationship("Tip", back_populates='user')
     results: Mapped[list['Result']] = relationship("Result", back_populates='user')
     favorite_team_id: Mapped[int] = mapped_column(ForeignKey('team.team_id'), nullable=True)
@@ -51,14 +53,21 @@ class User(db.Model, UserMixin):
         return db.session.execute(db.select(User)).scalars().all()
 
     @staticmethod
+    def by_id(uuid: str) -> User:
+        """Return the user given an ID."""
+
+        return db.session.execute(db.select(User).filter_by(id=uuid)).scalar_one_or_none()
+
+    @staticmethod
     def by_username(username: str) -> User:
         """Return a user given a username."""
 
-        return db.session.execute(db.select(User).filter_by(username=username)).scalar()
+        return db.session.execute(db.select(User).filter_by(username=username)).scalar_one_or_none()
 
 class Fixture(db.Model, Updateable):
     fixture_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    season: Mapped[str] = mapped_column(String(4), nullable=False)
+    season_id: Mapped[int] = mapped_column(ForeignKey('season.id'), nullable=False)
+    season: Mapped['Season'] = relationship("Season", foreign_keys=[season_id])
     round: Mapped[int] = mapped_column(Integer, nullable=True)
     date_time: Mapped[DateTime] = mapped_column(DateTime, nullable=True)
     # Status of the fixture. 'FT': full time, 'NS': not started, 'PST': postponed.
@@ -74,22 +83,28 @@ class Fixture(db.Model, Updateable):
     def by_id(fixture_id: int) -> Fixture:
         """Return the fixture given an ID."""
 
-        return db.session.execute(db.select(Fixture).filter_by(fixture_id=fixture_id)).scalar()
+        return (db.session.execute(db.select(Fixture).filter_by(fixture_id=fixture_id))
+                          .scalar_one_or_none())
 
     @staticmethod
     def by_season(season: str) -> list[Fixture]:
         """Return the list of fixtures in a given season."""
 
-        return db.session.execute(db.select(Fixture).filter_by(season=season)).scalars().all()
+        return (db.session.query(Fixture)
+                .join(Fixture.season)
+                .filter(Season.season == season)
+                .all())
 
     @staticmethod
     def by_dates(season: str, start_date: str, end_date: str) -> list[Fixture]:
         """Return the list of fixtures in a given season between two dates."""
 
-        return db.session.execute(db.select(Fixture)
-                                  .filter_by(season=season)
-                                  .filter(Fixture.date_time >= start_date)
-                                  .filter(Fixture.date_time <= end_date)).scalars().all()
+        return (db.session.query(Fixture)
+                .join(Fixture.season)
+                .filter(Season.season == season)
+                .filter(Fixture.date_time >= start_date)
+                .filter(Fixture.date_time <= end_date)
+                .all())
 
     @staticmethod
     def create_or_update(fixture: Fixture) -> None:
@@ -113,7 +128,7 @@ class Team(db.Model, Updateable):
     def by_id(team_id: int) -> Team:
         """Return the fixture given an ID."""
 
-        return db.session.execute(db.select(Team).filter_by(team_id=team_id)).scalar()
+        return db.session.execute(db.select(Team).filter_by(team_id=team_id)).scalar_one_or_none()
 
     @staticmethod
     def by_season(season: str) -> list[Team]:
@@ -121,7 +136,8 @@ class Team(db.Model, Updateable):
 
         return (db.session.query(Team)
                 .join(Team.standings)
-                .filter(TeamStanding.season == season)
+                .join(TeamStanding.season)
+                .filter(Season.season == season)
                 .order_by(Team.name)
                 .options(joinedload(Team.standings))
                 .all())
@@ -140,9 +156,10 @@ class Team(db.Model, Updateable):
             current_app.logger.debug(f"Added team: {team.name} ({team.team_id})")
 
         # Check if standings exists for this team and season
-        exisiting_standings: TeamStanding = db.session.execute(db.select(TeamStanding)
-                                                      .filter_by(team_id=team.team_id,
-                                                                 season=standings.season)).scalar()
+        exisiting_standings: TeamStanding = (db.session.execute(db.select(TeamStanding)
+                                                       .filter_by(team_id=team.team_id,
+                                                                  season=standings.season))
+                                                       .scalar_one_or_none())
         if exisiting_standings is not None:
             print(exisiting_standings.goals_scored)
             print(standings.goals_scored)
@@ -156,7 +173,8 @@ class Team(db.Model, Updateable):
 
 class TeamStanding(db.Model, Updateable):
     id: Mapped[int] = mapped_column(primary_key=True)
-    season: Mapped[str] = mapped_column(String(4), nullable=False)
+    season_id: Mapped[int] = mapped_column(ForeignKey('season.id'), nullable=False)
+    season: Mapped['Season'] = relationship("Season", foreign_keys=[season_id])
     rank: Mapped[int] = mapped_column(Integer, nullable=False)
     points: Mapped[int] = mapped_column(Integer, default=0)
     games_played: Mapped[int] = mapped_column(Integer, default=0)
@@ -171,7 +189,7 @@ class TeamStanding(db.Model, Updateable):
     status: Mapped[str] = mapped_column(String(20), default='')
     # Promotion status for a team. Valid values are 'CL', 'EL', 'ELC', 'R' or None.
     promotion: Mapped[str] = mapped_column(String(50), nullable=True, default=None)
-    last_update: Mapped[datetime] = mapped_column(DateTime)
+    last_update: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     team_id: Mapped[int] = mapped_column(ForeignKey('team.team_id'))
     team: Mapped['Team'] = relationship("Team", back_populates='standings')
 
@@ -179,9 +197,11 @@ class TeamStanding(db.Model, Updateable):
     def by_season(season: str) -> list[TeamStanding]:
         """Return the list of teams in a given season ordered by their rank."""
 
-        return db.session.execute(db.select(TeamStanding)
-                                  .filter_by(season=season)
-                                  .order_by(TeamStanding.rank)).scalars().all()
+        return (db.session.query(TeamStanding)
+                .join(TeamStanding.season)
+                .filter(Season.season == season)
+                .order_by(TeamStanding.rank)
+                .all())
 
 class Tip(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -189,7 +209,7 @@ class Tip(db.Model):
     # Valid values are '1', 'X' or '2'
     tip: Mapped[str] = mapped_column(String(1))
     # Status of the tip. 1: correct, -1: incorrect, 0: not yet decided
-    correct: Mapped[bool] = mapped_column(Integer, default=0)
+    correct: Mapped[int] = mapped_column(Integer, default=0)
     user_id: Mapped[str] = mapped_column(ForeignKey('user.id'))
     user: Mapped['User'] = relationship("User", back_populates='tips')
 
@@ -199,7 +219,23 @@ class Tip(db.Model):
 
         return db.session.execute(db.select(Tip)
                                   .filter_by(user_id=user.id)
-                                  .filter_by(fixture_id=fixture_id)).scalar()
+                                  .filter_by(fixture_id=fixture_id)).scalar_one_or_none()
+
+    @staticmethod
+    def create_or_update(user: User, fixture_id: int, value: str) -> Tip:
+        """Create or update a tip for a user and a fixture ID. Return the created or updated tip."""
+
+        if value not in ['1', 'X', '2'] or user is None:
+            return None
+
+        tip = Tip.by_fixure_id(user, fixture_id)
+        if tip is not None:
+            tip.tip = value
+        else:
+            tip = Tip(fixture_id=fixture_id, tip=value, user_id=user.id)
+            db.session.add(tip)
+
+        return tip
 
 # Association table to link Result and Team with an additional 'rank' column
 result_team_association = Table(
@@ -212,7 +248,8 @@ result_team_association = Table(
 
 class Result(db.Model, Updateable):
     id: Mapped[int] = mapped_column(primary_key=True)
-    season: Mapped[str] = mapped_column(String(4), nullable=False)
+    season_id: Mapped[int] = mapped_column(ForeignKey('season.id'), nullable=False)
+    season: Mapped['Season'] = relationship("Season", foreign_keys=[season_id])
     # Total tips made
     total: Mapped[int] = mapped_column(Integer, default=0)
     # Tips that have been decided
@@ -231,7 +268,7 @@ class Result(db.Model, Updateable):
                                                        order_by=result_team_association.c.rank)
     # Total score for team rankings
     placements_total: Mapped[int] = mapped_column(Integer, default=0)
-    last_update: Mapped[datetime] = mapped_column(DateTime)
+    last_update: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     user_id: Mapped[str] = mapped_column(ForeignKey('user.id'))
     user: Mapped['User'] = relationship("User", back_populates='results')
 
@@ -239,57 +276,101 @@ class Result(db.Model, Updateable):
     def by_season(season: str) -> list[Result]:
         """Return the list of results in a given season."""
 
-        return db.session.execute(db.select(Result).filter_by(season=season)).scalars().all()
+        return (db.session.query(Result)
+                .join(Result.season)
+                .filter(Season.season == season)
+                .all())
 
     @staticmethod
     def create_or_update(result: Result) -> None:
         """Create or update a fixture."""
 
-        existing_result: Result = db.session.execute(db.select(Result)
-                                                     .filter_by(season=result.season)
-                                                     .filter_by(user_id=result.user_id)).scalar()
+        existing_result = (db.session.query(Result)
+                           .filter(Result.season_id == result.season_id,
+                                   Result.user_id == result.user_id)
+                           .one_or_none())
         if existing_result is not None:
             existing_result.update_attributes(result.__dict__)
-            current_app.logger.debug(f"Updated fixture: {result.id}")
+            current_app.logger.debug(f"Updated result: {result.id}")
         else:
             db.session.add(result)
-            current_app.logger.debug(f"Added fixture: {result.id}")
+            current_app.logger.debug(f"Added result: {result.id}")
 
 class General(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    season: Mapped[str] = mapped_column(String(4), nullable=False)
-    last_update: Mapped[datetime] = mapped_column(DateTime)
-    remaining_requests: Mapped[int] = mapped_column(Integer)
+    season_id: Mapped[int] = mapped_column(ForeignKey('season.id'), nullable=False)
+    season: Mapped['Season'] = relationship("Season", foreign_keys=[season_id])
+    last_update: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+    remaining_requests: Mapped[int] = mapped_column(Integer, nullable=True)
     allow_late_modification: Mapped[bool] = mapped_column(Boolean, default=False)
 
     @staticmethod
     def get() -> General:
         """Return the General instance."""
 
-        return db.session.execute(db.select(General)).scalar()
+        return db.session.execute(db.select(General)).scalar_one_or_none()
 
-    # TODO: the season should not be updated here, only last_update and remaining_requests
-    # The season should be updated only when a new season starts and should be in a manual trigger
     @staticmethod
-    def update(season: str, last_update: str, remaining_requests: int) -> None:
-        """Update or create the General instance and commit it to the database."""
+    def create(season: Season) -> None:
+        """Create the General instance and add it to the database."""
 
-        general = General.get()
-        if general:
-            general.season = season
-            general.last_update = last_update
-            general.remaining_requests = remaining_requests
-        else:
-            general = General(season=season,
-                              last_update=last_update,
-                              remaining_requests=remaining_requests)
+        if General.get() is None:
+            general = General(season_id=season.id)
             db.session.add(general)
 
     @staticmethod
-    def get_active_season() -> str:
+    def update(last_update: str, remaining_requests: int) -> None:
+        """Update the General instance in the database."""
+
+        general = General.get()
+        if general is not None:
+            general.last_update = last_update
+            general.remaining_requests = remaining_requests
+
+    @staticmethod
+    def get_active_season() -> Season:
         """Return the current active season."""
 
         general = General.get()
-        if general:
+        if general and general.season is not None:
             return general.season
-        return ACTIVE_SEASON
+        current_app.logger.warning("Active season not set in General table. "
+                                   f"Using default: {ACTIVE_SEASON}")
+
+        # Only used as a fallback if nothing is set. This object is not persisent.
+        return Season(id=0, season=ACTIVE_SEASON, display_name=SEASON_DISPLAY_NAME)
+
+class Season(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    season: Mapped[str] = mapped_column(String(4), unique=True, nullable=False)
+    display_name: Mapped[str] = mapped_column(String(10), unique=True, nullable=False)
+
+    @staticmethod
+    def by_season(season: str) -> Season:
+        """Return the matching season instance."""
+
+        return db.session.execute(db.select(Season).filter_by(season=season)).scalar_one_or_none()
+
+    @staticmethod
+    def all() -> list[Season]:
+        """Return the list of all seasons."""
+
+        return db.session.execute(db.select(Season).order_by(Season.season)).scalars().all()
+
+    @staticmethod
+    def create(season: str) -> Season:
+        """Create a new season and return it."""
+
+        display_name = f"{season}-{str(int(season) + 1)[2:]}"
+        new_season = Season(season=season, display_name=display_name)
+        db.session.add(new_season)
+        return new_season
+
+    @staticmethod
+    def get_season_data() -> dict[str, Any]:
+        """Return a dictionary with the active season and all seasons."""
+
+        return {
+            'active_season': General.get_active_season(),
+            'all_seasons': Season.all()
+        }
