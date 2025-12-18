@@ -19,3 +19,4 @@
 - Email functionality.
 - Keys in environment
 - Fix readme, venv.
+- Change strings to datetime in util
