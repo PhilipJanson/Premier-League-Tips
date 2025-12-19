@@ -31,14 +31,16 @@ def create_app() -> Flask:
     from .views import views
     from .auth import auth
     from .admin import admin
+    from .user import user
 
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
     app.register_blueprint(admin, url_prefix='/admin')
+    app.register_blueprint(user, url_prefix='/user')
 
     # pylint: disable=unused-import
     # Note: Import all defined models to allow create_all to function properly.
-    from .models import User, Tip, Fixture, Team, TeamStanding, Result, General
+    from .models import User, Tip, Fixture, Team, TeamStanding, Result, General, Season
 
     with app.app_context():
         db.create_all()

@@ -93,6 +93,7 @@ class Fixture(db.Model, Updateable):
         return (db.session.query(Fixture)
                 .join(Fixture.season)
                 .filter(Season.season == season)
+                .order_by(Fixture.date_time)
                 .all())
 
     @staticmethod
@@ -141,6 +142,12 @@ class Team(db.Model, Updateable):
                 .order_by(Team.name)
                 .options(joinedload(Team.standings))
                 .all())
+    
+    @staticmethod
+    def all() -> list[Team]:
+        """Return the list of all teams."""
+
+        return db.session.execute(db.select(Team).order_by(Team.name)).scalars().all()
 
     @staticmethod
     def create_or_update_team_and_standing(team: Team, standings: TeamStanding) -> None:

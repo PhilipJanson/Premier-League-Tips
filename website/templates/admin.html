@@ -5,22 +5,6 @@
 <div class="text-center border p-4">
   <div class="row justify-content-center align-items-center">
     <div class="col-auto">
-      <!-- Links -->
-      <div class="mb-3">Links</div>
-      <div class="border-bottom pb-3 mb-3">
-        <div class="mb-2">
-          <a href="https://github.com/PhilipJanson/Premier-League-Tips" target="_blank">Github</a>
-        </div>
-        <div class="mb-2">
-          <a href="https://eu.pythonanywhere.com/user/philipjanson/" target="_blank">PythonAnywhere</a>
-        </div>
-        <div class="mb-2">
-          <a href="https://philipjanson.eu.pythonanywhere.com/" target="_blank">Hemsida</a>
-        </div>
-        <div class="mb-2">
-          <a href="https://dashboard.api-football.com/" target="_blank">Api-Sports</a>
-        </div>
-      </div>
       <!-- API Options -->
       <div class="mb-3">API Options</div>
       <div class="border-bottom pb-3 mb-3">
@@ -63,7 +47,7 @@
       </div>
       <!-- Season -->
       <div class="border-bottom pb-3 mb-3">
-        <div class="mb-3">Set Active Season</div>
+        <div class="mb-3">Current Active Season: {{ general.season.display_name }}</div>
         <div class="mb-3 d-flex flex-row gap-2 mx-5">
           <select class="form-control" name="set-active-season-select" id="set-active-season-select">
             {% for season in season_data['all_seasons'] %}
@@ -74,7 +58,6 @@
           </select>
           <button class="btn btn-success" type="button" onclick="setActiveSeason()">Set Active Season</button>
         </div>
-        <div class="mb-3">Add Season</div>
         <div class="mb-3 d-flex flex-row gap-2 mx-5">
           <input type="text" id="add-season-input" class="form-control" placeholder="Enter season" required>
           <button class="btn btn-warning" type="button" onclick="addSeason()">Add Season</button>
@@ -111,6 +94,22 @@
         <div class="mb-3 d-flex flex-row gap-2 mx-5">
           <input type="text" id="user-uuid-input" class="form-control" placeholder="Enter user UUID" required>
           <button class="btn btn-success" type="button" onclick="setUserAdmin()">Set Admin</button>
+        </div>
+      </div>
+      <!-- Links -->
+      <div class="mb-3">Links</div>
+      <div class="border-bottom pb-3 mb-3">
+        <div class="mb-2">
+          <a href="https://github.com/PhilipJanson/Premier-League-Tips" target="_blank">Github</a>
+        </div>
+        <div class="mb-2">
+          <a href="https://eu.pythonanywhere.com/user/philipjanson/" target="_blank">PythonAnywhere</a>
+        </div>
+        <div class="mb-2">
+          <a href="https://philipjanson.eu.pythonanywhere.com/" target="_blank">Hemsida</a>
+        </div>
+        <div class="mb-2">
+          <a href="https://dashboard.api-football.com/" target="_blank">Api-Sports</a>
         </div>
       </div>
     </div>

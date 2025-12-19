@@ -1,8 +1,18 @@
 {% extends "base.html" %}
 {% block title %}Tippa Matcher{% endblock %}
+
+{% macro team_macro(fixture, team) %}
+  <div class="row align-items-center">
+    <div class="col col-lg-1 p-1">
+      <img class="img-thumbnail-custom-2 float-start" src="{{ team.logo }}" alt="Team logo"/>
+    </div>
+    <div class="col text-left small">{{ team.name }}</div>
+  </div>
+{% endmacro %}
+
 {% block content %}
   <h1 class="pb-2 text-center">Tippa matcher</h1>
-  <div class="text-responive">
+  <div class="container text-responive">
     <div class="row">
       {% set prev_round = namespace(round = "0") %}
       {% set index = namespace(value = 1) %}
@@ -28,30 +38,8 @@
           <div class="row border hover p-2">
             <!--Teams-->
             <div class="col">
-              <!--Home team-->
-              <div class="row align-items-center">
-                <div class="col col-lg-1 p-1">
-                  <img class="img-thumbnail-custom-2 float-start" src="{{ fixture.home_team.logo }}" alt="Home team's logo"/>
-                </div>
-                <div class="col text-left small">{{ fixture.home_team.name }}</div>
-                <div class="col-md-auto text-right small">
-                  {% if fixture.status == "FT" %}
-                    {{ fixtures.home_score }}
-                  {% endif %}
-                </div>
-              </div>
-              <!--Away team-->
-              <div class="row align-items-center">
-                <div class="col col-lg-1 p-1">
-                  <img class="img-thumbnail-custom-2 float-start" src="{{ fixture.away_team.logo }}" alt="Away team's logo"/>
-                </div>
-                <div class="col text-left small">{{ fixture.away_team.name }}</div>
-                <div class="col-md-auto text-right small">
-                  {% if fixture.status == "FT" %}
-                    {{ fixtures.away_score }}
-                  {% endif %}
-                </div>
-              </div>
+              {{ team_macro(fixture, fixture.home_team) }}
+              {{ team_macro(fixture, fixture.away_team) }}
             </div>
             <!--Time-->
             <div class="d-flex col-md-auto border-left text-center align-items-center small">
@@ -60,11 +48,7 @@
               {% elif fixture.status == "PST" %}
                 <div class="text-warning">Uppskjuten</div>
               {% else %}
-                {{ fixture.time }}
-              {% endif %}
-              <br/>
-              {% if fixture.status != "PST" %}
-                {{ fixture.date }}
+                {{ fixture.date_time.strftime('%Y-%m-%d %H:%M') }}
               {% endif %}
               {% if user.is_admin %}
                 <br/>

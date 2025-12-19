@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}
+  {{ user.username | capitalize }}
+{% endblock %}
+{% block content %}
+  <h1 class="pb-2 text-center">{{ user.username | capitalize }}</h1>
+  <div class="container text-center border p-4">
+    <div class="row justify-content-center align-items-center">
+      <div class="col-auto">
+        <div class="border-bottom pb-3 mb-3">
+          <div class="mb-4">
+            <h2>Favoritlag</h2>
+            {% if user.favorite_team %}
+              <div>
+                <img src="{{ user.favorite_team.logo }}" alt="{{ user.favorite_team.name }}'s Logo"/>
+                <p>{{ user.favorite_team.name }}</p>
+              </div>
+            {% else %}
+              <p>Inget lag valt</p>
+            {% endif %}
+          </div>
+          <div class="mb-3">Välj favoritlag</div>
+          <div class="mb-3 d-flex flex-row gap-2 mx-5">
+            <select class="form-control" name="set-favorite-team-select" id="set-favorite-team-select">
+              {% for team in teams %}
+                <option value="{{ team.team_id }}">{{ team.name }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn btn-success" type="button" onclick="setFavoriteTeam('{{ user.id }}')">
+              Välj favoritlag
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block script %}
+  <script type="text/javascript" src="{{ url_for('static', filename='js/user.js') }}"></script>
+{% endblock %}

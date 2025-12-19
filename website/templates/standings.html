@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Tabell{% endblock %}
-{% block content%}
+{% block content %}
   <h1 class="pb-2 text-center">Tabell</h1>
-  <div class="text-responsive border shadow p-2 bg-white">
+  <div class="container text-responsive border shadow p-2 bg-white">
     {% for standing in team_standings %}
       {% if loop.index == 1 %}
         <div class="row m-0 border-bottom text-center align-items-center small pb-2">

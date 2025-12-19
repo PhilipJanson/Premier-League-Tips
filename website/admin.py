@@ -15,7 +15,7 @@ from . import db
 
 admin = Blueprint('admin', __name__)
 
-@admin.route('/')
+@admin.route('')
 @login_required
 def endpoint_admin() -> str:
     """Page to display options for an admin user."""

@@ -2,7 +2,7 @@
 {% block title %}Statistik{% endblock %}
 {% block content %}
   <h1 class="pb-2 text-center">Statistik</h1>
-  <div class="text-responsive">
+  <div class="container text-responsive">
     {% for u in user_results %}
       {% if u.result %}
         <h2 class="text-center p-1">{{ u.username.capitalize() }}</h2>
@@ -77,8 +77,7 @@
             </div>
             <div class="carousel-item">
               <h3 class="text-center p-3">Antal rätt</h3>
-              <canvas id="{{ u.id }}-correct-chart" class="stat pie-chart pb-4"
-                      data-correct="{{ u.result.correct }}" data-incorrect="{{ u.result.incorrect }}" data-finished="{{ u.result.finished }}"></canvas>
+              <canvas id="{{ u.id }}-correct-chart" class="stat pie-chart pb-4" data-correct="{{ u.result.correct }}" data-incorrect="{{ u.result.incorrect }}" data-finished="{{ u.result.finished }}"></canvas>
             </div>
             <div class="carousel-item">
               <h3 class="text-center p-3">Tipfördelning</h3>
@@ -99,7 +98,8 @@
           </a>
         </div>
       {% else %}
-        <h2 class="text-center p-1 text-muted">{{ u.username.capitalize() }} — Inga resultat</h2>
+        <h2 class="text-center p-1 text-muted">{{ u.username.capitalize() }}
+          — Inga resultat</h2>
       {% endif %}
     {% endfor %}
   </div>
