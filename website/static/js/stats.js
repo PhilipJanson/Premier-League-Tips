@@ -2,20 +2,26 @@ var carousels = document.getElementsByClassName('carousel');
 
 for (const carousel of carousels) {
   const userId = carousel.dataset.userId;
-  const total = carousel.dataset.total;
+  const total = Number(carousel.dataset.total) || 0;
 
   const correctCtx = document.getElementById(`${userId}-correct-chart`);
-  const correct = correctCtx.dataset.correct;
-  const incorrect = correctCtx.dataset.incorrect;
-  const notPlayed = total - correctCtx.dataset.finished;
+  const correct = Number(correctCtx?.dataset?.correct) || 0;
+  const incorrect = Number(correctCtx?.dataset?.incorrect) || 0;
+  const finished = Number(correctCtx?.dataset?.finished) || 0;
+  const notPlayed = Math.max(0, total - finished);
+
+  function safePercent(part, tot) {
+    if (!tot || tot === 0) return '0%';
+    return Math.round((100 * part) / tot) + '%';
+  }
 
   var correctPieChart = new Chart(correctCtx.getContext('2d'), {
     type: 'pie',
     data: {
       labels: [
-        'Antal rätt ' + percentage(correct, total),
-        'Antal fel ' + percentage(incorrect, total),
-        'Ej spelade ' + percentage(notPlayed, total),
+        'Antal rätt ' + safePercent(correct, total),
+        'Antal fel ' + safePercent(incorrect, total),
+        'Ej spelade ' + safePercent(notPlayed, total),
       ],
       datasets: [
         {
@@ -25,23 +31,21 @@ for (const carousel of carousels) {
         },
       ],
     },
-    options: {
-      responsive: true,
-    },
+    options: { responsive: true },
   });
 
   const tipCtx = document.getElementById(`${userId}-tip-chart`);
-  const tip1 = tipCtx.dataset.tipOne;
-  const tipX = tipCtx.dataset.tipX;
-  const tip2 = tipCtx.dataset.tipTwo;
+  const tip1 = Number(tipCtx?.dataset?.tipOne) || 0;
+  const tipX = Number(tipCtx?.dataset?.tipX) || 0;
+  const tip2 = Number(tipCtx?.dataset?.tipTwo) || 0;
 
   var tipPieChart = new Chart(tipCtx.getContext('2d'), {
     type: 'pie',
     data: {
       labels: [
-        '1 ' + percentage(tip1, total),
-        'X ' + percentage(tipX, total),
-        '2 ' + percentage(tip2, total),
+        '1 ' + safePercent(tip1, total),
+        'X ' + safePercent(tipX, total),
+        '2 ' + safePercent(tip2, total),
       ],
       datasets: [
         {
@@ -51,20 +55,26 @@ for (const carousel of carousels) {
         },
       ],
     },
-    options: {
-      responsive: true,
-    },
+    options: { responsive: true },
   });
 
   const roundsCtx = document.getElementById(`${userId}-round-stats`);
-  const roundStats = JSON.parse(roundsCtx.dataset.stats);
+  let roundStats = {};
+  try {
+    const raw = roundsCtx?.dataset?.stats || '{}';
+    roundStats = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  } catch (err) {
+    console.warn('Invalid round_stats JSON for user', userId, err);
+    roundStats = {};
+  }
+
   const roundScores = [];
   const roundGuesses = [];
   for (let i = 1; i <= 38; i++) {
-    const round = String(i);
-    if (roundStats[round]) {
-      roundScores.push(roundStats[round].correct);
-      roundGuesses.push(roundStats[round].tips);
+    const key = String(i);
+    if (roundStats[key]) {
+      roundScores.push(Number(roundStats[key].correct) || 0);
+      roundGuesses.push(Number(roundStats[key].tips) || 0);
     } else {
       roundScores.push(0);
       roundGuesses.push(0);
@@ -79,16 +89,16 @@ for (const carousel of carousels) {
         {
           label: 'Antal rätt',
           data: roundScores,
-          backgroundColor: 'rgba(105, 0, 132, .2)',
-          borderColor: 'rgba(200, 99, 132, .7)',
+          backgroundColor: 'rgba(105,0,132,.2)',
+          borderColor: 'rgba(200,99,132,.7)',
           borderWidth: 2,
           lineTension: 0,
         },
         {
           label: 'Tips Gjorda',
           data: roundGuesses,
-          backgroundColor: 'rgba(2, 0, 132, .2)',
-          borderColor: 'rgba(2, 99, 132, .7)',
+          backgroundColor: 'rgba(2,0,132,.2)',
+          borderColor: 'rgba(2,99,132,.7)',
           borderWidth: 2,
           lineTension: 0,
         },
@@ -97,17 +107,7 @@ for (const carousel of carousels) {
     options: {
       responsive: true,
       scales: {
-        yAxes: [
-          {
-            display: true,
-            ticks: {
-              beginAtZero: true,
-              steps: 10,
-              stepValue: 1,
-              max: 10,
-            },
-          },
-        ],
+        yAxes: [{ display: true, ticks: { beginAtZero: true } }],
       },
     },
   });
@@ -117,8 +117,4 @@ function range(start, end) {
   return Array(end - start + 1)
     .fill()
     .map((_, idx) => start + idx);
-}
-
-function percentage(partialValue, totalValue) {
-  return Math.round((100 * partialValue) / totalValue) + '%';
 }

@@ -289,7 +289,7 @@ class Result(db.Model, Updateable):
                            .one_or_none())
         if existing_result is not None:
             existing_result.update_attributes(result.__dict__)
-            current_app.logger.debug(f"Updated result: {result.id}")
+            current_app.logger.debug(f"Updated result: {existing_result.id}")
         else:
             db.session.add(result)
             current_app.logger.debug(f"Added result: {result.id}")

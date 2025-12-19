@@ -87,13 +87,41 @@ def endpoint_stats(season: str) -> str:
                           .filter(Season.season == season)
                           .filter(Fixture.status == 'NS')
                           .all())
+
+    results = Result.by_season(season)
+    user_result = {result.user_id: result for result in results}
+
+    user_results = []
+    for user in User.all():
+        if user.username == 'admin':
+            continue
+
+        result = user_result.get(user.id)
+        if result:
+            # Ensure round_stats is a valid JSON string
+            round_stats = result.round_stats if (result.round_stats and
+                                                 result.round_stats.strip()) else "{}"
+            user_results.append({
+                "id": user.id,
+                "username": user.username,
+                "result": {
+                    "total": int(result.total or 0),
+                    "finished": int(result.finished or 0),
+                    "correct": int(result.correct or 0),
+                    "incorrect": int(result.incorrect or 0),
+                    "tip_1": int(result.tip_1 or 0),
+                    "tip_X": int(result.tip_X or 0),
+                    "tip_2": int(result.tip_2 or 0),
+                    "round_stats": round_stats
+                }
+            })
+
     kwargs = {
         'season_data': Season.get_season_data(),
         'selected_season': season,
         'user': current_user,
-        'all_users': User.all(),
         'fixtures': fixtures,
-        'results': Result.by_season(season)
+        'user_results': user_results
     }
     return render_template('stats.html', **kwargs)
 
