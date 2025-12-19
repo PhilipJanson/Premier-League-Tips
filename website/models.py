@@ -10,7 +10,7 @@ from flask_login import UserMixin
 from sqlalchemy import Boolean, ForeignKey, Integer, String, DateTime, Table, Column, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship, joinedload
 from typing import Any
-from . import db, ACTIVE_SEASON, SEASON_DISPLAY_NAME
+from . import db, ACTIVE_SEASON
 
 class Updateable:
     """Mixin class to add update_attributes method to models."""
@@ -158,7 +158,7 @@ class Team(db.Model, Updateable):
         # Check if standings exists for this team and season
         exisiting_standings: TeamStanding = (db.session.execute(db.select(TeamStanding)
                                                        .filter_by(team_id=team.team_id,
-                                                                  season=standings.season))
+                                                                  season_id=standings.season_id))
                                                        .scalar_one_or_none())
         if exisiting_standings is not None:
             print(exisiting_standings.goals_scored)
@@ -338,7 +338,9 @@ class General(db.Model):
                                    f"Using default: {ACTIVE_SEASON}")
 
         # Only used as a fallback if nothing is set. This object is not persisent.
-        return Season(id=0, season=ACTIVE_SEASON, display_name=SEASON_DISPLAY_NAME)
+        return Season(id=0,
+                      season=ACTIVE_SEASON,
+                      display_name=Season.get_season_display_name(ACTIVE_SEASON))
 
 class Season(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -361,8 +363,7 @@ class Season(db.Model):
     def create(season: str) -> Season:
         """Create a new season and return it."""
 
-        display_name = f"{season}-{str(int(season) + 1)[2:]}"
-        new_season = Season(season=season, display_name=display_name)
+        new_season = Season(season=season, display_name=Season.get_season_display_name(season))
         db.session.add(new_season)
         return new_season
 
@@ -374,3 +375,9 @@ class Season(db.Model):
             'active_season': General.get_active_season(),
             'all_seasons': Season.all()
         }
+
+    @staticmethod
+    def get_season_display_name(season: str) -> str:
+        """Return a string representation of the season given the starting year."""
+
+        return f"{season}-{str(int(season) + 1)[2:]}"
