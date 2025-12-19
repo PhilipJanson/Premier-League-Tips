@@ -161,8 +161,6 @@ class Team(db.Model, Updateable):
                                                                   season_id=standings.season_id))
                                                        .scalar_one_or_none())
         if exisiting_standings is not None:
-            print(exisiting_standings.goals_scored)
-            print(standings.goals_scored)
             exisiting_standings.update_attributes(standings.__dict__)
             current_app.logger.debug(f"Updated standings for team: {team.name} "
                                      f"(ID: {team.team_id}, season: {standings.season})")
