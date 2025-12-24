@@ -1,9 +1,47 @@
-/* Log in, sign-out, etc cards*/
+/* Navbar */
+.navbar-logo {
+  width: 30px;
+  height: 30px;
+  filter: brightness(10000%);
+}
+
+/* Bootstrap lg value 992px, .02px is subtracted to avoid overlap rounding bugs in browsers */
+@media (max-width: 991.98px) {
+  .navbar-collapse .dropdown-menu {
+    position: static;
+    float: none;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding-left: 1rem;
+    margin-top: 0;
+  }
+
+  .navbar-collapse .dropdown-item {
+    color: rgba(255, 255, 255, 0.75);
+    padding: 0.25rem 0;
+  }
+
+  .navbar-collapse .dropdown-item:hover {
+    background: none;
+    color: #ffffff;
+  }
+}
+
+/* Auth */
 .auth-card {
   min-width: 15rem;
   max-width: 30rem;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* Index */
+.large-logo {
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  max-width: 100%;
+  height: auto;
 }
 
 .hover {
@@ -38,17 +76,12 @@
   cursor: move;
 }
 
-.img-thumbnail-custom {
-  padding: 0.25rem;
-  border-radius: 0.25rem;
-  max-width: 100%;
-  height: auto;
-}
-
-.img-thumbnail-custom-2 {
+.team-logo-thumbnail {
   width: 30px;
   height: 30px;
-  display: inline-block;
+  object-fit: contain;
+  display: block;
+  border-radius: 4px;
 }
 
 .nav-sticky-bottom {
@@ -59,10 +92,6 @@
   z-index: 5;
   translate: 0 60px;
   transition: all 0.5s ease-in-out;
-}
-
-.nav-link {
-  display: inline;
 }
 
 .visible {
@@ -135,6 +164,7 @@
   }
 }
 
+/* Holiday theme snow effects */
 #holiday-snow {
   position: fixed;
   top: 0;
