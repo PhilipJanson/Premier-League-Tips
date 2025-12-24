@@ -263,3 +263,19 @@ def _parse_headers(headers: dict) -> None:
         'remaining_requests':  headers.get('x-ratelimit-requests-remaining', None)
     }
     General.update(**data)
+
+@admin.route('/toggle-holiday-theme', methods=['POST'])
+@login_required
+@admin_required
+def endpoint_toggle_holiday_theme() -> Response:
+    """Toggle whether late modification of tips is allowed."""
+
+    general = General.get()
+    if general is None:
+        flash("No general table exists.", category='error')
+        abort(404)
+
+    general.holiday_theme = not general.holiday_theme
+    db.session.commit()
+
+    return jsonify({}), 200

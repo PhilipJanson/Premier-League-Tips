@@ -132,9 +132,6 @@ dmypy.json
 .vscode
 .venv
 *.db
-*.json
-keys.py
-api.py
-stats
+migrations
 db_backup
 responses

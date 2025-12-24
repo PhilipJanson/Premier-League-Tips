@@ -17,5 +17,5 @@
 - tips/default redirect
 - pythonanywhere admin. Link to repo, setup fast-served css, tasks, venv.
 - Email functionality.
-- Keys in environment
-- Fix readme, venv.
+- [DONE]: Keys in environment
+- [DONE]: Fix readme, venv.

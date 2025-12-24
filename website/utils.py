@@ -7,9 +7,8 @@ import requests
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from typing import Any
-from keys import API_KEY
 from .models import Fixture, User, Result, Tip, Season, MAX_USERNAME_LEN, MAX_PASSWORD_LEN
-from . import LEAGUE_ID
+from . import LEAGUE_ID, api_secret_key
 
 USERNAME_REGEX = re.compile(r'^[a-zA-Z][a-zA-Z0-9_-]{2,' + str(MAX_USERNAME_LEN - 1) + r'}$')
 API_URL = 'https://v3.football.api-sports.io/'
@@ -75,7 +74,7 @@ def api_call(endpoint: str, season: Season) -> tuple[dict, Any]:
         url += '&timezone=Europe/Stockholm'
 
     headers = {
-        'x-rapidapi-key': API_KEY,
+        'x-rapidapi-key': api_secret_key,
         'x-rapidapi-host': API_URL
     }
 

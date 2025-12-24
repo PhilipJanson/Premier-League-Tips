@@ -308,6 +308,7 @@ class General(db.Model):
     last_update: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     remaining_requests: Mapped[int] = mapped_column(Integer, nullable=True)
     allow_late_modification: Mapped[bool] = mapped_column(Boolean, default=False)
+    holiday_theme: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
 
     @staticmethod
     def get() -> General:

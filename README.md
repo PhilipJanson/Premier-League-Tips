@@ -3,30 +3,53 @@
 Website written in Python powered by Flask and api-sports.io to display Premier League fixtures and
 to place simple bets on them.
 
-Currently a work-in-progress
+## Installation
 
-### Installation
-Dependencies specified in [`requirements.txt`](./requirements.txt)
+Dependencies are specified in [`requirements.txt`](./requirements.txt).
 
-`PATH_TO_PYTHON_EXE`:
-`C:\Users\%username%\AppData\Local\Programs\Python\Python36\python.exe`
+Example setup (Windows PowerShell):
+
 ```ps
+# Create and activate virtual environment
 pip install virtualenv
 virtualenv --python <PATH_TO_PYTHON_EXE> .venv
 .\venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### Start app
-```ps
-py main.py
+## Environment variables
+Setup a `.env` file to provide the correct settings for the app.
+```
+FLASK_APP=app.py
+FLASK_ENV=development
+FLASK_DEBUG=1
+APP_SECRET_KEY=<flask_secret_key>
+API_SECRET_KEY=<api_secret_key>
 ```
 
-### Lint repo
-Linting rules specified in [`.pylintrc`](./.pylintrc)
+## Database
+Setup and migrate database changes
+```ps
+# Initialize database
+flask db init
+# Migrate new database model changes
+flask db migrate -m "<message>"
+# Upgrade
+flask db upgrade
+```
+
+## Run app
+```ps
+flask run
+```
+
+## Linting
+Linting rules specified in [`.pylintrc`](./.pylintrc).
 ```ps
 pylint ${PWD}
 ```
 
-### Notes
-`./keys.py` is omitted to protect `API_KEY` and `APP_SECRET_KEY`
+## Links
+- [API Football](https://dashboard.api-football.com/)
