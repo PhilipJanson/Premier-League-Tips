@@ -12,6 +12,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, joinedload
 from typing import Any
 from . import db, ACTIVE_SEASON
 
+MAX_USERNAME_LEN = 100
+MAX_PASSWORD_LEN = 500
+
 class Updateable:
     """Mixin class to add update_attributes method to models."""
 
@@ -25,8 +28,8 @@ class Updateable:
 
 class User(db.Model, UserMixin):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    username: Mapped[str] = mapped_column(String(100), unique=True)
-    password: Mapped[str] = mapped_column(String(500))
+    username: Mapped[str] = mapped_column(String(MAX_USERNAME_LEN), unique=True)
+    password: Mapped[str] = mapped_column(String(MAX_PASSWORD_LEN))
     is_admin: Mapped[bool] = mapped_column(Boolean)
     email: Mapped[str] = mapped_column(String(100), nullable=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True),
@@ -142,7 +145,7 @@ class Team(db.Model, Updateable):
                 .order_by(Team.name)
                 .options(joinedload(Team.standings))
                 .all())
-    
+
     @staticmethod
     def all() -> list[Team]:
         """Return the list of all teams."""
@@ -229,9 +232,6 @@ class Tip(db.Model):
     @staticmethod
     def create_or_update(user: User, fixture_id: int, value: str) -> Tip:
         """Create or update a tip for a user and a fixture ID. Return the created or updated tip."""
-
-        if value not in ['1', 'X', '2'] or user is None:
-            return None
 
         tip = Tip.by_fixure_id(user, fixture_id)
         if tip is not None:
@@ -324,11 +324,11 @@ class General(db.Model):
             db.session.add(general)
 
     @staticmethod
-    def update(last_update: str, remaining_requests: int) -> None:
+    def update(last_update: datetime, remaining_requests: int) -> None:
         """Update the General instance in the database."""
 
         general = General.get()
-        if general is not None:
+        if general is not None and last_update is not None and remaining_requests is not None:
             general.last_update = last_update
             general.remaining_requests = remaining_requests
 

@@ -3,6 +3,7 @@
 from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import CSRFProtect
 from keys import APP_SECRET_KEY
 
 # Enable debug and test environment
@@ -16,6 +17,7 @@ LEAGUE_ID = 39
 ACTIVE_SEASON = '2025'
 
 db: SQLAlchemy = SQLAlchemy()
+csrf: CSRFProtect = CSRFProtect()
 
 def create_app() -> Flask:
     """Create the app and initialize the database and login manager."""
@@ -25,6 +27,7 @@ def create_app() -> Flask:
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_NAME}"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
+    csrf.init_app(app)
 
     # pylint: disable=import-outside-toplevel
     # pylint: disable=cyclic-import
@@ -50,7 +53,7 @@ def create_app() -> Flask:
     login_manager.init_app(app)
 
     @login_manager.user_loader
-    def load_user(user_id: int) -> User:
+    def load_user(user_id: str) -> User:
         # TODO: move to function in models.py
         return db.session.execute(db.select(User).filter_by(id=user_id)).scalar()
 

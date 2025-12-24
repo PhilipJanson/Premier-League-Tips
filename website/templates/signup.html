@@ -1,23 +1,25 @@
-{% extends "base.html" %}
+{% extends "auth.html" %}
 {% block title %}Skapa Konto{% endblock %}
 {% block content %}
   <div class="container">
+    {% call auth_card("Skapa Konto") %}
     <form method="POST">
-      <h3 align="center">Skapa Konto</h3>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <div class="form-group">
         <label for="username">Användarnamn</label>
-        <input type="text" class="form-control" id="username" name="username" placeholder="Skriv användarnamn"/>
+        <input type="text" class="form-control" id="username" name="username" placeholder="Skriv användarnamn" required="required"/>
       </div>
       <div class="form-group">
         <label for="password">Lösenord</label>
-        <input type="password" class="form-control" id="password" name="password" placeholder="Skriv lösenord"/>
+        <input type="password" class="form-control" id="password" name="password" placeholder="Skriv lösenord" required="required"/>
       </div>
       <div class="form-group">
-        <label for="repeatPassword">Upprepa Lösenord</label>
-        <input type="password" class="form-control" id="repeatPassword" name="repeatPassword" placeholder="Upprepa lösenord"/>
+        <label for="password-repeat">Upprepa Lösenord</label>
+        <input type="password" class="form-control" id="password-repeat" name="password-repeat" placeholder="Upprepa lösenord" required="required"/>
       </div>
       <br/>
       <button type="submit" class="btn btn-outline-primary">Skapa Konto</button>
     </form>
+    {% endcall %}
   </div>
 {% endblock %}

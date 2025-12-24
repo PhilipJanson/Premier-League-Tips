@@ -1,19 +1,47 @@
 """Utils."""
 
 import json
+import re
 import requests
 
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from typing import Any
 from keys import API_KEY
-from .models import Fixture, User, Result, Tip, Season
+from .models import Fixture, User, Result, Tip, Season, MAX_USERNAME_LEN, MAX_PASSWORD_LEN
 from . import LEAGUE_ID
 
-URL = 'https://v3.football.api-sports.io/'
+USERNAME_REGEX = re.compile(r'^[a-zA-Z][a-zA-Z0-9_-]{2,' + str(MAX_USERNAME_LEN - 1) + r'}$')
+API_URL = 'https://v3.football.api-sports.io/'
 # Dump API response data to console for debugging
 DUMP_DATA = False
 
+class ValidationError(Exception):
+    """Raised when user input fails validation."""
+
+    def __init__(self, message: str):
+        super().__init__(message)
+        self.message = message
+
+def check_username_rules(username: str) -> None:
+    """Check username rules. Raises ValidationError on fail."""
+    if username is None or not USERNAME_REGEX.match(username):
+        raise ValidationError("Ogiltigt användarnamn. Endast bokstäver, siffror, '-' och '_' är "
+                              "tillåtet.")
+
+def check_password_rules(password: str) -> None:
+    """Check password rules. Raises ValidationError on fail."""
+
+    if password is None or len(password) < 10:
+        raise ValidationError("Lösenordet måste vara minst 10 tecken.")
+    if len(password) > MAX_PASSWORD_LEN:
+        raise ValidationError(f"Lösenordet får inte vara längre än {MAX_PASSWORD_LEN} tecken.")
+    if not re.search(r"[A-Z]", password):
+        raise ValidationError("Lösenordet måste innehålla minst en stor bokstav.")
+    if not re.search(r"[^\w\s]", password):
+        raise ValidationError("Lösenordet måste innehålla minst ett specialtecken.")
+
+# TODO: Change return types to datetime
 def get_week_dates() -> tuple[str, str]:
     """Return the start and end dates in string format for the current week."""
 
@@ -41,14 +69,14 @@ def api_call(endpoint: str, season: Season) -> tuple[dict, Any]:
     """Fetch data from the API and return a tuple containing the response headers and data as
     json objects."""
 
-    url = f"{URL}/{endpoint}?season={season.season}&league={LEAGUE_ID}"
+    url = f"{API_URL}/{endpoint}?season={season.season}&league={LEAGUE_ID}"
 
     if endpoint == 'fixtures':
         url += '&timezone=Europe/Stockholm'
 
     headers = {
         'x-rapidapi-key': API_KEY,
-        'x-rapidapi-host': URL
+        'x-rapidapi-host': API_URL
     }
 
     response = requests.request('GET', url, headers=headers)

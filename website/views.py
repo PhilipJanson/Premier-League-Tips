@@ -1,9 +1,7 @@
 """Views."""
 
-import json
-
 from datetime import datetime
-from flask import Blueprint, Response, flash, render_template, jsonify, request
+from flask import Blueprint, Response, flash, render_template, jsonify, abort, request
 from flask_login import login_required, current_user
 from .models import User, Tip, Fixture, Team, TeamStanding, Result, General, Season
 from .utils import get_week_dates, calculate_next_fixture
@@ -160,15 +158,39 @@ def endpoint_team_ranker() -> str:
     return render_template('teamranker.html', **kwargs)
 
 @views.route('/register-tips', methods=['POST'])
+@login_required
 def endpoint_register_tips() -> Response:
     """Endpoint for registering a new tip for the current user."""
 
-    tips = json.loads(request.data)
+    if not request.is_json:
+        abort(415)
+    data = request.get_json()
 
-    for tip in tips:
-        fixture_id = int(str(tip['fixtureId']).strip())
-        value = str(tip['value']).strip()
-        Tip.create_or_update(current_user, fixture_id, value)
-    db.session.commit()
+    if not isinstance(data, list):
+        abort(400)
 
-    return jsonify({})
+    try:
+        for tip in data:
+            if not isinstance(tip, dict):
+                abort(400)
+
+            try:
+                fixture_id = int(tip.get('fixtureId'))
+                value = str(tip.get('value')).strip()
+            except (TypeError, ValueError):
+                abort(400)
+
+            if value not in {'1', 'X', '2'}:
+                abort(400)
+
+            fixture = Fixture.by_id(fixture_id)
+            if not fixture:
+                abort(404)
+
+            Tip.create_or_update(current_user, fixture_id, value)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        abort(500)
+
+    return jsonify({}), 200
