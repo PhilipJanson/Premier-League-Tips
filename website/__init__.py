@@ -92,7 +92,7 @@ def create_app() -> Flask:
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         response.headers['Content-Security-Policy'] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://code.jquery.com https://maxcdn.bootstrapcdn.com https://stackpath.bootstrapcdn.com; "
+            "script-src 'self' https://cdnjs.cloudflare.com https://code.jquery.com https://maxcdn.bootstrapcdn.com https://stackpath.bootstrapcdn.com; "
             "style-src 'self' 'unsafe-inline' https://stackpath.bootstrapcdn.com https://cdnjs.cloudflare.com https://maxcdn.bootstrapcdn.com; "
             "img-src 'self' data: https://media.api-sports.io; "
             "font-src 'self' https://cdnjs.cloudflare.com https://stackpath.bootstrapcdn.com; "

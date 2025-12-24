@@ -1,27 +1,29 @@
-const csrfToken = document
-  .querySelector('meta[name="csrf-token"]')
-  .getAttribute('content');
+document.addEventListener('DOMContentLoaded', () => {
+  const csrfToken = document
+    .querySelector('meta[name="csrf-token"]')
+    .getAttribute('content');
+  let tips = [];
 
-class Tip {
-  constructor(fixtureId, value) {
-    this.fixtureId = fixtureId;
-    this.value = value;
-  }
-}
+  // Tip button clicks
+  document.querySelectorAll('[id^="tipbutton-"]').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (button.dataset.enabled !== 'true') return;
 
-let tips = new Array();
+      const [_, fixtureId, value] = button.id.split('-');
+      tips = tips.filter((t) => t.fixtureId !== fixtureId);
+      tips.push({ fixtureId, value });
 
-function tipSelected(button, enabled) {
-  if (enabled !== 'true') return;
+      document.getElementById('nav-bottom-button').classList.add('visible');
+    });
+  });
 
-  const [_, fixtureId, value] = button.id.split('-');
-  tips = tips.filter((t) => t.fixtureId !== fixtureId);
-  tips.push(new Tip(fixtureId, value));
+  // Submit button
+  document
+    .getElementById('tip-button-submit')
+    .addEventListener('click', () => tipButtonPressed(tips, csrfToken));
+});
 
-  document.getElementById('nav-bottom-button').classList.add('visible');
-}
-
-function tipButtonPressed() {
+function tipButtonPressed(tips, csrfToken) {
   fetch('/register-tips', {
     method: 'POST',
     headers: {

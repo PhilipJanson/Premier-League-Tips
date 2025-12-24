@@ -1,15 +1,20 @@
-const csrfToken = document
-  .querySelector('meta[name="csrf-token"]')
-  .getAttribute('content');
+document.addEventListener('DOMContentLoaded', () => {
+  const csrfToken = document
+    .querySelector('meta[name="csrf-token"]')
+    .getAttribute('content');
+  const button = document.getElementById('button-set-favorite-team');
+  const uuid = button.dataset.uuid;
+  button.addEventListener('click', () => setFavoriteTeam(uuid, csrfToken));
+});
 
-function setFavoriteTeam(user_id) {
+function setFavoriteTeam(userId, csrfToken) {
   const teamId = document.getElementById('set-favorite-team-select').value;
   if (!teamId) {
-    console.log('team.id was null');
+    console.log('teamId was null');
     return;
   }
 
-  fetch(`/user/${user_id}/set-favorite-team`, {
+  fetch(`/user/${userId}/set-favorite-team`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -17,6 +22,6 @@ function setFavoriteTeam(user_id) {
     },
     body: JSON.stringify({ teamId: teamId }),
   }).then((_res) => {
-    window.location.href = `/user/${user_id}`;
+    window.location.href = `/user/${userId}`;
   });
 }

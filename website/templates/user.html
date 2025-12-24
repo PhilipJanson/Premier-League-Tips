@@ -26,7 +26,7 @@
                 <option value="{{ team.team_id }}">{{ team.name }}</option>
               {% endfor %}
             </select>
-            <button class="btn btn-success" type="button" onclick="setFavoriteTeam('{{ user.id }}')">
+            <button class="btn btn-success" type="button" id="button-set-favorite-team" data-uuid="{{ user.id }}">
               Välj favoritlag
             </button>
           </div>

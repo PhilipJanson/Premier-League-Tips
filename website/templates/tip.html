@@ -96,15 +96,15 @@
                 {% set enabled = "true" %}
               {% endif %}
               <div class="btn-group btn-group-toggle shadow-sm" data-toggle="buttons">
-                <label class="btn {{ button1 }}" id="tipbutton-{{ fixture.fixture_id }}-1" onclick="tipSelected(this, '{{ enabled }}')">
+                <label class="btn {{ button1 }}" id="tipbutton-{{ fixture.fixture_id }}-1" data-enabled="{{ enabled }}">
                   <input type="radio" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-1">
                   1
                 </label>
-                <label class="btn {{ buttonX }}" id="tipbutton-{{ fixture.fixture_id }}-X" onclick="tipSelected(this, '{{ enabled }}')">
+                <label class="btn {{ buttonX }}" id="tipbutton-{{ fixture.fixture_id }}-X" data-enabled="{{ enabled }}">
                   <input type="radio" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-X">
                   X
                 </label>
-                <label class="btn {{ button2 }}" id="tipbutton-{{ fixture.fixture_id }}-2" onclick="tipSelected(this, '{{ enabled }}')">
+                <label class="btn {{ button2 }}" id="tipbutton-{{ fixture.fixture_id }}-2" data-enabled="{{ enabled }}">
                   <input type="radio" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-2">
                   2
                 </label>
@@ -120,7 +120,7 @@
     </div>
   </div>
   <div id="nav-bottom-button" class="nav-sticky-bottom text-right bg-nav p-2 pr-4">
-    <button class="btn btn-primary" type="button" onclick="tipButtonPressed()">
+    <button class="btn btn-primary" type="button" id="tip-button-submit">
       Tippa
     </button>
   </div>

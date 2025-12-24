@@ -31,16 +31,16 @@
             {% else %}
               <div class="text-muted mb-3">No General records found.</div>
             {% endif %}
-            <button class="btn btn-primary" type="button" onclick="triggerAdminAction('/admin/fetch-api-fixtures')">
+            <button class="btn btn-primary" type="button" id="button-fetch-api-fixtures">
               Fetch API Fixtures
             </button>
-            <button class="btn btn-primary" type="button" onclick="triggerAdminAction('/admin/fetch-api-standings')">
+            <button class="btn btn-primary" type="button" id="button-fetch-api-standings">
               Fetch API Standings
             </button>
-            <button class="btn btn-primary" type="button" onclick="triggerAdminAction('/admin/calculate-results')">
+            <button class="btn btn-primary" type="button" id="button-calculate-results">
               Calculate Results
             </button>
-            <button class="btn btn-warning" type="button" onclick="triggerAdminAction('/admin/toggle-late-modification')">
+            <button class="btn btn-warning" type="button" id="button-toggle-late-modification">
               Toggle Late Modification
             </button>
           </div>
@@ -62,11 +62,11 @@
                 </option>
               {% endfor %}
             </select>
-            <button class="btn btn-success" type="button" onclick="setActiveSeason()">Set Active Season</button>
+            <button class="btn btn-success" type="button" id="button-set-active-season">Set Active Season</button>
           </div>
           <div class="mb-3 d-flex flex-row gap-2 mx-5">
             <input type="text" id="add-season-input" class="form-control" placeholder="Enter season" required="required">
-            <button class="btn btn-warning" type="button" onclick="addSeason()">Add Season</button>
+            <button class="btn btn-warning" type="button" id="button-add-season">Add Season</button>
           </div>
         </div>
         <!-- Users -->
@@ -99,12 +99,12 @@
           <div class="mb-3">Set User as Admin</div>
           <div class="mb-3 d-flex flex-row gap-2 mx-5">
             <input type="text" id="user-uuid-input" class="form-control" placeholder="Enter user UUID" required="required">
-            <button class="btn btn-success" type="button" onclick="setUserAdmin()">Set Admin</button>
+            <button class="btn btn-success" type="button" id="button-set-user-admin">Set Admin</button>
           </div>
         </div>
         <!-- Holiday Theme -->
         <div class="border-bottom pb-3 mb-3">
-          <button class="btn btn-primary" type="button" onclick="triggerAdminAction('/admin/toggle-holiday-theme')">
+          <button class="btn btn-primary" type="button" id="button-toggle-holiday-theme">
             Toggle Holiday Theme
           </button>
         </div>
