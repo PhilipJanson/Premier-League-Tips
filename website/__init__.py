@@ -2,7 +2,8 @@
 
 import os
 
-from flask import Flask, render_template
+from datetime import timedelta
+from flask import Flask, Response, render_template
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -39,7 +40,17 @@ def create_app() -> Flask:
     app.config['SECRET_KEY'] = app_secret_key
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_NAME}"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['DATABASE_TEST'] = False
+    # Enforce secure cookies and sane remember duration
+    app.config.update({
+        'SESSION_COOKIE_SECURE': True,
+        'SESSION_COOKIE_HTTPONLY': True,
+        'SESSION_COOKIE_SAMESITE': 'Lax',
+        'REMEMBER_COOKIE_SECURE': True,
+        'REMEMBER_COOKIE_HTTPONLY': True,
+        'REMEMBER_COOKIE_DURATION': timedelta(days=7),
+        'PERMANENT_SESSION_LIFETIME': timedelta(days=7)
+    })
+
     db.init_app(app)
     csrf.init_app(app)
     migrate.init_app(app, db)
@@ -57,7 +68,7 @@ def create_app() -> Flask:
     app.register_blueprint(user, url_prefix='/user')
 
     with app.app_context():
-        if app.config.get('DATABASE_TEST', False):
+        if os.environ.get('DATABASE_TEST', False):
             db.create_all()
 
     login_manager = LoginManager()
@@ -72,5 +83,22 @@ def create_app() -> Flask:
     @app.errorhandler(404)
     def not_found_error(_error) -> str:
         return render_template('404.html'), 404
+
+    @app.after_request
+    def set_security_headers(response: Response):
+        # Clickjacking, MIME sniffing, referrer, and CSP
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://code.jquery.com https://maxcdn.bootstrapcdn.com https://stackpath.bootstrapcdn.com; "
+            "style-src 'self' 'unsafe-inline' https://stackpath.bootstrapcdn.com https://cdnjs.cloudflare.com https://maxcdn.bootstrapcdn.com; "
+            "img-src 'self' data: https://media.api-sports.io; "
+            "font-src 'self' https://cdnjs.cloudflare.com https://stackpath.bootstrapcdn.com; "
+            "connect-src 'self' https://api-sports.io; "
+            "object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
+        )
+        return response
 
     return app

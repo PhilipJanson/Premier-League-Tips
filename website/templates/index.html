@@ -4,13 +4,11 @@
   <div class="container text-center">
     <img class="img-thumbnail-custom" src="https://media.api-sports.io/football/leagues/39.png" alt="Premier League Logo"/>
     <h1 class="pb-2 text-center">Premier League Tips</h1>
-    <div class="col text-center pl-5 pr-5">
+    <div class="col text-center pl-5 pr-5 mb-5">
       En webapplikation skapad för att visa matcher och resultat från Premier League, samt för att kunna tippa på resultaten. Skapa ett konto för att börja tippa. Hemsidan är skapad av Philip Janson och byggd med Python Flask, Bootstrap och JavaScript. Information om matcher och resultat hämtas från
       <a href="https://api-sports.io/">https://api-sports.io/</a>. Matchresultat och poäng uppdateras en gång om dagen vid
       <nobr>kl. 00.00.</nobr>
     </div>
-    <br/>
-    <br/>
     {% if fixtures is not none %}
       <h3>Veckans matcher</h3>
       <div class="row">

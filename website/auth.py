@@ -19,12 +19,13 @@ def endpoint_login() -> Response:
     if request.method == 'POST':
         username = request.form.get('username').strip()
         password = request.form.get('password').strip()
+        remember_me = request.form.get('remember-me', False)
         user = User.by_username(username)
 
         if not user or not check_password_hash(user.password, password):
             # Display a generic message to not leak security information.
             flash("Ogilitga inloggnings uppgifter.", category='error')
-        elif not login_user(user, remember=True):
+        elif not login_user(user, remember=remember_me):
             flash("Något gick fel vid inloggning.", category='error')
         else:
             flash("Inloggad!", category='success')
@@ -52,6 +53,7 @@ def endpoint_signup() -> Response:
             username = request.form.get('username').strip()
             password = request.form.get('password').strip()
             password_repeat = request.form.get('password-repeat').strip()
+            remember_me = request.form.get('remember-me', False)
             user = User.by_username(username)
 
             if user:
@@ -66,7 +68,7 @@ def endpoint_signup() -> Response:
 
             new_user = User.create(username, generate_password_hash(password))
             db.session.commit()
-            login_user(new_user, remember=True)
+            login_user(new_user, remember=remember_me)
             flash("Konto skapat!", category='success')
             return redirect(url_for('views.endpoint_home'))
         except ValidationError as err:

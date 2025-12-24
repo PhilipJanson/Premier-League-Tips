@@ -10,7 +10,7 @@
 - Migration from old db to new one
 - Standings rewrite. Team status. Promotions. Better layout. Last updated.
 - Admin page layout.
-- Login/signup box size, link to signup/login in the boxes.
+- [DONE]: Login/signup box size, link to signup/login in the boxes.
 - Automatic task
 - [DONE]: Remove json handler
 - Upgrade to Bootstrap 5 and FontAwesome 6

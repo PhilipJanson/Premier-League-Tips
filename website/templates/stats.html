@@ -55,7 +55,6 @@
                   </div>
                 </div>
               </div>
-              <br/>
               <h5 class="text-center p-1">Ej spelade</h5>
               <div class="row overflow-auto border shadow stat stat-2 p-2 small">
                 {% for fixture in fixtures %}
@@ -85,7 +84,7 @@
             </div>
             <div class="carousel-item">
               <h3 class="text-center p-3">Omgångsstatistik</h3>
-              <canvas id="{{ u.id }}-round-stats" class="stat line-graph" data-stats='{{ u.result.round_stats | safe }}'></canvas>
+              <canvas id="{{ u.id }}-round-stats" class="stat line-graph" data-stats='{{ u.result.round_stats | tojson }}'></canvas>
             </div>
           </div>
           <a class="carousel-control-prev" href="#{{ u.id }}-carousel" role="button" data-slide="prev">

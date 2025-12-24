@@ -13,8 +13,15 @@
         <label for="password">Lösenord</label>
         <input type="password" class="form-control" id="password" name="password" placeholder="Skriv lösenord" required="required"/>
       </div>
-      <br/>
+      <div class="form-group form-check mt-2">
+        <input type="checkbox" class="form-check-input" id="remember-me" name="remember-me"/>
+        <label class="form-check-label" for="remember-me">Kom ihåg mig</label>
+      </div>
       <button type="submit" class="btn btn-outline-primary">Logga In</button>
+      <small class="d-block mt-3">
+        Har du inget konto?
+        <a href="{{ url_for('auth.endpoint_signup') }}">Registrera dig här</a>
+      </small>
     </form>
     {% endcall %}
   </div>
