@@ -4,10 +4,10 @@
 {% endblock %}
 {% block content %}
   <h1 class="pb-2 text-center">{{ user.username | capitalize }}</h1>
-  <div class="container text-center border p-4">
+  <div class="container text-center p-4 ">
     <div class="row justify-content-center align-items-center">
-      <div class="col-auto">
-        <div class="border-bottom pb-3 mb-3">
+      <div class="col-auto border bg-white shadow">
+        <div class="border-bottom pb-3 mb-1">
           <div class="mb-4">
             <h2>Favoritlag</h2>
             {% if user.favorite_team %}
@@ -31,11 +31,12 @@
             </button>
           </div>
         </div>
+        <div class="mb-3">
+          <a href="{{ url_for('user.endpoint_change_password', user_id=user.id) }}">Byt lösenord</a>
+        </div>
       </div>
     </div>
-    <div>
-      <a href="{{ url_for('user.endpoint_change_password', user_id=user.id) }}">Byt lösenord</a>
-    </div>
+
   </div>
 {% endblock %}
 {% block script %}

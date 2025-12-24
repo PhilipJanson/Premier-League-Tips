@@ -75,6 +75,13 @@ def create_app() -> Flask:
     login_manager.login_view = 'auth.endpoint_login'
     login_manager.init_app(app)
 
+    @app.context_processor
+    def inject_general():
+        try:
+            return {'general': General.get()}
+        except Exception:
+            return {'general': None}
+
     @login_manager.user_loader
     def load_user(user_id: str) -> User | None:
         # TODO: move to function in models.py
