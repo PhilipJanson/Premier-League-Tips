@@ -5,19 +5,19 @@
     {% call auth_card("Skapa Konto") %}
     <form method="POST">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-      <div class="form-group">
+      <div class="form-group mb-2">
         <label for="username">Användarnamn</label>
         <input type="text" class="form-control" id="username" name="username" placeholder="Skriv användarnamn" required="required"/>
       </div>
-      <div class="form-group">
+      <div class="form-group mb-2">
         <label for="password">Lösenord</label>
         <input type="password" class="form-control" id="password" name="password" placeholder="Skriv lösenord" required="required"/>
       </div>
-      <div class="form-group">
+      <div class="form-group mb-2">
         <label for="password-repeat">Upprepa Lösenord</label>
         <input type="password" class="form-control" id="password-repeat" name="password-repeat" placeholder="Upprepa lösenord" required="required"/>
       </div>
-      <div class="form-group form-check mt-2">
+      <div class="form-group form-check mb-2">
         <input type="checkbox" class="form-check-input" id="remember-me" name="remember-me"/>
         <label class="form-check-label" for="remember-me">Kom ihåg mig</label>
       </div>

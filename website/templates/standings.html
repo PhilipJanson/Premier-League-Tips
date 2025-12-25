@@ -6,9 +6,9 @@
     {% for standing in team_standings %}
       {% if loop.index == 1 %}
         <div class="row m-0 border-bottom text-center align-items-center small pb-2">
-          <div class="col text-left">#</div>
+          <div class="col text-start">#</div>
           <div class="col p-0"></div>
-          <div class="col-3 text-left">Lag</div>
+          <div class="col-3 text-start">Lag</div>
           <div class="col">MP</div>
           <div class="col">W</div>
           <div class="col">D</div>
@@ -16,17 +16,17 @@
           <div class="col">GF</div>
           <div class="col">GA</div>
           <div class="col">GD</div>
-          <div class="col font-weight-bold">Poäng</div>
+          <div class="col fw-bold">Poäng</div>
           <div class="col-2">Form</div>
           <div class="w-100"></div>
         </div>
       {% endif %}
       <div class="row m-0 border-bottom hover text-center align-items-center small">
-        <div class="col text-left">{{ standing.rank }}</div>
+        <div class="col text-start">{{ standing.rank }}</div>
         <div class="col p-0">
           <img class="team-logo-thumbnail float-start p-1" src="{{ standing.team.logo }}" alt="{{ standing.team.name }}'s Logo"/>
         </div>
-        <div class="col-3 text-left">{{ standing.team.name }}</div>
+        <div class="col-3 text-start">{{ standing.team.name }}</div>
         <div class="col">{{ standing.games_played }}</div>
         <div class="col">{{ standing.wins}}</div>
         <div class="col">{{ standing.draws }}</div>

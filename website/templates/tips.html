@@ -35,7 +35,7 @@
           <div class="col-1 text-center">Resultat</div>
           <div class="col-1"></div>
           <div class="col-1 text-center">Tips</div>
-          <div class="col text-right">Datum</div>
+          <div class="col text-end">Datum</div>
         </div>
         {% for fixture in fixtures %}
           {% for tip in display_user.tips %}
@@ -63,7 +63,7 @@
                 </div>
                 <div class="col-1"></div>
                 <div class="col-1 text-center">{{ tip.tip }}</div>
-                <div class="col text-right">{{ fixture.date }}</div>
+                <div class="col text-end">{{ fixture.date }}</div>
               </div>
             {% endif %}
           {% endfor %}

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
   <head>
@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous"/>
     <link rel="stylesheet" href="{{ url_for('static',filename='styles/style.css') }}"/>
     <link rel="icon" type="image/x-icon" href="https://media.api-sports.io/football/leagues/39.png"/>
@@ -17,15 +17,15 @@
 
   <!-- Navlink -->
   {% macro nav_link(route, label) %}
-    <li class="nav-item mr-2">
+    <li class="nav-item me-2">
       <a class="nav-link" id="{{ route }}" href="/{{ route }}">{{ label }}</a>
     </li>
   {% endmacro %}
 
   <!-- Dropdown Navlink -->
   {% macro nav_dropdown(route, label) %}
-    <li class="nav-item dropdown mr-2">
-      <a class="nav-link dropdown-toggle" id="{{ route }}-list" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <li class="nav-item dropdown me-2">
+      <a class="nav-link dropdown-toggle" id="{{ route }}-list" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         {{ label }}
       </a>
       <div class="dropdown-menu" aria-labelledby="{{ route }}-list">
@@ -40,19 +40,19 @@
 
   <!-- Navbar -->
   {% macro navbar() %}
-    <nav class="navbar shadow sticky-top navbar-expand-lg navbar-dark bg-dark">
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
+    <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark shadow">
+      <button class="navbar-toggler ms-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbar">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <div class="collapse navbar-collapse pt-1 pb-1" id="navbar">
+      <div class="collapse navbar-collapse ms-3" id="navbar">
         <!-- Navbar logo, render only on > lg -->
         <div class="d-none d-lg-flex">
-          <img src="https://media.api-sports.io/football/leagues/39.png" class="d-inline-block align-top mr-3 ml-1 navbar-logo" alt="Premier League Logo"/>
+          <img src="https://media.api-sports.io/football/leagues/39.png" class="d-inline-block align-top me-3 ms-1 navbar-logo" alt="Premier League Logo"/>
         </div>
         <div class="d-flex w-100">
           <!-- Left side navbar -->
           <ul class="navbar-nav">
-            <li class="nav-item mr-2">
+            <li class="nav-item me-2">
               <a class="nav-link" id="home" href="/">Hem</a>
             </li>
             {% if user.is_authenticated %}
@@ -68,25 +68,28 @@
             {% endif %}
             <!-- Render only in hamburger menu on < lg -->
             {% if user.is_authenticated %}
-              <li class="nav-item mr-2 d-lg-none">
-                <a class="nav-link" id="logout" href="/logout">Logga Ut</a>
+              <li class="nav-item me-2 d-lg-none">
+                <a class="nav-link" id="hamburger-user" href="/user/{{ user.id }}">{{ user.username | capitalize }}</a>
+              </li>
+              <li class="nav-item me-2 d-lg-none">
+                <a class="nav-link" id="hamburger-logout" href="/logout">Logga Ut</a>
               </li>
             {% else %}
-              <li class="nav-item mr-2 d-lg-none">
-                <a class="nav-link" id="login" href="/login">Logga In</a>
+              <li class="nav-item me-2 d-lg-none">
+                <a class="nav-link" id="hamburger-login" href="/login">Logga In</a>
               </li>
-              <li class="nav-item mr-2 d-lg-none">
-                <a class="nav-link" id="signup" href="/signup">Skapa Konto</a>
+              <li class="nav-item me-2 d-lg-none">
+                <a class="nav-link" id="hamburger-signup" href="/signup">Skapa Konto</a>
               </li>
             {% endif %}
           </ul>
           <!-- Right side navbar, render only on > lg -->
-          <ul class="navbar-nav ml-auto align-items-center d-none d-lg-flex">
+          <ul class="navbar-nav ms-auto align-items-center d-none d-lg-flex">
             {% if user.is_authenticated %}
               {{ nav_link("user/" ~ user.id, user.username | capitalize) }}
               {% if user.favorite_team %}
                 <a id="link-logo" href="/user/{{ user.id }}">
-                  <img class="team-logo-thumbnail rounded-circle bg-white float-start mr-3 p-1" src="{{ user.favorite_team.logo }}" alt="Team logo"/>
+                  <img class="team-logo-thumbnail rounded-circle bg-white float-start me-3 p-1" src="{{ user.favorite_team.logo }}" alt="Team logo"/>
                 </a>
               {% endif %}
               {{ nav_link("logout", "Logga Ut") }}
@@ -106,18 +109,14 @@
     {% if messages %}
       {% for category, message in messages %}
         {% if category == "error" %}
-          <div class="alert alert-fixed alert-danger alter-dismissable fade show" role="alert">
+          <div class="alert alert-fixed alert-danger alert-dismissible fade show" role="alert">
             {{ message }}
-            <button type="button" class="close" data-dismiss="alert">
-              <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
         {% else %}
-          <div class="alert alert-fixed alert-success alter-dismissable fade show" role="alert">
+          <div class="alert alert-fixed alert-success alert-dismissible fade show" role="alert">
             {{ message }}
-            <button type="button" class="close" data-dismiss="alert">
-              <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
         {% endif %}
       {% endfor %}
@@ -131,12 +130,10 @@
     {% endif %}
     {{ navbar() }}
     {{ flashes() }}
-    <div class="my-5 content-wrapper">
+    <div class="content-wrapper pt-4">
       {% block content %}{% endblock %}
     </div>
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     {% if general and general.holiday_theme %}
       <script type="text/javascript" src="{{ url_for('static', filename='js/snow.js') }}"></script>
     {% endif %}

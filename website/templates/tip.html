@@ -6,13 +6,13 @@
     <div class="col col-lg-1 p-1">
       <img class="team-logo-thumbnail float-start" src="{{ team.logo }}" alt="Logo"/>
     </div>
-    <div class="col text-left small">{{ team.name }}</div>
+    <div class="col text-start small">{{ team.name }}</div>
   </div>
 {% endmacro %}
 
 {% block content %}
   <h1 class="pb-2 text-center">Tippa matcher</h1>
-  <div class="container text-responive">
+  <div class="container text-responsive">
     <div class="row">
       {% set prev_round = namespace(round = "0") %}
       {% set index = namespace(value = 1) %}
@@ -27,7 +27,7 @@
             <div class="w-100"></div>
             {% set index.value = index.value + 1 %}
           {% endif %}
-          <div class="p-2 font-weight-bold">
+          <div class="p-2 fw-bold">
             Omgång
             {{ round }}
             av 38
@@ -57,13 +57,13 @@
               {% endif %}
             </div>
             <!-- Tip buttons -->
-            <div class="d-flex col col-lg-3 border-left align-items-center small">
-              <div class="btn-group btn-group-toggle shadow-sm" data-toggle="buttons">
+            <div class="d-flex col col-lg-3 border-start align-items-center small">
+              <div class="btn-group shadow-sm" role="group" aria-label="Tip buttons">
                 {% for value, cls in item
                   .buttons
                   .items() %}
-                  <label class="btn {{ cls }}" id="tipbutton-{{ fixture.fixture_id }}-{{ value }}" data-enabled="{{ 'true' if item.enabled else 'false' }}">
-                    <input type="radio" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-{{ value }}">
+                  <input type="radio" class="btn-check" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-{{ value }}" autocomplete="off" {% if 'active' in cls %} checked="checked" {% endif %}>
+                  <label class="btn {{ cls }}" for="{{ fixture.fixture_id }}-tips-{{ value }}" id="tipbutton-{{ fixture.fixture_id }}-{{ value }}" data-enabled="{{ 'true' if item.enabled else 'false' }}">
                     {{ value }}
                   </label>
                 {% endfor %}
@@ -78,7 +78,7 @@
       {% endfor %}
     </div>
   </div>
-  <div id="nav-bottom-button" class="nav-sticky-bottom text-right bg-nav p-2 pr-4">
+  <div id="nav-bottom-button" class="nav-sticky-bottom text-end bg-nav p-2 pe-4">
     <button class="btn btn-primary" type="button" id="tip-button-submit">
       Tippa
     </button>

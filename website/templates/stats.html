@@ -6,11 +6,11 @@
     {% for u in user_results %}
       {% if u.result %}
         <h2 class="text-center p-1">{{ u.username.capitalize() }}</h2>
-        <div id="{{ u.id }}-carousel" class="carousel slide bg-white shadow border" data-ride="carousel" data-interval="false" data-user-id="{{ u.id }}" data-total="{{ u.result.total }}">
+          <div id="{{ u.id }}-carousel" class="carousel slide bg-white shadow border" data-bs-ride="carousel" data-bs-interval="false" data-user-id="{{ u.id }}" data-total="{{ u.result.total }}">
           <div class="carousel-inner">
             <div class="carousel-item active">
-              <h3 class="text-center p-3">Översikt</h3>
-              <div class="row text-left border shadow stat stat-1 p-2 small">
+                  <h3 class="text-center p-3">Översikt</h3>
+              <div class="row text-start border shadow stat stat-1 p-2 small">
                 <div class="col border-bottom">
                   <div class="row">
                     <div class="col border-right">
@@ -87,18 +87,17 @@
               <canvas id="{{ u.id }}-round-stats" class="stat line-graph" data-stats='{{ u.result.round_stats | tojson }}'></canvas>
             </div>
           </div>
-          <a class="carousel-control-prev" href="#{{ u.id }}-carousel" role="button" data-slide="prev">
+          <a class="carousel-control-prev" href="#{{ u.id }}-carousel" role="button" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true" style="filter: invert(100%);"></span>
-            <span class="sr-only">Previous</span>
+            <span class="visually-hidden">Previous</span>
           </a>
-          <a class="carousel-control-next" href="#{{ u.id }}-carousel" role="button" data-slide="next">
+          <a class="carousel-control-next" href="#{{ u.id }}-carousel" role="button" data-bs-slide="next">
             <span class="carousel-control-next-icon" aria-hidden="true" style="filter: invert(100%);"></span>
-            <span class="sr-only">Next</span>
+            <span class="visually-hidden">Next</span>
           </a>
         </div>
       {% else %}
-        <h2 class="text-center p-1 text-muted">{{ u.username.capitalize() }}
-          — Inga resultat</h2>
+        <h2 class="text-center p-1 text-muted">{{ u.username.capitalize() }} — Inga resultat</h2>
       {% endif %}
     {% endfor %}
   </div>

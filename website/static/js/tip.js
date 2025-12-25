@@ -9,7 +9,23 @@ document.addEventListener('DOMContentLoaded', () => {
     button.addEventListener('click', () => {
       if (button.dataset.enabled !== 'true') return;
 
-      const [_, fixtureId, value] = button.id.split('-');
+      const parts = button.id.split('-');
+      const fixtureId = parts[1];
+      const value = parts.slice(2).join('-');
+
+      const radios = document.getElementsByName(`${fixtureId}-buttons`);
+      for (const r of radios) {
+        r.checked = false;
+      }
+      const input = document.getElementById(`${fixtureId}-tips-${value}`);
+      if (input) input.checked = true;
+
+      for (const r of radios) {
+        const lab = document.querySelector(`label[for="${r.id}"]`);
+        if (lab) lab.classList.remove('active');
+      }
+      button.classList.add('active');
+
       tips = tips.filter((t) => t.fixtureId !== fixtureId);
       tips.push({ fixtureId, value });
 
