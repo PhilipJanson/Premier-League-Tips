@@ -40,11 +40,11 @@ class User(db.Model, UserMixin):
     favorite_team: Mapped['Team'] = relationship("Team", foreign_keys=[favorite_team_id])
 
     @staticmethod
-    def create(username: str, password: str) -> User:
-        """Create a new user with a username and a password and add it to the database. Return the
-        created user."""
+    def create(username: str, hashed_password: str) -> User:
+        """Create a new user with a username and a hashed password and add it to the database.
+        Return the created user."""
 
-        user = User(username=username, password=password, is_admin=username == 'admin')
+        user = User(username=username, password=hashed_password, is_admin=username == 'admin')
         db.session.add(user)
         current_app.logger.debug(f"Created user: {user.username} ({user.id})")
         return user

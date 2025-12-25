@@ -4,7 +4,7 @@
 {% macro team_macro(fixture, team) %}
   <div class="row align-items-center">
     <div class="col col-lg-1 p-1">
-      <img class="team-logo-thumbnail float-start" src="{{ team.logo }}" alt="Team logo"/>
+      <img class="team-logo-thumbnail float-start" src="{{ team.logo }}" alt="Logo"/>
     </div>
     <div class="col text-left small">{{ team.name }}</div>
   </div>
@@ -16,8 +16,9 @@
     <div class="row">
       {% set prev_round = namespace(round = "0") %}
       {% set index = namespace(value = 1) %}
-
-      {% for fixture in fixtures %}
+      {% for item in fixture_data %}
+        {% set fixture = item.fixture %}
+        <!-- Round -->
         {% set round = fixture.round %}
         {% if round != prev_round.round %}
           {% set prev_round.round = round %}
@@ -33,7 +34,7 @@
           </div>
           <div class="w-100"></div>
         {% endif %}
-
+        <!-- Fixture -->
         <div id="{{ fixture.fixture_id }}" class="col shadow" tabindex="0">
           <div class="row border hover p-2">
             <!--Teams-->
@@ -41,7 +42,7 @@
               {{ team_macro(fixture, fixture.home_team) }}
               {{ team_macro(fixture, fixture.away_team) }}
             </div>
-            <!--Time-->
+            <!-- Time -->
             <div class="d-flex col-md-auto border-left text-center align-items-center small">
               {% if fixture.status == "FT" %}
                 Slut
@@ -51,63 +52,21 @@
                 {{ fixture.date_time.strftime('%Y-%m-%d %H:%M') }}
               {% endif %}
               {% if user.is_admin %}
-                <br/>
-                ID:
+                <br/>ID:
                 {{ fixture.fixture_id }}
               {% endif %}
             </div>
-            <!--Buttons-->
+            <!-- Tip buttons -->
             <div class="d-flex col col-lg-3 border-left align-items-center small">
-              {% set current_tip = namespace(value = none) %}
-              {% for tip in user.tips %}
-                {% if tip.fixture_id == fixture.fixture_id %}
-                  {% set current_tip.value = tip.tip %}
-                {% endif %}
-              {% endfor %}
-
-              {% set button1 = "btn-outline-success" %}
-              {% set buttonX = "btn-outline-success" %}
-              {% set button2 = "btn-outline-success" %}
-              {% set enabled = "false" %}
-
-              {% if fixture.status == "FT" and not allow_late_modification %}
-                {% if current_tip.value == "1" %}
-                  {% set button1 = "btn-success" %}
-                {% elif current_tip.value == "X" %}
-                  {% set buttonX = "btn-success" %}
-                {% elif current_tip.value == "2" %}
-                  {% set button2 = "btn-success" %}
-                {% endif %}
-                {% set button1 = button1 + " disabled" %}
-                {% set buttonX = buttonX + " disabled" %}
-                {% set button2 = button2 + " disabled" %}
-              {% elif fixture.status == "PST" and not allow_late_modification %}
-                {% set button1 = "btn-outline-warning disabled" %}
-                {% set buttonX = "btn-outline-warning disabled" %}
-                {% set button2 = "btn-outline-warning disabled" %}
-              {% else %}
-                {% if current_tip.value == "1" %}
-                  {% set button1 = "btn-outline-success active" %}
-                {% elif current_tip.value == "X" %}
-                  {% set buttonX = "btn-outline-success active" %}
-                {% elif current_tip.value == "2" %}
-                  {% set button2 = "btn-outline-success active" %}
-                {% endif %}
-                {% set enabled = "true" %}
-              {% endif %}
               <div class="btn-group btn-group-toggle shadow-sm" data-toggle="buttons">
-                <label class="btn {{ button1 }}" id="tipbutton-{{ fixture.fixture_id }}-1" data-enabled="{{ enabled }}">
-                  <input type="radio" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-1">
-                  1
-                </label>
-                <label class="btn {{ buttonX }}" id="tipbutton-{{ fixture.fixture_id }}-X" data-enabled="{{ enabled }}">
-                  <input type="radio" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-X">
-                  X
-                </label>
-                <label class="btn {{ button2 }}" id="tipbutton-{{ fixture.fixture_id }}-2" data-enabled="{{ enabled }}">
-                  <input type="radio" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-2">
-                  2
-                </label>
+                {% for value, cls in item
+                  .buttons
+                  .items() %}
+                  <label class="btn {{ cls }}" id="tipbutton-{{ fixture.fixture_id }}-{{ value }}" data-enabled="{{ 'true' if item.enabled else 'false' }}">
+                    <input type="radio" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-{{ value }}">
+                    {{ value }}
+                  </label>
+                {% endfor %}
               </div>
             </div>
           </div>

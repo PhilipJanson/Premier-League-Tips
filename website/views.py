@@ -4,7 +4,7 @@ from datetime import datetime
 from flask import Blueprint, Response, flash, render_template, jsonify, abort, request
 from flask_login import login_required, current_user
 from .models import User, Tip, Fixture, Team, TeamStanding, Result, General, Season
-from .utils import get_week_dates, calculate_next_fixture
+from .utils import get_week_dates, get_fixture_tip_data, calculate_next_fixture
 from . import db
 
 views = Blueprint('views', __name__)
@@ -36,11 +36,13 @@ def endpoint_tip(response: str) -> str:
     fixtures = Fixture.by_season(season_data['active_season'].season)
     general = General.get()
     allow_late_modification = general.allow_late_modification if general else False
+    fixture_data = get_fixture_tip_data(current_user, fixtures, allow_late_modification)
+    next_fixture = calculate_next_fixture(fixtures, datetime.now())
     kwargs = {
         'season_data': season_data,
         'user': current_user,
-        'fixtures': fixtures,
-        'next_fixture': calculate_next_fixture(fixtures, datetime.now()),
+        'fixture_data': fixture_data,
+        'next_fixture': next_fixture,
         'allow_late_modification': allow_late_modification
     }
     return render_template('tip.html', **kwargs)

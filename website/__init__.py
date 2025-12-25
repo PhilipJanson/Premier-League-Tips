@@ -76,7 +76,7 @@ def create_app() -> Flask:
     login_manager.init_app(app)
 
     @app.context_processor
-    def inject_general():
+    def inject_general() -> General | None:
         try:
             return {'general': General.get()}
         except Exception:

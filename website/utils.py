@@ -143,3 +143,43 @@ def is_correct(fixture: Fixture, tip: Tip) -> bool:
     return (score > 0 and tip.tip == '1') or \
            (score < 0 and tip.tip == '2') or \
            (score == 0 and tip.tip == 'X')
+
+def get_fixture_tip_data(user: User,
+                         fixtures: list[Fixture],
+                         allow_late_modification: bool) -> list[dict[str, Any]]:
+    """Return a list with fixture data from a given user and list of fixtures. The fixture data will
+       be a dict with the following format:
+       ```
+       {'fixture': <Fixture>, 'buttons': {'tip_value': <html_class>}, 'enabled': <bool>}
+       ```
+    """
+    fixture_data: list[dict[str, Any]] = []
+    # Mapped dict for getting tip value from a fixture_id
+    mapped_tips: dict[int, str] = {tip.fixture_id: tip.tip for tip in user.tips}
+
+    for fixture in fixtures:
+        tip_value = mapped_tips.get(fixture.fixture_id)
+        buttons = {
+            '1': 'btn-outline-success',
+            'X': 'btn-outline-success',
+            '2': 'btn-outline-success'
+        }
+        enabled = False
+
+        if fixture.status == "FT" and not allow_late_modification:
+            if tip_value:
+                buttons[tip_value] = "btn-success"
+            buttons = {k: f"{v} disabled" for k, v in buttons.items()}
+        elif fixture.status == "PST" and not allow_late_modification:
+            buttons = {k: "btn-outline-warning disabled" for k in buttons}
+        else:
+            if tip_value:
+                buttons[tip_value] = "btn-outline-success active"
+            enabled = True
+
+        fixture_data.append({
+            'fixture': fixture,
+            'buttons': buttons,
+            'enabled': enabled
+        })
+    return fixture_data
