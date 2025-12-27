@@ -10,7 +10,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 
 # Database location
-DB_NAME = 'database_test.db'
+DB_NAME = 'database.db'
 # Premier League ID
 LEAGUE_ID = 39
 # The current active season
@@ -68,7 +68,7 @@ def create_app() -> Flask:
     app.register_blueprint(user, url_prefix='/user')
 
     with app.app_context():
-        if os.environ.get('DATABASE_TEST', False):
+        if os.environ.get('CREATE_DB', None) == 'create':
             db.create_all()
 
     login_manager = LoginManager()
