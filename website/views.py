@@ -4,7 +4,13 @@ from datetime import datetime
 from flask import Blueprint, Response, flash, render_template, jsonify, abort, request
 from flask_login import login_required, current_user
 from .models import User, Tip, Fixture, Team, TeamStanding, Result, General, Season
-from .utils import get_week_dates, get_fixture_tip_data, calculate_next_fixture
+from .utils import (
+    get_week_dates,
+    get_fixture_tip_data,
+    calculate_next_fixture,
+    find_result,
+    parse_result
+)
 from . import db
 
 views = Blueprint('views', __name__)
@@ -87,41 +93,23 @@ def endpoint_stats(season: str) -> str:
                           .filter(Season.season == season)
                           .filter(Fixture.status == 'NS')
                           .all())
+    result = find_result(current_user.id, season)
+    parsed_result = parse_result(result)
 
-    results = Result.by_season(season)
-    user_result = {result.user_id: result for result in results}
-
-    user_results = []
-    for user in User.all():
-        if user.username == 'admin':
-            continue
-
-        result = user_result.get(user.id)
-        if result:
-            # Ensure round_stats is a valid JSON string
-            round_stats = result.round_stats if (result.round_stats and
-                                                 result.round_stats.strip()) else "{}"
-            user_results.append({
-                "id": user.id,
-                "username": user.username,
-                "result": {
-                    "total": int(result.total or 0),
-                    "finished": int(result.finished or 0),
-                    "correct": int(result.correct or 0),
-                    "incorrect": int(result.incorrect or 0),
-                    "tip_1": int(result.tip_1 or 0),
-                    "tip_X": int(result.tip_X or 0),
-                    "tip_2": int(result.tip_2 or 0),
-                    "round_stats": round_stats
-                }
-            })
+    parsed_compare_result = None
+    compare_to_user = request.args.get('compareTo', type=str)
+    if compare_to_user:
+        compare_result = find_result(compare_to_user, season)
+        parsed_compare_result = parse_result(compare_result)
 
     kwargs = {
         'season_data': Season.get_season_data(),
         'selected_season': season,
         'user': current_user,
+        'all_users': User.all(),
         'fixtures': fixtures,
-        'user_results': user_results
+        'user_result': parsed_result,
+        'compare_result': parsed_compare_result
     }
     return render_template('stats.html', **kwargs)
 

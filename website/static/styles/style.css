@@ -57,6 +57,34 @@ html {
   height: auto;
 }
 
+/* Stats */
+.stat-card {
+  height: 400px;
+}
+
+.stat-card-body {
+  max-height: 400px;
+  overflow: auto;
+}
+
+.stat-table {
+  margin-right: auto;
+  margin-left: auto;
+  max-width: 600px;
+}
+
+.stat-pie-chart {
+  margin-right: auto;
+  margin-left: auto;
+  max-width: 300px;
+}
+
+.stat-line-graph {
+  margin-right: auto;
+  margin-left: auto;
+  max-width: 600px;
+}
+
 .hover {
   background: #fff;
 }
@@ -116,32 +144,6 @@ html {
   width: 100%;
   z-index: 10;
   top: var(--bs-navbar-height, 56px);
-}
-
-.carousel-item {
-  height: 400px;
-}
-
-.stat {
-  margin-right: auto;
-  margin-left: auto;
-}
-
-.pie-chart {
-  max-width: 300px;
-}
-
-.line-graph {
-  max-width: 600px;
-}
-
-.stat-1 {
-  max-width: 400px;
-}
-
-.stat-2 {
-  max-width: 400px;
-  max-height: 140px;
 }
 
 .test:focus {

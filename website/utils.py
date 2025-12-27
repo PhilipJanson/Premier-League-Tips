@@ -183,3 +183,34 @@ def get_fixture_tip_data(user: User,
             'enabled': enabled
         })
     return fixture_data
+
+def find_result(user_id: str, season: str) -> Result | None:
+    """Return the result object of the given user and season."""
+    user = User.by_id(user_id)
+
+    if not user or not season:
+        return None
+
+    result = next((result for result in user.results if result.season.season == season), None)
+    return result
+
+def parse_result(result: Result | None) -> dict[str, Any]:
+    """Parse a result object to dict."""
+
+    if not result:
+        return {}
+
+    round_stats = result.round_stats if (result.round_stats and result.round_stats.strip()) else {}
+    return {
+        "user": result.user,
+        "result": {
+            "total": int(result.total or 0),
+            "finished": int(result.finished or 0),
+            "correct": int(result.correct or 0),
+            "incorrect": int(result.incorrect or 0),
+            "tip_1": int(result.tip_1 or 0),
+            "tip_X": int(result.tip_X or 0),
+            "tip_2": int(result.tip_2 or 0),
+            "round_stats": round_stats
+        }
+    }
