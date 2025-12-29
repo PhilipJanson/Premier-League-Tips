@@ -42,7 +42,7 @@ flask db upgrade
 
 ## Run app
 ```ps
-flask run
+python -m flask run
 ```
 
 ## Linting
