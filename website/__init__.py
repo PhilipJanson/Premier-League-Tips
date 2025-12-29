@@ -9,7 +9,7 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 
-# Database location
+# Database location, only used in dev environment
 DB_NAME = 'database.db'
 # Premier League ID
 LEAGUE_ID = 39
@@ -21,8 +21,8 @@ db: SQLAlchemy = SQLAlchemy()
 csrf: CSRFProtect = CSRFProtect()
 migrate: Migrate = Migrate()
 
-app_secret_key = os.environ.get('APP_SECRET_KEY')
-api_secret_key = os.environ.get('API_SECRET_KEY')
+app_secret_key = os.environ.get('APP_SECRET_KEY', None)
+api_secret_key = os.environ.get('API_SECRET_KEY', None)
 
 def create_app() -> Flask:
     """Create the app and initialize the database and login manager."""
@@ -31,14 +31,13 @@ def create_app() -> Flask:
     # Note: Import all defined models to allow create_all to function properly.
     from .models import User, Tip, Fixture, Team, TeamStanding, Result, General, Season
 
-    if app_secret_key is None:
+    if not app_secret_key:
         raise RuntimeError("APP_SECRET_KEY is not set in environment")
-    if api_secret_key is None:
+    if not api_secret_key:
         raise RuntimeError("API_SECRET_KEY is not set in environment")
 
     app = Flask(__name__)
     app.config['SECRET_KEY'] = app_secret_key
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_NAME}"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     # Enforce secure cookies and sane remember duration
     app.config.update({
@@ -50,6 +49,14 @@ def create_app() -> Flask:
         'REMEMBER_COOKIE_DURATION': timedelta(days=7),
         'PERMANENT_SESSION_LIFETIME': timedelta(days=7)
     })
+
+    app_database_url = os.environ.get('APP_DATABASE_URL', None)
+    if app_database_url is not None:
+        app.logger.info("Using remote database.")
+        app.config['SQLALCHEMY_DATABASE_URI'] = app_database_url
+    else:
+        app.logger.info("Using local development database.")
+        app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_NAME}"
 
     db.init_app(app)
     csrf.init_app(app)
@@ -67,10 +74,6 @@ def create_app() -> Flask:
     app.register_blueprint(admin, url_prefix='/admin')
     app.register_blueprint(user, url_prefix='/user')
 
-    with app.app_context():
-        if os.environ.get('CREATE_DB', None) == 'create':
-            db.create_all()
-
     login_manager = LoginManager()
     login_manager.login_view = 'auth.endpoint_login'
     login_manager.init_app(app)
@@ -84,8 +87,7 @@ def create_app() -> Flask:
 
     @login_manager.user_loader
     def load_user(user_id: str) -> User | None:
-        # TODO: move to function in models.py
-        return db.session.execute(db.select(User).filter_by(id=user_id)).scalar()
+        return User.by_id(user_id)
 
     @app.errorhandler(404)
     def not_found_error(_error) -> str:

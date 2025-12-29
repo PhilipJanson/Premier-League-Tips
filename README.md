@@ -27,17 +27,19 @@ FLASK_ENV=development
 FLASK_DEBUG=1
 APP_SECRET_KEY=<flask_secret_key>
 API_SECRET_KEY=<api_secret_key>
+APP_DATABASE_URL=<database_url> # Only needed if using remote db.
+APP_URL=<url> # Onlt needed for keep alive functionality.
 ```
 
 ## Database
 Setup and migrate database changes
 ```ps
 # Initialize database
-flask db init
+python -m flask db init
 # Migrate new database model changes
-flask db migrate -m "<message>"
+python -m flask db migrate -m "<message>"
 # Upgrade
-flask db upgrade
+python -m flask db upgrade
 ```
 
 ## Run app
