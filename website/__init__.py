@@ -8,6 +8,7 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
+from sqlalchemy.pool import QueuePool
 
 # Database location, only used in dev environment
 DB_NAME = 'database.db'
@@ -54,6 +55,13 @@ def create_app() -> Flask:
     if app_database_url is not None:
         app.logger.info("Using remote database.")
         app.config['SQLALCHEMY_DATABASE_URI'] = app_database_url
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+            'pool_size': 5,
+            'max_overflow': 10,
+            'pool_timeout': 30,
+            'pool_recycle': 1800,
+            'poolclass': QueuePool,
+        }
     else:
         app.logger.info("Using local development database.")
         app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_NAME}"
