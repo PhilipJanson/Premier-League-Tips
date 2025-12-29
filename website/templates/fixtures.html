@@ -25,7 +25,7 @@
         {% endif %}
         <div id="{{ fixture.fixture_id }}" class="col m-1 shadow align-items-center" tabindex="0">
           <div class="row border hover p-2">
-            {% if user.is_admin %}
+            {% if current_user.is_admin %}
               <div class="col">ID:
                 {{ fixture.fixture_id }}</div>
               <div class="w-100"></div>
@@ -62,15 +62,15 @@
             <div class="w-100"></div>
             <div class="col pt-1">
               <div class="row">
-                {% if fixture.fixture_id not in tip_ids and not user.is_admin%}
+                {% if fixture.fixture_id not in tip_ids and not current_user.is_admin%}
                   <div class="col">Tippa matchen för att se andras tips.</div>
                 {% else %}
                   <div class="col">
                     <div class="row text-start">
-                      {% for u in all_users %}
-                        {% for tip in u.tips %}
+                      {% for user in all_users %}
+                        {% for tip in user.tips %}
                           {% if tip.fixture_id == fixture.fixture_id %}
-                            <div class="col">{{u.username}}:
+                            <div class="col">{{ user.username }}:
                               {{ tip.tip }}</div>
                             <div class="w-100"></div>
                           {% endif %}

@@ -48,9 +48,7 @@ def endpoint_admin() -> str:
 
     kwargs = {
         'season_data': Season.get_season_data(),
-        'user': current_user,
         'all_users': User.all(),
-        'general': General.get()
     }
     return render_template('admin.html', **kwargs)
 

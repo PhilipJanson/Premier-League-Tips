@@ -16,21 +16,21 @@ app: Flask = create_app()
 
 def keep_alive() -> None:
     try:
-        app.logger.info(f"Keep alive triggered on: {APP_URL}")
+        print(f"Keep alive triggered on: {APP_URL}")
         requests.get(APP_URL)
     except Exception as err:
-        app.logger.error(f"Keep alive failed on {APP_URL}:", err)
+        print(f"Keep alive failed on {APP_URL}:", err)
 
 if APP_URL:
     if (IS_PRODUCTION or IS_CHILD_PROCESS):
         scheduler = BackgroundScheduler()
         scheduler.add_job(func=keep_alive, trigger='interval', minutes=10)
         scheduler.start()
-        app.logger.info("Keep alive enabled.")
+        print("Keep alive enabled.")
     elif IS_PRODUCTION:
-        app.logger.info("Keep alive not enabled.")
+        print("Keep alive not enabled.")
 else:
-    app.logger.info("No APP_URL environment variable provided, keep alive is not enabled.")
+    print("No APP_URL environment variable provided, keep alive is not enabled.")
 
 if __name__ == "__main__":
     serve(app, host="0.0.0.0", port=8000)

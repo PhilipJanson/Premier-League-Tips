@@ -8,6 +8,7 @@ from .utils import ValidationError, check_username_rules, check_password_rules
 from . import db
 
 auth = Blueprint('auth', __name__)
+current_user: User
 
 @auth.route('/login', methods=['GET', 'POST'])
 def endpoint_login() -> Response:
@@ -24,7 +25,7 @@ def endpoint_login() -> Response:
 
         if not user or not check_password_hash(user.password, password):
             # Display a generic message to not leak security information.
-            flash("Ogilitga inloggnings uppgifter.", category='error')
+            flash("Fel användarnamn eller lösenord.", category='error')
         elif not login_user(user, remember=remember_me):
             flash("Något gick fel vid inloggning.", category='error')
         else:

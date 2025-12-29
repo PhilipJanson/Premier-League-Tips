@@ -119,12 +119,12 @@ def calculate_user_result(user: User, season: Season) -> Result:
                 result.incorrect += 1
                 tip.correct = -1
 
-            if tip.tip == '1':
-                result.tip_1 += 1
-            elif tip.tip == 'X':
-                result.tip_X += 1
-            elif tip.tip == '2':
-                result.tip_2 += 1
+        if tip.tip == '1':
+            result.tip_1 += 1
+        elif tip.tip == 'X':
+            result.tip_X += 1
+        elif tip.tip == '2':
+            result.tip_2 += 1
 
         # Calculate round stats
         stats = round_stats[fixture.round]

@@ -25,7 +25,6 @@ def endpoint_home() -> str:
     fixtures = Fixture.by_dates(season_data['active_season'].season, start, end)
     kwargs = {
         'season_data': season_data,
-        'user': current_user,
         'fixtures': fixtures
     }
     return render_template('index.html', **kwargs)
@@ -46,7 +45,6 @@ def endpoint_tip(response: str) -> str:
     next_fixture = calculate_next_fixture(fixtures, datetime.now())
     kwargs = {
         'season_data': season_data,
-        'user': current_user,
         'fixture_data': fixture_data,
         'next_fixture': next_fixture,
         'allow_late_modification': allow_late_modification
@@ -62,7 +60,6 @@ def endpoint_fixtures() -> str:
     fixtures = Fixture.by_season(season_data['active_season'].season)
     kwargs = {
         'season_data': season_data,
-        'user': current_user,
         'all_users': User.all(),
         'fixtures': fixtures,
         'next_fixture': calculate_next_fixture(fixtures, datetime.now()),
@@ -78,7 +75,6 @@ def endpoint_standings(season: str) -> str:
     kwargs = {
         'season_data': Season.get_season_data(),
         'selected_season': season,
-        'user': current_user,
         'team_standings': TeamStanding.by_season(season)
     }
     return render_template('standings.html', **kwargs)
@@ -105,7 +101,6 @@ def endpoint_stats(season: str) -> str:
     kwargs = {
         'season_data': Season.get_season_data(),
         'selected_season': season,
-        'user': current_user,
         'all_users': User.all(),
         'fixtures': fixtures,
         'user_result': parsed_result,
@@ -127,7 +122,6 @@ def endpoint_tips() -> str:
     season_data = Season.get_season_data()
     kwargs = {
         'season_data': season_data,
-        'user': current_user,
         'all_users': User.all(),
         'display_user': display_user,
         'fixtures': Fixture.by_season(season_data['active_season'].season)
@@ -142,7 +136,6 @@ def endpoint_team_ranker() -> str:
     season_data = Season.get_season_data()
     kwargs = {
         'season_data': season_data,
-        'user': current_user,
         'teams': Team.by_season(season_data['active_season'].season)
     }
     return render_template('teamranker.html', **kwargs)

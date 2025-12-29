@@ -77,7 +77,7 @@
     </thead>
     <tbody>
       {% for fixture in fixtures %}
-        {% for tip in user.tips %}
+        {% for tip in current_user.tips %}
           {% if fixture.fixture_id == tip.fixture_id %}
             <tr>
               <td>{{ fixture.home_team.name }}

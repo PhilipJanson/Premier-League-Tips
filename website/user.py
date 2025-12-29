@@ -26,7 +26,6 @@ def endpoint_user(user_id: str) -> str:
 
     kwargs = {
         'season_data': Season.get_season_data(),
-        'user': current_user,
         'teams': Team.all()
     }
     return render_template('user.html', **kwargs)
@@ -82,6 +81,5 @@ def endpoint_change_password(user_id: str) -> str:
 
     kwargs = {
         'season_data': Season.get_season_data(),
-        'user': current_user,
     }
     return render_template('change_password.html', **kwargs)

@@ -55,21 +55,21 @@
             <li class="nav-item me-2">
               <a class="nav-link" id="home" href="/">Hem</a>
             </li>
-            {% if user.is_authenticated %}
+            {% if current_user.is_authenticated %}
               {{ nav_link("tip/default", "Tippa") }}
               {{ nav_link("fixtures", "Matcher") }}
               {{ nav_dropdown("standings", "Tabell") }}
               {{ nav_dropdown("stats", "Statistik") }}
               {{ nav_link("tips", "Tips") }}
               {{ nav_link("team-ranker", "Lagrankning") }}
-              {% if user.is_admin %}
+              {% if current_user.is_admin %}
                 {{ nav_link("admin", "Admin") }}
               {% endif %}
             {% endif %}
             <!-- Render only in hamburger menu on < lg -->
-            {% if user.is_authenticated %}
+            {% if current_user.is_authenticated %}
               <li class="nav-item me-2 d-lg-none">
-                <a class="nav-link" id="hamburger-user" href="/user/{{ user.id }}">{{ user.username | capitalize }}</a>
+                <a class="nav-link" id="hamburger-user" href="/user/{{ current_user.id }}">{{ current_user.username | capitalize }}</a>
               </li>
               <li class="nav-item me-2 d-lg-none">
                 <a class="nav-link" id="hamburger-logout" href="/logout">Logga Ut</a>
@@ -85,11 +85,11 @@
           </ul>
           <!-- Right side navbar, render only on > lg -->
           <ul class="navbar-nav ms-auto align-items-center d-none d-lg-flex">
-            {% if user.is_authenticated %}
-              {{ nav_link("user/" ~ user.id, user.username | capitalize) }}
-              {% if user.favorite_team %}
-                <a id="link-logo" href="/user/{{ user.id }}">
-                  <img class="team-logo-thumbnail rounded-circle bg-white float-start me-3 p-1" src="{{ user.favorite_team.logo }}" alt="Team logo"/>
+            {% if current_user.is_authenticated %}
+              {{ nav_link("user/" ~ current_user.id, current_user.username | capitalize) }}
+              {% if current_user.favorite_team %}
+                <a id="link-logo" href="/user/{{ current_user.id }}">
+                  <img class="team-logo-thumbnail rounded-circle bg-white float-start me-3 p-1" src="{{ current_user.favorite_team.logo }}" alt="Team logo"/>
                 </a>
               {% endif %}
               {{ nav_link("logout", "Logga Ut") }}

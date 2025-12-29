@@ -51,7 +51,7 @@
               {% else %}
                 {{ fixture.date_time.strftime('%Y-%m-%d %H:%M') }}
               {% endif %}
-              {% if user.is_admin %}
+              {% if current_user.is_admin %}
                 <br/>ID:
                 {{ fixture.fixture_id }}
               {% endif %}
