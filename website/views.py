@@ -8,8 +8,7 @@ from .utils import (
     get_week_dates,
     get_fixture_tip_data,
     calculate_next_fixture,
-    find_result,
-    parse_result
+    get_result_dict,
 )
 from . import db
 
@@ -89,22 +88,20 @@ def endpoint_stats(season: str) -> str:
                           .filter(Season.season == season)
                           .filter(Fixture.status == 'NS')
                           .all())
-    result = find_result(current_user.id, season)
-    parsed_result = parse_result(result)
+    user_result = get_result_dict(current_user.id, season)
 
-    parsed_compare_result = None
+    compare_result = {}
     compare_to_user = request.args.get('compareTo', type=str)
     if compare_to_user:
-        compare_result = find_result(compare_to_user, season)
-        parsed_compare_result = parse_result(compare_result)
+        compare_result = get_result_dict(compare_to_user, season)
 
     kwargs = {
         'season_data': Season.get_season_data(),
         'selected_season': season,
         'all_users': User.all(),
         'fixtures': fixtures,
-        'user_result': parsed_result,
-        'compare_result': parsed_compare_result
+        'user_result': user_result,
+        'compare_result': compare_result
     }
     return render_template('stats.html', **kwargs)
 

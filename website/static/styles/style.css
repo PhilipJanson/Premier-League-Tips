@@ -85,6 +85,18 @@ html {
   max-width: 600px;
 }
 
+.stat-team-table {
+  margin-right: auto;
+  margin-left: auto;
+  max-width: 600px;
+}
+
+.stat-team-table th:first-child,
+.stat-team-table td:first-child {
+  white-space: nowrap;
+  width: 1%;
+}
+
 .hover {
   background: #fff;
 }

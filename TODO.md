@@ -5,7 +5,7 @@
 - Layout overhaul, animations, better css, remove breaklines, mobile integration, text sizes,
   custom style rewrite.
 - Fix layout in fixtures (scores not aligned, some team icons are scaled wrong)
-- Stats page rewrite. Have side by side boxes instead of carousels
+- [DONE] Stats page rewrite. Have side by side boxes instead of carousels
 - Tips page rewrite. Not used
 - Migration from old db to new one
 - Standings rewrite. Team status. Promotions. Better layout. Last updated.
