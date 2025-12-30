@@ -2,11 +2,15 @@
 {% block title %}Tippa Matcher{% endblock %}
 
 {% macro team_macro(fixture, team) %}
-  <div class="row align-items-center">
-    <div class="col col-lg-1 p-1">
-      <img class="team-logo-thumbnail float-start" src="{{ team.logo }}" alt="Logo"/>
+  <div class="row align-items-center g-1"> <!-- g-1 adds small spacing between columns -->
+    <!-- Logo -->
+    <div class="col-auto pe-1 py-1">
+      <img class="team-logo-thumbnail" src="{{ team.logo }}" alt="Logo"/>
     </div>
-    <div class="col text-start small">{{ team.name }}</div>
+    <!-- Team name -->
+    <div class="col text-start small text-truncate">
+      {{ team.name }}
+    </div>
   </div>
 {% endmacro %}
 
@@ -36,14 +40,14 @@
         {% endif %}
         <!-- Fixture -->
         <div id="{{ fixture.fixture_id }}" class="col shadow" tabindex="0">
-          <div class="row border hover p-2">
+          <div class="row border hover py-2">
             <!--Teams-->
-            <div class="col">
+            <div class="col-12 col-md">
               {{ team_macro(fixture, fixture.home_team) }}
               {{ team_macro(fixture, fixture.away_team) }}
             </div>
             <!-- Time -->
-            <div class="d-flex col-md-auto border-left text-center align-items-center small">
+            <div class="d-flex col-6 col-md-auto text-center align-items-center small">
               {% if fixture.status == "FT" %}
                 Slut
               {% elif fixture.status == "PST" %}
@@ -51,20 +55,16 @@
               {% else %}
                 {{ fixture.date_time.strftime('%Y-%m-%d %H:%M') }}
               {% endif %}
-              {% if current_user.is_admin %}
-                <br/>ID:
-                {{ fixture.fixture_id }}
-              {% endif %}
             </div>
             <!-- Tip buttons -->
-            <div class="d-flex col col-lg-3 border-start align-items-center small">
+            <div class="d-flex col-6 col-md-auto border-start align-items-center small">
               <div class="btn-group shadow-sm" role="group" aria-label="Tip buttons">
                 {% for value, cls in item
                   .buttons
                   .items() %}
                   <input type="radio" class="btn-check" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-{{ value }}" autocomplete="off" {% if 'active' in cls %} checked="checked" {% endif %}>
-                  <label class="btn {{ cls }}" for="{{ fixture.fixture_id }}-tips-{{ value }}" id="tipbutton-{{ fixture.fixture_id }}-{{ value }}" data-enabled="{{ 'true' if item.enabled else 'false' }}">
-                    {{ value }}
+                  <label class="d-flex btn tip-button align-items-center {{ cls }}" for="{{ fixture.fixture_id }}-tips-{{ value }}" id="tipbutton-{{ fixture.fixture_id }}-{{ value }}" data-enabled="{{ 'true' if item.enabled else 'false' }}">
+                    {{ tip_icon(value, "{{ 'text-light' if 'active' in cls else 'text-primary' }}") }}
                   </label>
                 {% endfor %}
               </div>
@@ -78,15 +78,15 @@
       {% endfor %}
     </div>
   </div>
-  <div id="nav-bottom-button" class="nav-sticky-bottom text-end bg-nav p-2 pe-4">
+  <div id="nav-bottom-button" class="tip-bottom-nav text-end p-2 pe-4">
     <button class="btn btn-primary" type="button" id="tip-button-submit">
       Tippa
     </button>
   </div>
   <!--The fixture_id of the closest fixture in time-->
-  <p id="next-fixture-id" hidden="hidden">
+  <div id="next-fixture-id" hidden="hidden">
     {{ next_fixture.fixture_id }}
-  </p>
+  </div>
 {% endblock %}
 {% block script %}
   <script type="text/javascript" src="{{ url_for('static', filename='js/tip.js') }}"></script>

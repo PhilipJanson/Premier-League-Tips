@@ -24,17 +24,12 @@
           <div class="w-100"></div>
         {% endif %}
         <div id="{{ fixture.fixture_id }}" class="col m-1 shadow align-items-center" tabindex="0">
-          <div class="row border hover p-2">
-            {% if current_user.is_admin %}
-              <div class="col">ID:
-                {{ fixture.fixture_id }}</div>
-              <div class="w-100"></div>
-            {% endif %}
+          <div class="row hover p-2">
             <div class="col">
               {% if fixture.status == 'FT' %}
                 Slut
               {% else %}
-                {{ fixture.date_time }}
+                {{ fixture.date_time.strftime('%Y-%m-%d %H:%M') }}
               {% endif %}
             </div>
             <div class="w-100"></div>
@@ -62,7 +57,7 @@
             <div class="w-100"></div>
             <div class="col pt-1">
               <div class="row">
-                {% if fixture.fixture_id not in tip_ids and not current_user.is_admin%}
+                {% if fixture.fixture_id not in tip_ids %}
                   <div class="col">Tippa matchen för att se andras tips.</div>
                 {% else %}
                   <div class="col">
@@ -70,8 +65,14 @@
                       {% for user in all_users %}
                         {% for tip in user.tips %}
                           {% if tip.fixture_id == fixture.fixture_id %}
-                            <div class="col">{{ user.username }}:
-                              {{ tip.tip }}</div>
+                            <div class="row">
+                              <div class="col-1">
+                                {{ user.username | capitalize }}:
+                              </div>
+                              <div class="col">
+                                {{ tip_icon(tip.tip) }}
+                              </div>
+                            </div>
                             <div class="w-100"></div>
                           {% endif %}
                         {% endfor %}
@@ -91,9 +92,9 @@
     </div>
   </div>
   <!--The fixture_id of the closest fixture in time-->
-  <p id="next-fixture-id" hidden="hidden">
+  <div id="next-fixture-id" hidden="hidden">
     {{ next_fixture.fixture_id }}
-  </p>
+  </div>
 {% endblock %}
 {% block script %}
   <script type="text/javascript" src="{{ url_for('static', filename='js/scrollto.js') }}"></script>

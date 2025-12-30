@@ -40,15 +40,15 @@
             {% for char in standing.form %}
               {% if char == "W" %}
                 <span class="text-success">
-                  <i class="fa fa-check-circle"></i>
+                  <i class="fa-solid fa-circle-check"></i>
                 </span>
               {% elif char == "L" %}
                 <span class="text-danger">
-                  <i class="fa fa-times-circle"></i>
+                  <i class="fa-solid fa-circle-xmark"></i>
                 </span>
               {% elif char == "D" %}
                 <span class="text-secondary">
-                  <i class="fa fa-minus-circle"></i>
+                  <i class="fa-solid fa-circle-minus"></i>
                 </span>
               {% endif %}
             {% endfor %}

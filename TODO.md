@@ -5,7 +5,7 @@
 - Layout overhaul, animations, better css, remove breaklines, mobile integration, text sizes,
   custom style rewrite.
 - Fix layout in fixtures (scores not aligned, some team icons are scaled wrong)
-- [DONE] Stats page rewrite. Have side by side boxes instead of carousels
+- [DONE]: Stats page rewrite. Have side by side boxes instead of carousels
 - Tips page rewrite. Not used
 - Migration from old db to new one
 - Standings rewrite. Team status. Promotions. Better layout. Last updated.
@@ -13,7 +13,7 @@
 - [DONE]: Login/signup box size, link to signup/login in the boxes.
 - Automatic task
 - [DONE]: Remove json handler
-- Upgrade to Bootstrap 5 and FontAwesome 6
+- [DONE]: Upgrade to Bootstrap 5 and FontAwesome 7
 - tips/default redirect
 - pythonanywhere admin. Link to repo, setup fast-served css, tasks, venv.
 - Email functionality.

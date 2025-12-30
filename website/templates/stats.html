@@ -60,25 +60,25 @@
       <tr>
         <th>
           <span class="text-primary">
-            <i class="fa fa-bars"></i>
+            <i class="fa-solid fa-bars"></i>
           </span>
           Gjorda tips
         </th>
         <th>
           <span class="text-primary">
-            <i class="fa fa-soccer-ball-o"></i>
+            <i class="fa-solid fa-soccer-ball-o"></i>
           </span>
           Avslutade tips
         </th>
         <th>
           <span class="text-success">
-            <i class="fa fa-check-circle"></i>
+            <i class="fa-solid fa-circle-check"></i>
           </span>
           Antal rätt
         </th>
         <th>
           <span class="text-danger">
-            <i class="fa fa-times-circle"></i>
+            <i class="fa-solid fa-circle-xmark"></i>
           </span>
           Antal fel
         </th>
@@ -107,8 +107,11 @@
             <tr>
               <td>{{ fixture.home_team.name }}
                 -
-                {{ fixture.away_team.name }}</td>
-              <td>{{ tip.tip }}</td>
+                {{ fixture.away_team.name }}
+              </td>
+              <td class="text-center">
+                {{ tip_icon(tip.tip) }}
+              </td>
             </tr>
           {% endif %}
         {% endfor %}
@@ -153,9 +156,9 @@
     <thead>
       <tr>
         <th>Lag</th>
-        <th>1</th>
-        <th>X</th>
-        <th>2</th>
+        <th>{{ tip_icon('1') }}</th>
+        <th>{{ tip_icon('X') }}</th>
+        <th>{{ tip_icon('2') }}</th>
       </tr>
     </thead>
     <tbody>

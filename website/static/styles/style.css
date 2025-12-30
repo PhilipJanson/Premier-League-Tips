@@ -57,6 +57,30 @@ html {
   height: auto;
 }
 
+/* Tip */
+.team-logo-thumbnail {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  display: block;
+  border-radius: 4px;
+}
+
+.tip-button {
+  min-height: 46px;
+}
+
+.tip-bottom-nav {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: 5;
+  translate: 0 60px;
+  transition: all 0.5s ease-in-out;
+  background-color: #343a40;
+}
+
 /* Stats */
 .stat-card {
   height: 400px;
@@ -97,6 +121,7 @@ html {
   width: 1%;
 }
 
+/* Misc */
 .hover {
   background: #fff;
 }
@@ -117,34 +142,12 @@ html {
   background-color: #ff5e5e;
 }
 
-.bg-nav {
-  background-color: #343a40;
-}
-
 .disabled {
   cursor: default;
 }
 
 .team-picker {
   cursor: move;
-}
-
-.team-logo-thumbnail {
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
-  display: block;
-  border-radius: 4px;
-}
-
-.nav-sticky-bottom {
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  z-index: 5;
-  translate: 0 60px;
-  transition: all 0.5s ease-in-out;
 }
 
 .visible {

@@ -94,7 +94,7 @@ def create_app() -> Flask:
             return {'general': None}
 
     @app.context_processor
-    def inject_now():
+    def inject_now() -> datetime:
         return {'now': datetime.now()}
 
     @login_manager.user_loader
@@ -113,11 +113,22 @@ def create_app() -> Flask:
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         response.headers['Content-Security-Policy'] = (
             "default-src 'self'; "
-            "script-src 'self' https://cdnjs.cloudflare.com https://code.jquery.com https://maxcdn.bootstrapcdn.com https://stackpath.bootstrapcdn.com https://cdn.jsdelivr.net; "
-            "style-src 'self' 'unsafe-inline' https://stackpath.bootstrapcdn.com https://cdnjs.cloudflare.com https://maxcdn.bootstrapcdn.com https://cdn.jsdelivr.net; "
+            "script-src 'self' 'unsafe-inline' "
+            "https://cdnjs.cloudflare.com "
+            "https://code.jquery.com "
+            "https://cdn.jsdelivr.net "
+            "https://kit.fontawesome.com; "
+            "style-src 'self' 'unsafe-inline' "
+            "https://cdnjs.cloudflare.com "
+            "https://cdn.jsdelivr.net; "
             "img-src 'self' data: https://media.api-sports.io; "
-            "font-src 'self' https://cdnjs.cloudflare.com https://stackpath.bootstrapcdn.com https://cdn.jsdelivr.net; "
-            "connect-src 'self' https://api-sports.io; "
+            "font-src 'self' "
+            "https://cdnjs.cloudflare.com "
+            "https://cdn.jsdelivr.net "
+            "https://ka-f.fontawesome.com; "
+            "connect-src 'self' "
+            "https://api-sports.io "
+            "https://ka-f.fontawesome.com; "
             "object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
         )
         return response
