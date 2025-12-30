@@ -80,10 +80,14 @@ def api_call(endpoint: str, season: Season) -> tuple[dict, Any]:
     }
 
     response = requests.request('GET', url, headers=headers)
+    response_json = response.json()
     if DUMP_DATA:
-        print(json.dumps(response.json(), indent=4))
-    return dict(response.headers), response.json()
+        print(json.dumps(response_json, indent=4))
 
+    if response_json.get('errors', None):
+        raise Exception("Failed to make API call: {}".format(response_json['errors']))
+
+    return dict(response.headers), response_json
 
 def calculate_user_result(user: User, season: Season) -> Result:
     """Calculate the result for a user in a given season. Return a Result object."""

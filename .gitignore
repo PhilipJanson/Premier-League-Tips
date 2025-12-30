@@ -135,4 +135,4 @@ dmypy.json
 migrations
 db_backup
 responses
-scripts
+temp_scripts

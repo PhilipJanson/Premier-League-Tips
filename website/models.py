@@ -44,7 +44,7 @@ class User(db.Model, UserMixin):
         """Create a new user with a username and a hashed password and add it to the database.
         Return the created user."""
 
-        user = User(username=username, password=hashed_password, is_admin=username == 'admin')
+        user = User(username=username, password=hashed_password, is_admin=False)
         db.session.add(user)
         current_app.logger.debug(f"Created user: {user.username} ({user.id})")
         return user

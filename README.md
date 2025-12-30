@@ -42,6 +42,13 @@ python -m flask db migrate -m "<message>"
 python -m flask db upgrade
 ```
 
+## Set user as admin
+```ps
+python -m scripts.set_user_admin <user-uuid>
+# Add revoke flag to unset them as admin
+python -m scripts.set_user_admin <user-uuid> --revoke
+```
+
 ## Run app
 ```ps
 python -m flask run

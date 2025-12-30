@@ -83,8 +83,8 @@ def endpoint_fetch_api_fixtures() -> Response:
     except Exception as error:
         end_time = time.perf_counter()
         flash(f"Task failed in {(end_time - start_time):.2f} seconds: "
-              f"{type(error).__name__}", category='error')
-        current_app.logger.error(error)
+              f"{type(error).__name__}: {error}", category='error')
+        current_app.logger.exception(error)
 
     return jsonify({}), 200
 
@@ -119,8 +119,8 @@ def endpoint_fetch_api_standings() -> Response:
     except Exception as error:
         end_time = time.perf_counter()
         flash(f"Task failed in {(end_time - start_time):.2f} seconds: "
-              f"{type(error).__name__}", category='error')
-        current_app.logger.error(error)
+              f"{type(error).__name__}: {error}", category='error')
+        current_app.logger.exception(error)
 
     return jsonify({}), 200
 
@@ -139,8 +139,6 @@ def endpoint_calculate_results() -> Response:
     start_time = time.perf_counter()
 
     for user in User.all():
-        if user.username == 'admin':
-            continue
         result = calculate_user_result(user, season)
         Result.create_or_update(result)
 
