@@ -174,3 +174,13 @@ def endpoint_register_tips() -> Response:
         abort(500)
 
     return jsonify({}), 200
+
+@views.route('/privacy-policy')
+def endpoint_privacy_policy() -> str:
+    """Privacy policy."""
+
+    season_data = Season.get_season_data()
+    kwargs = {
+        'season_data': season_data,
+    }
+    return render_template('privacy_policy.html', **kwargs)

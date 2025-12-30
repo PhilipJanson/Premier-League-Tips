@@ -2,7 +2,7 @@
 
 import os
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 from flask import Flask, Response, render_template
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -92,6 +92,10 @@ def create_app() -> Flask:
             return {'general': General.get()}
         except Exception:
             return {'general': None}
+
+    @app.context_processor
+    def inject_now():
+        return {'now': datetime.now()}
 
     @login_manager.user_loader
     def load_user(user_id: str) -> User | None:
