@@ -1,108 +1,264 @@
 {% extends "base.html" %}
-{% block title %}Statistik{% endblock %}
-{% block content %}
-  <h1 class="pb-2 text-center">Statistik</h1>
-  <div class="text-responsive">
-    {% for user in all_users %}
-      {% if not user.is_admin %}
-        {% for result in results %}
-          {% if user.id == result.user_id %}
-            <h2 class="text-center p-1">{{ user.username.capitalize() }}</h2>
-            <div id="{{ user.id }}-carousel" class="carousel slide bg-white shadow border" data-ride="carousel" data-interval="false" data-user-id="{{ user.id }}" data-total="{{ result.total }}">
-              <div class="carousel-inner">
-                <div class="carousel-item active">
-                  <h3 class="text-center p-3">Översikt</h3>
-                  <div class="row text-left border shadow stat stat-1 p-2 small">
-                    <div class="col border-bottom">
-                      <div class="row">
-                        <div class="col border-right">
-                          <span class="text-primary">
-                            <i class="fa fa-bars"></i>
-                          </span>Gjorda tips:
-                        </div>
-                        <div class="col">{{ result.total }}</div>
-                      </div>
-                    </div>
-                    <div class="w-100"></div>
-                    <div class="col border-bottom">
-                      <div class="row">
-                        <div class="col border-right">
-                          <span class="text-primary">
-                            <i class="fa fa-soccer-ball-o"></i>
-                          </span>Avslutade tips:
-                        </div>
-                        <div class="col">{{ result.finished }}</div>
-                      </div>
-                    </div>
-                    <div class="w-100"></div>
-                    <div class="col border-bottom">
-                      <div class="row">
-                        <div class="col border-right">
-                          <span class="text-success">
-                            <i class="fa fa-check-circle"></i>
-                          </span>Antal rätt:
-                        </div>
-                        <div class="col">{{ result.correct }}</div>
-                      </div>
-                    </div>
-                    <div class="w-100"></div>
-                    <div class="col">
-                      <div class="row">
-                        <div class="col border-right">
-                          <span class="text-danger">
-                            <i class="fa fa-times-circle"></i>
-                          </span>Antal fel:
-                        </div>
-                        <div class="col">{{ result.incorrect }}</div>
-                      </div>
-                    </div>
-                  </div>
-                  <br/>
-                  <h5 class="text-center p-1">Ej spelade</h5>
-                  <div class="row overflow-auto border shadow stat stat-2 p-2 small">
-                    {% for fixture in fixtures %}
-                      {% for tip in user.tips %}
-                        {% if fixture.fixture_id == tip.fixture_id %}
-                          <div class="col border-bottom">
-                            <div class="row text-center">
-                              <div class="col-10 border-right">{{ fixture.home_team.name }}
-                                -
-                                {{ fixture.away_team.name }}</div>
-                              <div class="col-1">{{ tip.tip }}</div>
-                            </div>
-                          </div>
-                          <div class="w-100"></div>
-                        {% endif %}
-                      {% endfor %}
-                    {% endfor %}
-                  </div>
-                </div>
-                <div class="carousel-item">
-                  <h3 class="text-center p-3">Antal rätt</h3>
-                  <canvas id="{{ user.id }}-correct-chart" class="stat pie-chart pb-4" data-correct="{{ result.correct }}" data-incorrect="{{ result.incorrect }}" data-finished="{{ result.finished }}"></canvas>
-                </div>
-                <div class="carousel-item">
-                  <h3 class="text-center p-3">Tipfördelning</h3>
-                  <canvas id="{{ user.id }}-tip-chart" class="stat pie-chart pb-4" data-tip-one="{{ result.tip_1 }}" data-tip-x="{{ result.tip_X }}" data-tip-two="{{ result.tip_2 }}"></canvas>
-                </div>
-                <div class="carousel-item">
-                  <h3 class="text-center p-3">Omgångsstatistik</h3>
-                  <canvas id="{{ user.id }}-round-stats" class="stat line-graph" data-stats="{{ result.round_stats }}"></canvas>
-                </div>
-              </div>
-              <a class="carousel-control-prev" href="#{{ user.id }}-carousel" role="button" data-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true" style="filter: invert(100%);"></span>
-                <span class="sr-only">Previous</span>
-              </a>
-              <a class="carousel-control-next" href="#{{ user.id }}-carousel" role="button" data-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true" style="filter: invert(100%);"></span>
-                <span class="sr-only">Next</span>
-              </a>
+
+{% macro stat_card(title, compare_enabled) %}
+  <div class="col-12 col-lg-6">
+    <div class="card shadow-sm stat-card">
+      <div class="card-header fw-bold">
+        <div class="row">
+          <div class="col">
+            {{ title }}
+          </div>
+          {% if compare_enabled %}
+            <div class="col">
+              <select class="form-select form-select-sm compare-user-form">
+                <option value="">Jämför med...</option>
+                {% for user in all_users %}
+                  {% if user.id != current_user.id %}
+                    <option value="{{ user.id }}" {% if compare_result and user.id == compare_result.user.id %} selected="selected" {% endif %}>{{ user.username | capitalize }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
             </div>
           {% endif %}
+        </div>
+      </div>
+      <div class="card-body stat-card-body">
+        {% if user_result and user_result.result %}
+          {{ caller() }}
+        {% else %}
+          Ingen statistik att visa
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro correct_chart(result_dict)%}
+  {% if result_dict.user and result_dict.result %}
+    <canvas id="{{ result_dict.user.id }}-correct-chart" class="pie-chart stat-pie-chart" data-total="{{ result_dict.result.total }}" data-correct="{{ result_dict.result.correct }}" data-incorrect="{{ result_dict.result.incorrect }}" data-finished="{{ result_dict.result.finished }}"></canvas>
+  {% endif %}
+{% endmacro %}
+
+{% macro tip_chart(result_dict)%}
+  {% if result_dict.user and result_dict.result %}
+    <canvas id="{{ result_dict.user.id }}-tip-chart" class="pie-chart stat-pie-chart" data-total="{{ result_dict.result.total }}" data-tip-one="{{ result_dict.result.tip_1 }}" data-tip-x="{{ result_dict.result.tip_X }}" data-tip-two="{{ result_dict.result.tip_2 }}"></canvas>
+  {% endif %}
+{% endmacro %}
+
+{% macro tip_percentage(data, tip) %}
+  <div class="d-flex align-items-center gap-2">
+    <div class="progress flex-grow-1" style="height: 8px;">
+      <div class="progress-bar bg-success" role="progressbar" style="width: {{ data.percentages[tip] | round(0) | int }}%;" aria-valuenow="{{ data.percentages[tip] | round(0) | int }}" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+    <small class="text-muted">{{ data.percentages[tip] | round(0) | int }}%</small>
+  </div>
+{% endmacro %}
+
+{% macro stat_general(user_result) %}
+  <table class="table table-striped table-bordered align-middle stat-table">
+    <thead>
+      <tr>
+        <th>
+          <span class="text-primary">
+            <i class="fa-solid fa-bars"></i>
+          </span>
+          Gjorda tips
+        </th>
+        <th>
+          <span class="text-primary">
+            <i class="fa-solid fa-soccer-ball-o"></i>
+          </span>
+          Avslutade tips
+        </th>
+        <th>
+          <span class="text-success">
+            <i class="fa-solid fa-circle-check"></i>
+          </span>
+          Antal rätt
+        </th>
+        <th>
+          <span class="text-danger">
+            <i class="fa-solid fa-circle-xmark"></i>
+          </span>
+          Antal fel
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ user_result.result.total }}</td>
+        <td>{{ user_result.result.finished }}</td>
+        <td>{{ user_result.result.correct }}</td>
+        <td>{{ user_result.result.incorrect }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <table class="table table-striped table-bordered align-middle stat-table">
+    <thead>
+      <tr>
+        <th>Oavslutade matcher</th>
+        <th>Gissning</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fixture in fixtures %}
+        {% for tip in current_user.tips %}
+          {% if fixture.fixture_id == tip.fixture_id %}
+            <tr>
+              <td>{{ fixture.home_team.name }}
+                -
+                {{ fixture.away_team.name }}
+              </td>
+              <td class="text-center">
+                {{ tip_icon(tip.tip) }}
+              </td>
+            </tr>
+          {% endif %}
         {% endfor %}
+      {% endfor %}
+    </tbody>
+  </table>
+{% endmacro %}
+
+{% macro team_corrects(team_stats_dict) %}
+  <table class="table table-striped table-bordered align-middle stat-team-table">
+    <thead>
+      <tr>
+        <th>Lag</th>
+        <th>Antal rätt</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for team_id, data in team_stats_dict.items() %}
+        <tr>
+          <td class="text-nowrap px-1">
+            <div class="d-flex align-items-center">
+              <img class="team-logo-thumbnail me-2" src="{{ data.team_logo }}" alt="Logo"/>
+              <span>{{ data.team_name }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="progress flex-grow-1" style="height: 8px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ data.correct_percentage | round(0) | int }}%;" aria-valuenow="{{ data.correct_percentage | round(0) | int }}" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <small class="text-muted">{{ data.correct_percentage | round(0) | int }}%</small>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endmacro %}
+
+{% macro team_tips(team_stats_dict) %}
+  <table class="table table-striped table-bordered align-middle stat-team-table">
+    <thead>
+      <tr>
+        <th>Lag</th>
+        <th>{{ tip_icon('1') }}</th>
+        <th>{{ tip_icon('X') }}</th>
+        <th>{{ tip_icon('2') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for team_id, data in team_stats_dict.items() %}
+        <tr>
+          <td class="text-nowrap px-1">
+            <div class="d-flex align-items-center">
+              <img class="team-logo-thumbnail me-2" src="{{ data.team_logo }}" alt="Logo"/>
+              <span>{{ data.team_name }}</span>
+            </div>
+          </td>
+          <td>{{ tip_percentage(data, '1') }}</td>
+          <td>{{ tip_percentage(data, 'X') }}</td>
+          <td>{{ tip_percentage(data, '2') }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endmacro %}
+
+{% block title %}Statistik{% endblock %}
+
+{% block content %}
+  <div class="container-fluid p-3">
+    <div class="row g-3">
+      {% call stat_card("Statistik", true) %}
+      {{ stat_general(user_result) }}
+      {% endcall %}
+      {% call stat_card("Omgångsstatistik", false) %}
+      <canvas id="{{ user_result.user.id }}-round-stats" class="line-graph stat-line-graph" data-user="{{ user_result.user.username | capitalize }}" data-round-stats='{{ user_result.result.round_stats }}' {% if compare_result %} data-compare-round-stats='{{ compare_result.result.round_stats }}' data-compare-user="{{ compare_result.user.username | capitalize }}" {% endif %}></canvas>
+      {% endcall %}
+      {% call stat_card("Antal Rätt", false) %}
+      {% if compare_result.result %}
+        <div class="row">
+          <div class="col text-center fw-bold">
+            {{ user_result.user.username | capitalize }}
+            {{ correct_chart(user_result) }}
+          </div>
+          <div class="col text-center fw-bold">
+            {{ compare_result.user.username | capitalize }}
+            {{ correct_chart(compare_result) }}
+          </div>
+        </div>
+      {% else %}
+        {{ correct_chart(user_result) }}
       {% endif %}
-    {% endfor %}
+      {% endcall %}
+      {% call stat_card("Tippfördelning", false) %}
+      {% if compare_result.result %}
+        <div class="row">
+          <div class="col text-center fw-bold">
+            {{ user_result.user.username | capitalize }}
+            {{ tip_chart(user_result) }}
+          </div>
+          <div class="col text-center fw-bold">
+            {{ compare_result.user.username | capitalize }}
+            {{ tip_chart(compare_result) }}
+          </div>
+        </div>
+      {% else %}
+        {{ tip_chart(user_result) }}
+      {% endif %}
+      {% endcall %}
+      {% call stat_card("Antal Rätt - Lag", false) %}
+      {% if user_result.result.team_stats %}
+        {% if compare_result.result and compare_result.result.team_stats %}
+          <div class="row">
+            <div class="col text-center">
+              <div class="fw-bold">{{ user_result.user.username | capitalize }}</div>
+              {{ team_corrects(user_result.result.team_stats) }}
+            </div>
+            <div class="col text-center">
+              <div class="fw-bold">{{ compare_result.user.username | capitalize }}</div>
+              {{ team_corrects(compare_result.result.team_stats) }}
+            </div>
+          </div>
+        {% else %}
+          {{ team_corrects(user_result.result.team_stats) }}
+        {% endif %}
+      {% endif %}
+      {% endcall %}
+      {% call stat_card("Tipfördelning - Lag", false) %}
+      {% if user_result.result.team_stats %}
+        {% if compare_result.result and compare_result.result.team_stats %}
+          <div class="row">
+            <div class="col text-center">
+              <div class="fw-bold">{{ user_result.user.username | capitalize }}</div>
+              {{ team_tips(user_result.result.team_stats) }}
+            </div>
+            <div class="col text-center">
+              <div class="fw-bold">{{ compare_result.user.username | capitalize }}</div>
+              {{ team_tips(compare_result.result.team_stats) }}
+            </div>
+          </div>
+        {% else %}
+          {{ team_tips(user_result.result.team_stats) }}
+        {% endif %}
+      {% endif %}
+      {% endcall %}
+    </div>
   </div>
 {% endblock %}
 {% block script %}

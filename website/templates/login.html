@@ -1,17 +1,28 @@
-{% extends "base.html" %}
+{% extends "auth.html" %}
 {% block title %}Logga In{% endblock %}
 {% block content %}
-  <form method="POST">
-    <h3 align="center">Logga In</h3>
-    <div class="form-group">
-      <label for="username">Användarnamn</label>
-      <input type="text" class="form-control" id="username" name="username" placeholder="Skriv användarnamn"/>
-    </div>
-    <div class="form-group">
-      <label for="password">Lösenord</label>
-      <input type="password" class="form-control" id="password" name="password" placeholder="Skriv lösenord"/>
-    </div>
-    <br/>
-    <button type="submit" class="btn btn-outline-primary">Logga In</button>
-  </form>
+  <div class="container">
+    {% call auth_card("Logga In") %}
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div class="form-group mb-2">
+        <label for="username">Användarnamn</label>
+        <input type="text" class="form-control" id="username" name="username" placeholder="Skriv användarnamn" required="required"/>
+      </div>
+      <div class="form-group mb-2">
+        <label for="password">Lösenord</label>
+        <input type="password" class="form-control" id="password" name="password" placeholder="Skriv lösenord" required="required"/>
+      </div>
+      <div class="form-group form-check mb-2">
+        <input type="checkbox" class="form-check-input" id="remember-me" name="remember-me"/>
+        <label class="form-check-label" for="remember-me">Kom ihåg mig</label>
+      </div>
+      <button type="submit" class="btn btn-outline-primary">Logga In</button>
+      <small class="d-block mt-3">
+        Har du inget konto?
+        <a href="{{ url_for('auth.endpoint_signup') }}">Registrera dig här</a>
+      </small>
+    </form>
+    {% endcall %}
+  </div>
 {% endblock %}

@@ -1,16 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Premier League Tips{% endblock %}
+{% block title %}Jansonfotboll{% endblock %}
 {% block content %}
-  <div class="text-center">
-    <img class="img-thumbnail-custom" src="https://media.api-sports.io/football/leagues/39.png" alt="Premier League Logo"/>
-    <h1 class="pb-2 text-center">Premier League Tips</h1>
-    <div class="col text-center pl-5 pr-5">
-      En webapplikation skapad för att visa matcher och resultat från Premier League, samt för att kunna tippa på resultaten. Skapa ett konto för att börja tippa. Hemsidan är skapad av Philip Janson och byggd med Python Flask, Bootstrap och JavaScript. Information om matcher och resultat hämtas från
-      <a href="https://api-sports.io/">https://api-sports.io/</a>. Matchresultat och poäng uppdateras en gång om dagen vid
-      <nobr>kl. 00.00.</nobr>
+  <div class="container text-center">
+    {% if general and general.holiday_theme %}
+      <h1 class="pb-2 text-center">God Jul och Grattis Pappa!</h1>
+      <img class="large-logo" src="{{ url_for('static',filename='images/christmas-logo.png') }}" alt="Christmas Logo"/>
+    {% else %}
+      <h1 class="pb-2 text-center">Jansonfotboll</h1>
+      <img class="large-logo" src="https://media.api-sports.io/football/leagues/39.png" alt="Logo"/>
+    {% endif %}
+    <div class="text-center ps-5 pe-5 mb-5">
+      En webapplikation skapad för att visa matcher och resultat från Premier League.
     </div>
-    <br/>
-    <br/>
     {% if fixtures is not none %}
       <h3>Veckans matcher</h3>
       <div class="row">
@@ -22,13 +23,13 @@
               <div class="col pb-2 border-bottom">{{ fixture.date }}</div>
               <div class="w-100"></div>
               <div class="col-md-auto pt-3">
-                <img class="img-thumbnail-custom-2 float-start" src="{{ fixture.home_team.logo }}" alt="Home team's logo"/>
+                <img class="team-logo-thumbnail float-start" src="{{ fixture.home_team.logo }}" alt="Home team's logo"/>
               </div>
               <div class="col pt-3">{{ fixture.home_team.name }}</div>
               <div class="col col-lg-1 pt-3">-</div>
               <div class="col pt-3">{{ fixture.away_team.name }}</div>
               <div class="col-md-auto pt-3">
-                <img class="img-thumbnail-custom-2 float-start" src="{{ fixture.away_team.logo }}" alt="Home team's logo"/>
+                <img class="team-logo-thumbnail float-start" src="{{ fixture.away_team.logo }}" alt="Home team's logo"/>
               </div>
             </div>
           </div>

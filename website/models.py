@@ -12,6 +12,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, joinedload
 from typing import Any
 from . import db, ACTIVE_SEASON
 
+MAX_USERNAME_LEN = 100
+MAX_PASSWORD_LEN = 500
+
 class Updateable:
     """Mixin class to add update_attributes method to models."""
 
@@ -25,8 +28,8 @@ class Updateable:
 
 class User(db.Model, UserMixin):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    username: Mapped[str] = mapped_column(String(100), unique=True)
-    password: Mapped[str] = mapped_column(String(500))
+    username: Mapped[str] = mapped_column(String(MAX_USERNAME_LEN), unique=True)
+    password: Mapped[str] = mapped_column(String(MAX_PASSWORD_LEN))
     is_admin: Mapped[bool] = mapped_column(Boolean)
     email: Mapped[str] = mapped_column(String(100), nullable=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True),
@@ -37,11 +40,11 @@ class User(db.Model, UserMixin):
     favorite_team: Mapped['Team'] = relationship("Team", foreign_keys=[favorite_team_id])
 
     @staticmethod
-    def create(username: str, password: str) -> User:
-        """Create a new user with a username and a password and add it to the database. Return the
-        created user."""
+    def create(username: str, hashed_password: str) -> User:
+        """Create a new user with a username and a hashed password and add it to the database.
+        Return the created user."""
 
-        user = User(username=username, password=password, is_admin=username == 'admin')
+        user = User(username=username, password=hashed_password, is_admin=False)
         db.session.add(user)
         current_app.logger.debug(f"Created user: {user.username} ({user.id})")
         return user
@@ -93,6 +96,7 @@ class Fixture(db.Model, Updateable):
         return (db.session.query(Fixture)
                 .join(Fixture.season)
                 .filter(Season.season == season)
+                .order_by(Fixture.date_time)
                 .all())
 
     @staticmethod
@@ -143,6 +147,12 @@ class Team(db.Model, Updateable):
                 .all())
 
     @staticmethod
+    def all() -> list[Team]:
+        """Return the list of all teams."""
+
+        return db.session.execute(db.select(Team).order_by(Team.name)).scalars().all()
+
+    @staticmethod
     def create_or_update_team_and_standing(team: Team, standings: TeamStanding) -> None:
         """Create or update a team and its standing for a season."""
 
@@ -161,8 +171,6 @@ class Team(db.Model, Updateable):
                                                                   season_id=standings.season_id))
                                                        .scalar_one_or_none())
         if exisiting_standings is not None:
-            print(exisiting_standings.goals_scored)
-            print(standings.goals_scored)
             exisiting_standings.update_attributes(standings.__dict__)
             current_app.logger.debug(f"Updated standings for team: {team.name} "
                                      f"(ID: {team.team_id}, season: {standings.season})")
@@ -224,9 +232,6 @@ class Tip(db.Model):
     @staticmethod
     def create_or_update(user: User, fixture_id: int, value: str) -> Tip:
         """Create or update a tip for a user and a fixture ID. Return the created or updated tip."""
-
-        if value not in ['1', 'X', '2'] or user is None:
-            return None
 
         tip = Tip.by_fixure_id(user, fixture_id)
         if tip is not None:
@@ -291,7 +296,7 @@ class Result(db.Model, Updateable):
                            .one_or_none())
         if existing_result is not None:
             existing_result.update_attributes(result.__dict__)
-            current_app.logger.debug(f"Updated result: {result.id}")
+            current_app.logger.debug(f"Updated result: {existing_result.id}")
         else:
             db.session.add(result)
             current_app.logger.debug(f"Added result: {result.id}")
@@ -303,6 +308,7 @@ class General(db.Model):
     last_update: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     remaining_requests: Mapped[int] = mapped_column(Integer, nullable=True)
     allow_late_modification: Mapped[bool] = mapped_column(Boolean, default=False)
+    holiday_theme: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
 
     @staticmethod
     def get() -> General:
@@ -319,11 +325,11 @@ class General(db.Model):
             db.session.add(general)
 
     @staticmethod
-    def update(last_update: str, remaining_requests: int) -> None:
+    def update(last_update: datetime, remaining_requests: int) -> None:
         """Update the General instance in the database."""
 
         general = General.get()
-        if general is not None:
+        if general is not None and last_update is not None and remaining_requests is not None:
             general.last_update = last_update
             general.remaining_requests = remaining_requests
 

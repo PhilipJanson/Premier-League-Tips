@@ -1,124 +1,178 @@
-var carousels = document.getElementsByClassName('carousel');
+document.addEventListener('DOMContentLoaded', () => {
+  const ROUNDS = 38;
 
-for (const carousel of carousels) {
-  const userId = carousel.dataset.userId;
-  const total = carousel.dataset.total;
+  function range(start, end) {
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  }
 
-  const correctCtx = document.getElementById(`${userId}-correct-chart`);
-  const correct = correctCtx.dataset.correct;
-  const incorrect = correctCtx.dataset.incorrect;
-  const notPlayed = total - correctCtx.dataset.finished;
+  function safePercent(part, total) {
+    if (!total || total === 0) return '0%';
+    return Math.round((100 * part) / total) + '%';
+  }
 
-  var correctPieChart = new Chart(correctCtx.getContext('2d'), {
-    type: 'pie',
-    data: {
-      labels: [
-        'Antal rätt ' + percentage(correct, total),
-        'Antal fel ' + percentage(incorrect, total),
-        'Ej spelade ' + percentage(notPlayed, total),
-      ],
-      datasets: [
-        {
-          data: [correct, incorrect, notPlayed],
-          backgroundColor: ['#46BFBD', '#F7464A', '#FDB45C'],
-          hoverBackgroundColor: ['#5AD3D1', '#FF5A5E', '#FFC870'],
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-    },
-  });
-
-  const tipCtx = document.getElementById(`${userId}-tip-chart`);
-  const tip1 = tipCtx.dataset.tipOne;
-  const tipX = tipCtx.dataset.tipX;
-  const tip2 = tipCtx.dataset.tipTwo;
-
-  var tipPieChart = new Chart(tipCtx.getContext('2d'), {
-    type: 'pie',
-    data: {
-      labels: [
-        '1 ' + percentage(tip1, total),
-        'X ' + percentage(tipX, total),
-        '2 ' + percentage(tip2, total),
-      ],
-      datasets: [
-        {
-          data: [tip1, tipX, tip2],
-          backgroundColor: ['#46BFBD', '#FDB45C', '#F7464A'],
-          hoverBackgroundColor: ['#5AD3D1', '#FFC870', '#FF5A5E'],
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-    },
-  });
-
-  const roundsCtx = document.getElementById(`${userId}-round-stats`);
-  const roundStats = JSON.parse(roundsCtx.dataset.stats);
-  const roundScores = [];
-  const roundGuesses = [];
-  for (let i = 1; i <= 38; i++) {
-    const round = String(i);
-    if (roundStats[round]) {
-      roundScores.push(roundStats[round].correct);
-      roundGuesses.push(roundStats[round].tips);
-    } else {
-      roundScores.push(0);
-      roundGuesses.push(0);
+  function parseRoundStats(canvas, dataId) {
+    try {
+      const raw = canvas.getAttribute(dataId) || '{}';
+      return JSON.parse(raw);
+    } catch (err) {
+      console.warn('Invalid data-round-stats JSON for canvas', canvas.id, err);
+      return {};
     }
   }
 
-  var roundStatChart = new Chart(roundsCtx.getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: range(1, 38),
-      datasets: [
+  document.querySelectorAll('.pie-chart').forEach((canvas) => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const total = Number(canvas.dataset.total) || 0;
+    if (canvas.id.includes('correct-chart')) {
+      const correct = Number(canvas.dataset.correct) || 0;
+      const incorrect = Number(canvas.dataset.incorrect) || 0;
+      const finished = Number(canvas.dataset.finished) || 0;
+      const notPlayed = Math.max(0, total - finished);
+
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: [
+            'Antal rätt ' + safePercent(correct, total),
+            'Antal fel ' + safePercent(incorrect, total),
+            'Ej spelade ' + safePercent(notPlayed, total),
+          ],
+          datasets: [
+            {
+              data: [correct, incorrect, notPlayed],
+              backgroundColor: ['#46BFBD', '#F7464A', '#FDB45C'],
+              hoverBackgroundColor: ['#5AD3D1', '#FF5A5E', '#FFC870'],
+            },
+          ],
+        },
+        options: { responsive: true },
+      });
+    }
+
+    if (canvas.id.includes('tip-chart')) {
+      const tip1 = Number(canvas.dataset.tipOne) || 0;
+      const tipX = Number(canvas.dataset.tipX) || 0;
+      const tip2 = Number(canvas.dataset.tipTwo) || 0;
+
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: [
+            '1 ' + safePercent(tip1, total),
+            'X ' + safePercent(tipX, total),
+            '2 ' + safePercent(tip2, total),
+          ],
+          datasets: [
+            {
+              data: [tip1, tipX, tip2],
+              backgroundColor: ['#46BFBD', '#FDB45C', '#F7464A'],
+              hoverBackgroundColor: ['#5AD3D1', '#FFC870', '#FF5A5E'],
+            },
+          ],
+        },
+        options: { responsive: true },
+      });
+    }
+  });
+
+  document.querySelectorAll('.line-graph').forEach((canvas) => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const roundStats = parseRoundStats(canvas, 'data-round-stats');
+    const compareStats = parseRoundStats(canvas, 'data-compare-round-stats');
+
+    const roundScores = [];
+    const compareRoundScores = [];
+    const roundGuesses = [];
+    for (let i = 1; i <= ROUNDS; i++) {
+      const currRound = String(i);
+      if (roundStats[currRound]) {
+        roundScores.push(Number(roundStats[currRound].correct) || 0);
+        roundGuesses.push(Number(roundStats[currRound].tips) || 0);
+      } else {
+        roundScores.push(0);
+        roundGuesses.push(0);
+      }
+      if (compareStats[currRound]) {
+        compareRoundScores.push(Number(compareStats[currRound].correct) || 0);
+      } else {
+        compareRoundScores.push(0);
+      }
+    }
+
+    let datasets = [];
+    if (compareStats && Object.keys(compareStats).length === 0) {
+      datasets = [
         {
           label: 'Antal rätt',
           data: roundScores,
-          backgroundColor: 'rgba(105, 0, 132, .2)',
-          borderColor: 'rgba(200, 99, 132, .7)',
+          backgroundColor: 'rgba(105,0,132,.2)',
+          borderColor: 'rgba(200,99,132,.7)',
           borderWidth: 2,
           lineTension: 0,
         },
         {
           label: 'Tips Gjorda',
           data: roundGuesses,
-          backgroundColor: 'rgba(2, 0, 132, .2)',
-          borderColor: 'rgba(2, 99, 132, .7)',
+          backgroundColor: 'rgba(2,0,132,.2)',
+          borderColor: 'rgba(2,99,132,.7)',
           borderWidth: 2,
           lineTension: 0,
         },
-      ],
-    },
-    options: {
-      responsive: true,
-      scales: {
-        yAxes: [
-          {
-            display: true,
-            ticks: {
-              beginAtZero: true,
-              steps: 10,
-              stepValue: 1,
-              max: 10,
-            },
-          },
-        ],
+      ];
+    } else {
+      datasets = [
+        {
+          label: 'Antal rätt ' + canvas.dataset.user,
+          data: roundScores,
+          backgroundColor: 'rgba(0, 189, 57, 0.2)',
+          borderColor: 'rgba(0, 92, 29, 0.2)',
+          borderWidth: 2,
+          lineTension: 0,
+        },
+        {
+          label: 'Antal rätt ' + canvas.dataset.compareUser,
+          data: compareRoundScores,
+          backgroundColor: 'rgba(241, 57, 57, 0.2)',
+          borderColor: 'rgba(138, 31, 31, 0.7)',
+          borderWidth: 2,
+          lineTension: 0,
+        },
+      ];
+    }
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: range(1, ROUNDS),
+        datasets: datasets,
       },
-    },
+      options: {
+        responsive: true,
+        scales: {
+          yAxes: [
+            { display: true, ticks: { beginAtZero: true, min: 0, max: 10 } },
+          ],
+        },
+      },
+    });
   });
-}
 
-function range(start, end) {
-  return Array(end - start + 1)
-    .fill()
-    .map((_, idx) => start + idx);
-}
+  document.querySelectorAll('.compare-user-form').forEach((select) => {
+    select.addEventListener('change', async (e) => {
+      const userId = e.target.value;
+      const url = new URL(window.location.href);
 
-function percentage(partialValue, totalValue) {
-  return Math.round((100 * partialValue) / totalValue) + '%';
-}
+      if (userId !== '') {
+        url.searchParams.set('compareTo', userId);
+      } else {
+        url.searchParams.delete('compareTo');
+      }
+
+      window.location.href = url.toString();
+    });
+  });
+});

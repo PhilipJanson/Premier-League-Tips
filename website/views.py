@@ -1,12 +1,15 @@
 """Views."""
 
-import json
-
 from datetime import datetime
-from flask import Blueprint, Response, flash, render_template, jsonify, request
+from flask import Blueprint, Response, flash, render_template, jsonify, abort, request
 from flask_login import login_required, current_user
 from .models import User, Tip, Fixture, Team, TeamStanding, Result, General, Season
-from .utils import get_week_dates, calculate_next_fixture
+from .utils import (
+    get_week_dates,
+    get_fixture_tip_data,
+    calculate_next_fixture,
+    get_result_dict,
+)
 from . import db
 
 views = Blueprint('views', __name__)
@@ -21,7 +24,6 @@ def endpoint_home() -> str:
     fixtures = Fixture.by_dates(season_data['active_season'].season, start, end)
     kwargs = {
         'season_data': season_data,
-        'user': current_user,
         'fixtures': fixtures
     }
     return render_template('index.html', **kwargs)
@@ -38,11 +40,12 @@ def endpoint_tip(response: str) -> str:
     fixtures = Fixture.by_season(season_data['active_season'].season)
     general = General.get()
     allow_late_modification = general.allow_late_modification if general else False
+    fixture_data = get_fixture_tip_data(current_user, fixtures, allow_late_modification)
+    next_fixture = calculate_next_fixture(fixtures, datetime.now())
     kwargs = {
         'season_data': season_data,
-        'user': current_user,
-        'fixtures': fixtures,
-        'next_fixture': calculate_next_fixture(fixtures, datetime.now()),
+        'fixture_data': fixture_data,
+        'next_fixture': next_fixture,
         'allow_late_modification': allow_late_modification
     }
     return render_template('tip.html', **kwargs)
@@ -56,7 +59,6 @@ def endpoint_fixtures() -> str:
     fixtures = Fixture.by_season(season_data['active_season'].season)
     kwargs = {
         'season_data': season_data,
-        'user': current_user,
         'all_users': User.all(),
         'fixtures': fixtures,
         'next_fixture': calculate_next_fixture(fixtures, datetime.now()),
@@ -72,7 +74,6 @@ def endpoint_standings(season: str) -> str:
     kwargs = {
         'season_data': Season.get_season_data(),
         'selected_season': season,
-        'user': current_user,
         'team_standings': TeamStanding.by_season(season)
     }
     return render_template('standings.html', **kwargs)
@@ -87,36 +88,22 @@ def endpoint_stats(season: str) -> str:
                           .filter(Season.season == season)
                           .filter(Fixture.status == 'NS')
                           .all())
+    user_result = get_result_dict(current_user.id, season)
+
+    compare_result = {}
+    compare_to_user = request.args.get('compareTo', type=str)
+    if compare_to_user:
+        compare_result = get_result_dict(compare_to_user, season)
+
     kwargs = {
         'season_data': Season.get_season_data(),
         'selected_season': season,
-        'user': current_user,
         'all_users': User.all(),
         'fixtures': fixtures,
-        'results': Result.by_season(season)
+        'user_result': user_result,
+        'compare_result': compare_result
     }
     return render_template('stats.html', **kwargs)
-
-@views.route('/tips', methods=['GET', 'POST'])
-@login_required
-def endpoint_tips() -> str:
-    """Page to display all tips in a season for a specific user."""
-
-    display_user = current_user
-
-    if request.method == 'POST':
-        username = request.form['form-username']
-        display_user = User.by_username(username)
-
-    season_data = Season.get_season_data()
-    kwargs = {
-        'season_data': season_data,
-        'user': current_user,
-        'all_users': User.all(),
-        'display_user': display_user,
-        'fixtures': Fixture.by_season(season_data['active_season'].season)
-    }
-    return render_template('tips.html', **kwargs)
 
 @views.route('/team-ranker')
 @login_required
@@ -126,21 +113,54 @@ def endpoint_team_ranker() -> str:
     season_data = Season.get_season_data()
     kwargs = {
         'season_data': season_data,
-        'user': current_user,
         'teams': Team.by_season(season_data['active_season'].season)
     }
     return render_template('teamranker.html', **kwargs)
 
 @views.route('/register-tips', methods=['POST'])
+@login_required
 def endpoint_register_tips() -> Response:
     """Endpoint for registering a new tip for the current user."""
 
-    tips = json.loads(request.data)
+    if not request.is_json:
+        abort(415)
+    data = request.get_json()
 
-    for tip in tips:
-        fixture_id = int(str(tip['fixtureId']).strip())
-        value = str(tip['value']).strip()
-        Tip.create_or_update(current_user, fixture_id, value)
-    db.session.commit()
+    if not isinstance(data, list):
+        abort(400)
 
-    return jsonify({})
+    try:
+        for tip in data:
+            if not isinstance(tip, dict):
+                abort(400)
+
+            try:
+                fixture_id = int(tip.get('fixtureId'))
+                value = str(tip.get('value')).strip()
+            except (TypeError, ValueError):
+                abort(400)
+
+            if value not in {'1', 'X', '2'}:
+                abort(400)
+
+            fixture = Fixture.by_id(fixture_id)
+            if not fixture:
+                abort(404)
+
+            Tip.create_or_update(current_user, fixture_id, value)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        abort(500)
+
+    return jsonify({}), 200
+
+@views.route('/privacy-policy')
+def endpoint_privacy_policy() -> str:
+    """Privacy policy."""
+
+    season_data = Season.get_season_data()
+    kwargs = {
+        'season_data': season_data,
+    }
+    return render_template('privacy_policy.html', **kwargs)

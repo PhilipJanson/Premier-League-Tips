@@ -1,14 +1,17 @@
 """Website."""
 
-from flask import Flask, render_template
-from flask_login import LoginManager
-from flask_sqlalchemy import SQLAlchemy
-from keys import APP_SECRET_KEY
+import os
 
-# Enable debug and test environment
-TEST_ENVIRONMENT_ENABLED = True
-# Database location
-DB_NAME = 'database_test.db'
+from datetime import datetime, timedelta
+from flask import Flask, Response, render_template
+from flask_login import LoginManager
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import CSRFProtect
+from sqlalchemy.pool import QueuePool
+
+# Database location, only used in dev environment
+DB_NAME = 'database.db'
 # Premier League ID
 LEAGUE_ID = 39
 # The current active season
@@ -16,44 +19,118 @@ LEAGUE_ID = 39
 ACTIVE_SEASON = '2025'
 
 db: SQLAlchemy = SQLAlchemy()
+csrf: CSRFProtect = CSRFProtect()
+migrate: Migrate = Migrate()
+
+app_secret_key = os.environ.get('APP_SECRET_KEY', None)
+api_secret_key = os.environ.get('API_SECRET_KEY', None)
 
 def create_app() -> Flask:
     """Create the app and initialize the database and login manager."""
 
+    # pylint: disable=unused-import
+    # Note: Import all defined models to allow create_all to function properly.
+    from .models import User, Tip, Fixture, Team, TeamStanding, Result, General, Season
+
+    if not app_secret_key:
+        raise RuntimeError("APP_SECRET_KEY is not set in environment")
+    if not api_secret_key:
+        raise RuntimeError("API_SECRET_KEY is not set in environment")
+
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = APP_SECRET_KEY
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_NAME}"
+    app.config['SECRET_KEY'] = app_secret_key
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    # Enforce secure cookies and sane remember duration
+    app.config.update({
+        'SESSION_COOKIE_SECURE': True,
+        'SESSION_COOKIE_HTTPONLY': True,
+        'SESSION_COOKIE_SAMESITE': 'Lax',
+        'REMEMBER_COOKIE_SECURE': True,
+        'REMEMBER_COOKIE_HTTPONLY': True,
+        'REMEMBER_COOKIE_DURATION': timedelta(days=7),
+        'PERMANENT_SESSION_LIFETIME': timedelta(days=7)
+    })
+
+    app_database_url = os.environ.get('APP_DATABASE_URL', None)
+    if app_database_url is not None:
+        app.logger.info("Using remote database.")
+        app.config['SQLALCHEMY_DATABASE_URI'] = app_database_url
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+            'pool_size': 5,
+            'max_overflow': 10,
+            'pool_timeout': 30,
+            'pool_recycle': 1800,
+            'poolclass': QueuePool,
+        }
+    else:
+        app.logger.info("Using local development database.")
+        app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_NAME}"
+
     db.init_app(app)
+    csrf.init_app(app)
+    migrate.init_app(app, db)
 
     # pylint: disable=import-outside-toplevel
     # pylint: disable=cyclic-import
     from .views import views
     from .auth import auth
     from .admin import admin
+    from .user import user
 
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
     app.register_blueprint(admin, url_prefix='/admin')
-
-    # pylint: disable=unused-import
-    # Note: Import all defined models to allow create_all to function properly.
-    from .models import User, Tip, Fixture, Team, TeamStanding, Result, General
-
-    with app.app_context():
-        db.create_all()
+    app.register_blueprint(user, url_prefix='/user')
 
     login_manager = LoginManager()
     login_manager.login_view = 'auth.endpoint_login'
     login_manager.init_app(app)
 
+    @app.context_processor
+    def inject_general() -> General | None:
+        try:
+            return {'general': General.get()}
+        except Exception:
+            return {'general': None}
+
+    @app.context_processor
+    def inject_now() -> datetime:
+        return {'now': datetime.now()}
+
     @login_manager.user_loader
-    def load_user(user_id: int) -> User:
-        # TODO: move to function in models.py
-        return db.session.execute(db.select(User).filter_by(id=user_id)).scalar()
+    def load_user(user_id: str) -> User | None:
+        return User.by_id(user_id)
 
     @app.errorhandler(404)
     def not_found_error(_error) -> str:
         return render_template('404.html'), 404
+
+    @app.after_request
+    def set_security_headers(response: Response):
+        # Clickjacking, MIME sniffing, referrer, and CSP
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' "
+            "https://cdnjs.cloudflare.com "
+            "https://code.jquery.com "
+            "https://cdn.jsdelivr.net "
+            "https://kit.fontawesome.com; "
+            "style-src 'self' 'unsafe-inline' "
+            "https://cdnjs.cloudflare.com "
+            "https://cdn.jsdelivr.net; "
+            "img-src 'self' data: https://media.api-sports.io; "
+            "font-src 'self' "
+            "https://cdnjs.cloudflare.com "
+            "https://cdn.jsdelivr.net "
+            "https://ka-f.fontawesome.com; "
+            "connect-src 'self' "
+            "https://api-sports.io "
+            "https://ka-f.fontawesome.com; "
+            "object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
+        )
+        return response
 
     return app

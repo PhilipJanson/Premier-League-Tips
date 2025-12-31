@@ -1,1 +1,1 @@
-"""Premier-League-Tips."""
+"""Jansonfotboll."""
