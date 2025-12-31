@@ -6,7 +6,6 @@
   custom style rewrite.
 - Fix layout in fixtures (scores not aligned, some team icons are scaled wrong)
 - [DONE]: Stats page rewrite. Have side by side boxes instead of carousels
-- Tips page rewrite. Not used
 - Migration from old db to new one
 - Standings rewrite. Team status. Promotions. Better layout. Last updated.
 - Admin page layout.

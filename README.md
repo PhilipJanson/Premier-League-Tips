@@ -1,7 +1,6 @@
-# Premier-League-Tips
+# Jansonfotboll
 
-Website written in Python powered by Flask and api-sports.io to display Premier League fixtures and
-to place simple bets on them.
+Website written in Python, powered by Flask.
 
 ## Installation
 
@@ -62,3 +61,7 @@ pylint ${PWD}
 
 ## Links
 - [API Football](https://dashboard.api-football.com/)
+- [Bootstrap](https://getbootstrap.com/docs/5.3)
+- [Fontawesome](https://fontawesome.com)
+- [Supabase](https://supabase.com/dashboard)
+- [Render](https://dashboard.render.com/web)
