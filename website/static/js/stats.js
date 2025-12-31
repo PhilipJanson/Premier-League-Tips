@@ -1,6 +1,6 @@
-const ROUNDS = 38;
-
 document.addEventListener('DOMContentLoaded', () => {
+  const ROUNDS = 38;
+
   function range(start, end) {
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }

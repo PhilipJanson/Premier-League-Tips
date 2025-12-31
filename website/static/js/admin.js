@@ -1,4 +1,60 @@
 document.addEventListener('DOMContentLoaded', () => {
+  function triggerAdminAction(endpoint, csrfToken) {
+    fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken,
+      },
+    }).then((_res) => {
+      window.location.href = '/admin';
+    });
+  }
+
+  function setActiveSeason(csrfToken) {
+    const season = document.getElementById('set-active-season-select').value;
+    if (!season) return;
+    fetch('/admin/set-active-season', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+      },
+      body: JSON.stringify({ season: season }),
+    }).then((_res) => {
+      window.location.href = '/admin';
+    });
+  }
+
+  function addSeason(csrfToken) {
+    const season = document.getElementById('add-season-input').value;
+    if (!season) return;
+    fetch('/admin/add-season', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+      },
+      body: JSON.stringify({ season: season }),
+    }).then((_res) => {
+      window.location.href = '/admin';
+    });
+  }
+
+  function setUserAdmin(csrfToken) {
+    const uuid = document.getElementById('user-uuid-input').value;
+    if (!uuid) return;
+    fetch('/admin/set-user-admin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+      },
+      body: JSON.stringify({ uuid: uuid }),
+    }).then((_res) => {
+      window.location.href = '/admin';
+    });
+  }
+
   const csrfToken = document
     .querySelector('meta[name="csrf-token"]')
     .getAttribute('content');
@@ -39,59 +95,3 @@ document.addEventListener('DOMContentLoaded', () => {
       triggerAdminAction('/admin/toggle-holiday-theme', csrfToken)
     );
 });
-
-function triggerAdminAction(endpoint, csrfToken) {
-  fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': csrfToken,
-    },
-  }).then((_res) => {
-    window.location.href = '/admin';
-  });
-}
-
-function setActiveSeason(csrfToken) {
-  const season = document.getElementById('set-active-season-select').value;
-  if (!season) return;
-  fetch('/admin/set-active-season', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrfToken,
-    },
-    body: JSON.stringify({ season: season }),
-  }).then((_res) => {
-    window.location.href = '/admin';
-  });
-}
-
-function addSeason(csrfToken) {
-  const season = document.getElementById('add-season-input').value;
-  if (!season) return;
-  fetch('/admin/add-season', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrfToken,
-    },
-    body: JSON.stringify({ season: season }),
-  }).then((_res) => {
-    window.location.href = '/admin';
-  });
-}
-
-function setUserAdmin(csrfToken) {
-  const uuid = document.getElementById('user-uuid-input').value;
-  if (!uuid) return;
-  fetch('/admin/set-user-admin', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrfToken,
-    },
-    body: JSON.stringify({ uuid: uuid }),
-  }).then((_res) => {
-    window.location.href = '/admin';
-  });
-}

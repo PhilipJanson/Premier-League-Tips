@@ -1,4 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
+  function tipButtonPressed(tips, csrfToken) {
+    fetch('/register-tips', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+      },
+      body: JSON.stringify(tips),
+    }).then((_res) => {
+      tips = [];
+      window.location.href = '/tip/register';
+    });
+  }
+
   const csrfToken = document
     .querySelector('meta[name="csrf-token"]')
     .getAttribute('content');
@@ -38,17 +52,3 @@ document.addEventListener('DOMContentLoaded', () => {
     .getElementById('tip-button-submit')
     .addEventListener('click', () => tipButtonPressed(tips, csrfToken));
 });
-
-function tipButtonPressed(tips, csrfToken) {
-  fetch('/register-tips', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrfToken,
-    },
-    body: JSON.stringify(tips),
-  }).then((_res) => {
-    tips = [];
-    window.location.href = '/tip/register';
-  });
-}
