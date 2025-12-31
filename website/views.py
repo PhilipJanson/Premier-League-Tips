@@ -105,26 +105,6 @@ def endpoint_stats(season: str) -> str:
     }
     return render_template('stats.html', **kwargs)
 
-@views.route('/tips', methods=['GET', 'POST'])
-@login_required
-def endpoint_tips() -> str:
-    """Page to display all tips in a season for a specific user."""
-
-    display_user = current_user
-
-    if request.method == 'POST':
-        username = request.form['form-username']
-        display_user = User.by_username(username)
-
-    season_data = Season.get_season_data()
-    kwargs = {
-        'season_data': season_data,
-        'all_users': User.all(),
-        'display_user': display_user,
-        'fixtures': Fixture.by_season(season_data['active_season'].season)
-    }
-    return render_template('tips.html', **kwargs)
-
 @views.route('/team-ranker')
 @login_required
 def endpoint_team_ranker() -> str:

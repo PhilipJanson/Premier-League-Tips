@@ -28,7 +28,7 @@ FLASK_DEBUG=1
 APP_SECRET_KEY=<flask_secret_key>
 API_SECRET_KEY=<api_secret_key>
 APP_DATABASE_URL=<database_url> # Only needed if using remote db.
-APP_URL=<url> # Onlt needed for keep alive functionality.
+APP_URL=<url> # Only needed for keep alive functionality.
 ```
 
 ## Database

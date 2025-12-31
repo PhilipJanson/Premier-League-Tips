@@ -16,7 +16,6 @@ app: Flask = create_app()
 
 def keep_alive() -> None:
     try:
-        print(f"Keep alive triggered on: {APP_URL}")
         requests.get(APP_URL)
     except Exception as err:
         print(f"Keep alive failed on {APP_URL}:", err)
