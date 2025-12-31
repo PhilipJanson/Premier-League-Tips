@@ -55,6 +55,11 @@ def endpoint_signup() -> Response:
             password = request.form.get('password').strip()
             password_repeat = request.form.get('password-repeat').strip()
             remember_me = request.form.get('remember-me', False)
+            privacy_policy_accept = request.form.get('accept-privacy')
+
+            if not privacy_policy_accept:
+                raise ValidationError("Du måste godkänna integritetspolicyn.")
+
             user = User.by_username(username)
 
             if user:

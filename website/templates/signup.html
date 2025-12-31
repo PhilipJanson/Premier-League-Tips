@@ -21,6 +21,15 @@
         <input type="checkbox" class="form-check-input" id="remember-me" name="remember-me"/>
         <label class="form-check-label" for="remember-me">Kom ihåg mig</label>
       </div>
+      <div class="form-group form-check mb-2">
+        <input type="checkbox" class="form-check-input" id="accept-privacy" name="accept-privacy" required="required"/>
+        <label class="form-check-label" for="accept-privacy">
+          Jag godkänner att mina uppgifter sparas enligt
+          <a href="{{ url_for('views.endpoint_privacy_policy') }}" target="_blank">
+            integritetspolicyn
+          </a>
+        </label>
+      </div>
       <button type="submit" class="btn btn-outline-primary">Skapa Konto</button>
       <small class="d-block mt-3">
         Har du redan ett konto?
