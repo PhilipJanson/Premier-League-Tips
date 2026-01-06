@@ -1,4 +1,6 @@
-/* Scrollbar */
+/*
+ * ======= Scrollbar =======
+ */
 html {
   scrollbar-gutter: stable;
 }
@@ -11,7 +13,9 @@ html {
   width: 8px;
 }
 
-/* Navbar */
+/*
+ * ======= Navbar =======
+ */
 .navbar-logo {
   width: 30px;
   height: 30px;
@@ -41,7 +45,16 @@ html {
   }
 }
 
-/* Auth */
+.navbar-flash {
+  position: fixed;
+  width: 100%;
+  z-index: 10;
+  top: var(--bs-navbar-height, 56px);
+}
+
+/*
+ * ======= Auth =======
+ */
 .auth-card {
   min-width: 15rem;
   max-width: 30rem;
@@ -49,7 +62,9 @@ html {
   margin-right: auto;
 }
 
-/* Index */
+/*
+ * ======= Index =======
+ */
 .large-logo {
   padding: 0.25rem;
   border-radius: 0.25rem;
@@ -57,13 +72,19 @@ html {
   height: auto;
 }
 
-/* Tip */
+/*
+ * ======= Tip =======
+ */
 .team-logo-thumbnail {
   width: 30px;
   height: 30px;
   object-fit: contain;
   display: block;
   border-radius: 4px;
+}
+
+.tip-fixture {
+  min-width: 150px;
 }
 
 .tip-button {
@@ -81,7 +102,13 @@ html {
   background-color: #343a40;
 }
 
-/* Stats */
+.tip-bottom-nav-button {
+  translate: 0 0;
+}
+
+/*
+ * ======= Stats =======
+ */
 .stat-card {
   height: 400px;
 }
@@ -121,48 +148,32 @@ html {
   width: 1%;
 }
 
-/* Misc */
-.hover {
-  background: #fff;
+/*
+ * ======= Team Ranker =======
+ */
+.team-picker {
+  cursor: move;
 }
 
-.bg-white {
+/*
+ * ======= Misc =======
+ */
+@media (min-width: 576px) {
+  .text-sm-nowrap {
+    white-space: nowrap !important;
+  }
+
+  .border-sm-start {
+    border-left: 1px solid var(--bs-border-color);
+  }
+}
+
+.hover {
   background: #fff;
 }
 
 .hover:hover {
   background: #f5f5f5;
-}
-
-.bg-success-light {
-  background-color: #afffa8;
-}
-
-.bg-danger-light {
-  background-color: #ff5e5e;
-}
-
-.disabled {
-  cursor: default;
-}
-
-.team-picker {
-  cursor: move;
-}
-
-.visible {
-  translate: 0 0;
-}
-
-.alert-fixed {
-  position: fixed;
-  width: 100%;
-  z-index: 10;
-  top: var(--bs-navbar-height, 56px);
-}
-
-.test:focus {
-  z-index: 100;
 }
 
 @media (min-width: 0px) {
@@ -195,7 +206,14 @@ html {
   }
 }
 
-/* Holiday theme snow effects */
+/*
+ * ======= Holiday Effect =======
+ */
+.holiday-wrapper {
+  position: relative;
+  z-index: 2;
+}
+
 #holiday-snow {
   position: fixed;
   top: 0;
@@ -205,11 +223,6 @@ html {
   pointer-events: none;
   z-index: -1;
   overflow: hidden;
-}
-
-.content-wrapper {
-  position: relative;
-  z-index: 2;
 }
 
 .snowflake {

@@ -43,7 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
       tips = tips.filter((t) => t.fixtureId !== fixtureId);
       tips.push({ fixtureId, value });
 
-      document.getElementById('nav-bottom-button').classList.add('visible');
+      document
+        .getElementById('nav-bottom-button')
+        .classList.add('tip-bottom-nav-button');
     });
   });
 

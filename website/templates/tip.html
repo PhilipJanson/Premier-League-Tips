@@ -2,28 +2,60 @@
 {% block title %}Tippa Matcher{% endblock %}
 
 {% macro team_macro(fixture, team) %}
-  <div class="row align-items-center g-1"> <!-- g-1 adds small spacing between columns -->
-    <!-- Logo -->
+  <div class="row align-items-center g-1">
     <div class="col-auto pe-1 py-1">
       <img class="team-logo-thumbnail" src="{{ team.logo }}" alt="Logo"/>
     </div>
-    <!-- Team name -->
-    <div class="col text-start small text-truncate">
+    <div class="col-12 col-sm text-start text-truncate small">
       {{ team.short_name }}
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro fixture_macro(fixture, buttons, enabled) %}
+  <div id="{{ fixture.fixture_id }}" class="col-12 col-lg-6 my-2 my-sm-0 shadow tip-fixture" tabindex="0">
+    <div class="row border hover py-2">
+      <!--Teams-->
+      <div class="col-6 col-sm-5">
+        {{ team_macro(fixture, fixture.home_team) }}
+        {{ team_macro(fixture, fixture.away_team) }}
+      </div>
+      <!-- Time -->
+      <div class="d-flex col-6 col-sm-3 border-start justify-content-center align-items-center small text-sm-nowrap text-center">
+        {% if fixture.status.value == 'FINISHED' or fixture.status.value == 'AWARDED' %}
+          Slut
+        {% elif fixture.status.value == 'POSTPONED' %}
+          <div class="text-warning">Uppskjuten</div>
+        {% elif fixture.status.value == 'CANCELLED' %}
+          <div class="text-danger">Inställd</div>
+        {% else %}
+          {{ fixture.date_time.strftime('%Y-%m-%d %H:%M') }}
+        {% endif %}
+      </div>
+      <!-- Tip buttons -->
+      <div class="d-flex col-12 col-sm-4 border-sm-start mt-2 mt-sm-0 justify-content-center align-items-center small">
+        <div class="btn-group" role="group" aria-label="Tip buttons">
+          {% for value, cls in buttons.items() %}
+            <input type="radio" class="btn-check" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-{{ value }}" autocomplete="off" {% if 'active' in cls %} checked="checked" {% endif %}>
+            <label class="d-flex btn tip-button align-items-center {{ cls }}" for="{{ fixture.fixture_id }}-tips-{{ value }}" id="tipbutton-{{ fixture.fixture_id }}-{{ value }}" data-enabled="{{ 'true' if enabled else 'false' }}">
+              {{ tip_icon(value, "{{ 'text-light' if 'active' in cls else 'text-primary' }}") }}
+            </label>
+          {% endfor %}
+        </div>
+      </div>
     </div>
   </div>
 {% endmacro %}
 
 {% block content %}
   <h1 class="pb-2 text-center">Tippa matcher</h1>
-  <div class="container text-responsive">
-    <div class="row">
+  <div class="container">
+    <div class="row mx-3 mx-lg-0">
       {% set prev_round = namespace(round = "0") %}
       {% set index = namespace(value = 1) %}
-      {% for item in fixture_data %}
-        {% set fixture = item.fixture %}
+      {% for entry in fixture_data %}
         <!-- Round -->
-        {% set round = fixture.round %}
+        {% set round = entry.fixture.round %}
         {% if round != prev_round.round %}
           {% set prev_round.round = round %}
           {% if index.value % 2 == 0 %}
@@ -31,7 +63,7 @@
             <div class="w-100"></div>
             {% set index.value = index.value + 1 %}
           {% endif %}
-          <div class="p-2 fw-bold">
+          <div class="p-2 fw-bold text-nowrap">
             Omgång
             {{ round }}
             av 38
@@ -39,40 +71,7 @@
           <div class="w-100"></div>
         {% endif %}
         <!-- Fixture -->
-        <div id="{{ fixture.fixture_id }}" class="col shadow" tabindex="0">
-          <div class="row border hover py-2">
-            <!--Teams-->
-            <div class="col-12 col-md">
-              {{ team_macro(fixture, fixture.home_team) }}
-              {{ team_macro(fixture, fixture.away_team) }}
-            </div>
-            <!-- Time -->
-            <div class="d-flex col-6 col-md-auto text-center align-items-center small">
-              {% if fixture.status.value == 'FINISHED' or fixture.status.value == 'AWARDED' %}
-                Slut
-              {% elif fixture.status.value == 'POSTPONED' %}
-                <div class="text-warning">Uppskjuten</div>
-              {% elif fixture.status.value == 'CANCELLED' %}
-                <div class="text-danger">Inställd</div>
-              {% else %}
-                {{ fixture.date_time.strftime('%Y-%m-%d %H:%M') }}
-              {% endif %}
-            </div>
-            <!-- Tip buttons -->
-            <div class="d-flex col-6 col-md-auto border-start align-items-center small">
-              <div class="btn-group shadow-sm" role="group" aria-label="Tip buttons">
-                {% for value, cls in item
-                  .buttons
-                  .items() %}
-                  <input type="radio" class="btn-check" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-{{ value }}" autocomplete="off" {% if 'active' in cls %} checked="checked" {% endif %}>
-                  <label class="d-flex btn tip-button align-items-center {{ cls }}" for="{{ fixture.fixture_id }}-tips-{{ value }}" id="tipbutton-{{ fixture.fixture_id }}-{{ value }}" data-enabled="{{ 'true' if item.enabled else 'false' }}">
-                    {{ tip_icon(value, "{{ 'text-light' if 'active' in cls else 'text-primary' }}") }}
-                  </label>
-                {% endfor %}
-              </div>
-            </div>
-          </div>
-        </div>
+        {{ fixture_macro(entry.fixture, entry.buttons, entry.enabled) }}
         {% if index.value % 2 == 0 %}
           <div class="w-100"></div>
         {% endif %}
