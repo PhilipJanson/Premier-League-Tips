@@ -209,29 +209,41 @@ def get_user_team_tip_distribution(user_id: str, season: str) -> dict[str, Any]:
     """Returns tip counts and percentages for all teams in a given season for a specific user."""
 
     team_counts = (
-            db.session.query(
-                Team.team_id,
-                Team.short_name,
-                Team.logo,
-                Tip.tip_value,
-                Fixture.home_team_id,
-                Fixture.away_team_id,
-                func.count(Tip.id).label('tip_count'),
-                func.sum(case((Tip.tip_status == TipStatus.CORRECT, 1), else_=0)).label('correct_count')
-            )
-            .join(Fixture, or_(Fixture.home_team_id == Team.team_id,
-                            Fixture.away_team_id == Team.team_id))
-            .join(Tip, Tip.fixture_id == Fixture.fixture_id)
-            .join(Season, Fixture.season_id == Season.id)
-            .filter(Season.season == season)
-            .filter(Tip.user_id == user_id)
-            .group_by(Team.team_id, Team.short_name, Team.logo, Tip.tip_value, Fixture.home_team_id, Fixture.away_team_id)
-            .order_by(Team.short_name)
-            .all()
+        db.session.query(
+            Team.team_id,
+            Team.short_name,
+            Team.logo,
+            Tip.tip_value,
+            Fixture.home_team_id,
+            Fixture.away_team_id,
+            func.count(Tip.id).label('tip_count'),
+            func.sum(case((Tip.tip_status == TipStatus.CORRECT, 1), else_=0)).label('correct_count')
         )
+        .join(Fixture, or_(Fixture.home_team_id == Team.team_id,
+                           Fixture.away_team_id == Team.team_id))
+        .join(Tip, Tip.fixture_id == Fixture.fixture_id)
+        .join(Season, Fixture.season_id == Season.id)
+        .filter(Season.season == season)
+        .filter(Tip.user_id == user_id)
+        .group_by(Team.team_id,
+                  Team.short_name,
+                  Team.logo,
+                  Tip.tip_value,
+                  Fixture.home_team_id,
+                  Fixture.away_team_id)
+        .order_by(Team.short_name)
+        .all()
+    )
 
     result = {}
-    for team_id, team_name, logo, tip_value, home_id, away_id, tip_count, correct_count in team_counts:
+    for (team_id,
+         team_name,
+         logo,
+         tip_value,
+         home_id,
+         away_id,
+         tip_count,
+         correct_count) in team_counts:
         if team_id not in result:
             result[team_id] = {
                 'team_name': team_name,
@@ -242,7 +254,6 @@ def get_user_team_tip_distribution(user_id: str, season: str) -> dict[str, Any]:
                 'correct_percentage': 0,
             }
 
-        # Determine if this tip corresponds to win, draw, or loss for this team
         if tip_value == TipValue.TIP_X:
             outcome = 'draw'
         elif (tip_value == TipValue.TIP_1 and team_id == home_id) or \
@@ -254,7 +265,6 @@ def get_user_team_tip_distribution(user_id: str, season: str) -> dict[str, Any]:
         result[team_id]['counts'][outcome] += tip_count
         result[team_id]['correct'] += correct_count
 
-    # Calculate percentages
     for team_id, data in result.items():
         total_tips = sum(data['counts'].values())
         if total_tips > 0:
