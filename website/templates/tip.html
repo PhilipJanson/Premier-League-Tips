@@ -9,7 +9,7 @@
     </div>
     <!-- Team name -->
     <div class="col text-start small text-truncate">
-      {{ team.name }}
+      {{ team.short_name }}
     </div>
   </div>
 {% endmacro %}
@@ -48,10 +48,12 @@
             </div>
             <!-- Time -->
             <div class="d-flex col-6 col-md-auto text-center align-items-center small">
-              {% if fixture.status == "FT" %}
+              {% if fixture.status.value == 'FINISHED' or fixture.status.value == 'AWARDED' %}
                 Slut
-              {% elif fixture.status == "PST" %}
+              {% elif fixture.status.value == 'POSTPONED' %}
                 <div class="text-warning">Uppskjuten</div>
+              {% elif fixture.status.value == 'CANCELLED' %}
+                <div class="text-danger">Inställd</div>
               {% else %}
                 {{ fixture.date_time.strftime('%Y-%m-%d %H:%M') }}
               {% endif %}

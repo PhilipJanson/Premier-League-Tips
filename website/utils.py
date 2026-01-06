@@ -2,19 +2,27 @@
 
 import json
 import re
-import requests
 
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from typing import Any
 from sqlalchemy import func, or_, case
-from .models import Fixture, User, Result, Tip, Season, Team, MAX_USERNAME_LEN, MAX_PASSWORD_LEN
-from . import db, LEAGUE_ID, api_secret_key
+from .models import (
+    Fixture,
+    FixtureStatus,
+    User,
+    Result,
+    Tip,
+    TipValue,
+    TipStatus,
+    Season,
+    Team,
+    MAX_USERNAME_LEN,
+    MAX_PASSWORD_LEN
+)
+from . import db
 
 USERNAME_REGEX = re.compile(r'^[a-zA-Z][a-zA-Z0-9_-]{2,' + str(MAX_USERNAME_LEN - 1) + r'}$')
-API_URL = 'https://v3.football.api-sports.io/'
-# Dump API response data to console for debugging
-DUMP_DATA = False
 
 class ValidationError(Exception):
     """Raised when user input fails validation."""
@@ -65,38 +73,14 @@ def calculate_next_fixture(fixtures: list[Fixture], selected_date: datetime) -> 
 
     return None
 
-def api_call(endpoint: str, season: Season) -> tuple[dict, Any]:
-    """Fetch data from the API and return a tuple containing the response headers and data as
-    json objects."""
-
-    url = f"{API_URL}/{endpoint}?season={season.season}&league={LEAGUE_ID}"
-
-    if endpoint == 'fixtures':
-        url += '&timezone=Europe/Stockholm'
-
-    headers = {
-        'x-rapidapi-key': api_secret_key,
-        'x-rapidapi-host': API_URL
-    }
-
-    response = requests.request('GET', url, headers=headers)
-    response_json = response.json()
-    if DUMP_DATA:
-        print(json.dumps(response_json, indent=4))
-
-    if response_json.get('errors', None):
-        raise Exception("Failed to make API call: {}".format(response_json['errors']))
-
-    return dict(response.headers), response_json
-
+# TODO: Impement team ranking score calculation
 def calculate_user_result(user: User, season: Season) -> Result:
     """Calculate the result for a user in a given season. Return a Result object."""
 
-    # TODO: Impement team ranking score calculation
     if user is None:
         return None
 
-    round_stats = defaultdict(lambda: {"tips": 0, "correct": 0})
+    round_stats = defaultdict(lambda: {'tips': 0, 'correct': 0})
     result = Result(user_id=user.id,
                     season_id=season.id,
                     total=0,
@@ -114,28 +98,28 @@ def calculate_user_result(user: User, season: Season) -> Result:
 
         # Calulate tip results
         result.total += 1
-        if fixture.status == 'FT':
+        if FixtureStatus.is_finished(fixture.status):
             result.finished += 1
 
             if is_tip_correct(fixture, tip):
                 result.correct += 1
-                tip.correct = 1
+                tip.tip_status = TipStatus.CORRECT
             else:
                 result.incorrect += 1
-                tip.correct = -1
+                tip.tip_status = TipStatus.INCORRECT
 
-        if tip.tip == '1':
+        if tip.tip_value == TipValue.TIP_1:
             result.tip_1 += 1
-        elif tip.tip == 'X':
+        elif tip.tip_value == TipValue.TIP_X:
             result.tip_X += 1
-        elif tip.tip == '2':
+        elif tip.tip_value == TipValue.TIP_2:
             result.tip_2 += 1
 
         # Calculate round stats
         stats = round_stats[fixture.round]
-        stats["tips"] += 1
-        if tip.correct == 1:
-            stats["correct"] += 1
+        stats['tips'] += 1
+        if tip.tip_status == TipStatus.CORRECT:
+            stats['correct'] += 1
         result.round_stats = json.dumps(round_stats)
 
     result.last_update = datetime.now()
@@ -145,9 +129,9 @@ def is_tip_correct(fixture: Fixture, tip: Tip) -> bool:
     """Return True if the tip is correct, False otherwise."""
 
     score = fixture.home_score - fixture.away_score
-    return (score > 0 and tip.tip == '1') or \
-           (score < 0 and tip.tip == '2') or \
-           (score == 0 and tip.tip == 'X')
+    return (score > 0 and tip.tip_value == TipValue.TIP_1) or \
+           (score < 0 and tip.tip_value == TipValue.TIP_2) or \
+           (score == 0 and tip.tip_value == TipValue.TIP_X)
 
 def get_fixture_tip_data(user: User,
                          fixtures: list[Fixture],
@@ -159,28 +143,31 @@ def get_fixture_tip_data(user: User,
        ```
     """
     fixture_data: list[dict[str, Any]] = []
-    # Mapped dict for getting tip value from a fixture_id
-    mapped_tips: dict[int, str] = {tip.fixture_id: tip.tip for tip in user.tips}
+    mapped_tips: dict[int, TipValue] = {tip.fixture_id: tip.tip_value for tip in user.tips}
 
     for fixture in fixtures:
         tip_value = mapped_tips.get(fixture.fixture_id)
         buttons = {
-            '1': 'btn-outline-success',
-            'X': 'btn-outline-success',
-            '2': 'btn-outline-success'
+            TipValue.TIP_1.value: 'btn-outline-success',
+            TipValue.TIP_X.value: 'btn-outline-success',
+            TipValue.TIP_2.value: 'btn-outline-success'
         }
         enabled = False
 
-        if fixture.status == "FT" and not allow_late_modification:
+        if (fixture.status == FixtureStatus.SCHEDULED or \
+            fixture.status == FixtureStatus.TIMED or \
+            allow_late_modification):
             if tip_value:
-                buttons[tip_value] = "btn-success"
-            buttons = {k: f"{v} disabled" for k, v in buttons.items()}
-        elif fixture.status == "PST" and not allow_late_modification:
-            buttons = {k: "btn-outline-warning disabled" for k in buttons}
+                buttons[tip_value.value] = 'btn-outline-success active'
+            enabled = True
+        elif fixture.status == FixtureStatus.POSTPONED:
+            buttons = {k: 'btn-outline-warning disabled' for k in buttons}
+        elif fixture.status == FixtureStatus.CANCELLED:
+            buttons = {k: 'btn-outline-danger disabled' for k in buttons}
         else:
             if tip_value:
-                buttons[tip_value] = "btn-outline-success active"
-            enabled = True
+                buttons[tip_value.value] = 'btn-success'
+            buttons = {k: f'{v} disabled' for k, v in buttons.items()}
 
         fixture_data.append({
             'fixture': fixture,
@@ -222,40 +209,52 @@ def get_user_team_tip_distribution(user_id: str, season: str) -> dict[str, Any]:
     """Returns tip counts and percentages for all teams in a given season for a specific user."""
 
     team_counts = (
-        db.session.query(
-            Team.team_id,
-            Team.name,
-            Team.logo,
-            Tip.tip,
-            func.count(Tip.id).label("tip_count"),
-            func.sum(case((Tip.correct == 1, 1), else_=0)).label("correct_count")
+            db.session.query(
+                Team.team_id,
+                Team.short_name,
+                Team.logo,
+                Tip.tip_value,
+                Fixture.home_team_id,
+                Fixture.away_team_id,
+                func.count(Tip.id).label('tip_count'),
+                func.sum(case((Tip.tip_status == TipStatus.CORRECT, 1), else_=0)).label('correct_count')
+            )
+            .join(Fixture, or_(Fixture.home_team_id == Team.team_id,
+                            Fixture.away_team_id == Team.team_id))
+            .join(Tip, Tip.fixture_id == Fixture.fixture_id)
+            .join(Season, Fixture.season_id == Season.id)
+            .filter(Season.season == season)
+            .filter(Tip.user_id == user_id)
+            .group_by(Team.team_id, Team.short_name, Team.logo, Tip.tip_value, Fixture.home_team_id, Fixture.away_team_id)
+            .order_by(Team.short_name)
+            .all()
         )
-        .join(Fixture, or_(Fixture.home_team_id == Team.team_id,
-                           Fixture.away_team_id == Team.team_id))
-        .join(Tip, Tip.fixture_id == Fixture.fixture_id)
-        .join(Season, Fixture.season_id == Season.id)
-        .filter(Season.season == season)
-        .filter(Tip.user_id == user_id)
-        .group_by(Team.team_id, Team.name, Team.logo, Tip.tip)
-        .order_by(Team.name)
-        .all()
-    )
 
     result = {}
-    for team_id, team_name, logo, tip, tip_count, correct_count in team_counts:
+    for team_id, team_name, logo, tip_value, home_id, away_id, tip_count, correct_count in team_counts:
         if team_id not in result:
             result[team_id] = {
                 'team_name': team_name,
                 'team_logo': logo,
-                'counts': {'1': 0, 'X': 0, '2': 0},
-                'percentages': {'1': 0, 'X': 0, '2': 0},
+                'counts': {'winner': 0, 'draw': 0, 'loser': 0},
+                'percentages': {'winner': 0, 'draw': 0, 'loser': 0},
                 'correct': 0,
-                'incorrect': 0,
                 'correct_percentage': 0,
             }
-        result[team_id]['counts'][tip] = tip_count
+
+        # Determine if this tip corresponds to win, draw, or loss for this team
+        if tip_value == TipValue.TIP_X:
+            outcome = 'draw'
+        elif (tip_value == TipValue.TIP_1 and team_id == home_id) or \
+             (tip_value == TipValue.TIP_2 and team_id == away_id):
+            outcome = 'winner'
+        else:
+            outcome = 'loser'
+
+        result[team_id]['counts'][outcome] += tip_count
         result[team_id]['correct'] += correct_count
 
+    # Calculate percentages
     for team_id, data in result.items():
         total_tips = sum(data['counts'].values())
         if total_tips > 0:

@@ -5,7 +5,6 @@ import requests
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask
-from waitress import serve
 from website import create_app
 
 APP_URL = os.environ.get('APP_URL', None)
@@ -30,6 +29,3 @@ if APP_URL:
         print("Keep alive not enabled.")
 else:
     print("No APP_URL environment variable provided, keep alive is not enabled.")
-
-if __name__ == "__main__":
-    serve(app, host="0.0.0.0", port=8000)

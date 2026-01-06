@@ -45,12 +45,12 @@
   {% endif %}
 {% endmacro %}
 
-{% macro tip_percentage(data, tip) %}
+{% macro tip_percentage(data, key) %}
   <div class="d-flex align-items-center gap-2">
     <div class="progress flex-grow-1" style="height: 8px;">
-      <div class="progress-bar bg-success" role="progressbar" style="width: {{ data.percentages[tip] | round(0) | int }}%;" aria-valuenow="{{ data.percentages[tip] | round(0) | int }}" aria-valuemin="0" aria-valuemax="100"></div>
+      <div class="progress-bar bg-success" role="progressbar" style="width: {{ data.percentages[key] | round(0) | int }}%;" aria-valuenow="{{ data.percentages[key] | round(0) | int }}" aria-valuemin="0" aria-valuemax="100"></div>
     </div>
-    <small class="text-muted">{{ data.percentages[tip] | round(0) | int }}%</small>
+    <small class="text-muted">{{ data.percentages[key] | round(0) | int }}%</small>
   </div>
 {% endmacro %}
 
@@ -105,12 +105,12 @@
         {% for tip in current_user.tips %}
           {% if fixture.fixture_id == tip.fixture_id %}
             <tr>
-              <td>{{ fixture.home_team.name }}
+              <td>{{ fixture.home_team.short_name }}
                 -
-                {{ fixture.away_team.name }}
+                {{ fixture.away_team.short_name }}
               </td>
               <td class="text-center">
-                {{ tip_icon(tip.tip) }}
+                {{ tip_icon(tip.tip_value.value) }}
               </td>
             </tr>
           {% endif %}
@@ -125,7 +125,7 @@
     <thead>
       <tr>
         <th>Lag</th>
-        <th>Antal rätt</th>
+        <th>Vinstprocent</th>
       </tr>
     </thead>
     <tbody>
@@ -156,9 +156,9 @@
     <thead>
       <tr>
         <th>Lag</th>
-        <th>{{ tip_icon('1') }}</th>
-        <th>{{ tip_icon('X') }}</th>
-        <th>{{ tip_icon('2') }}</th>
+        <th>Vinnare</th>
+        <th>Oavgjort</th>
+        <th>Förlorare</th>
       </tr>
     </thead>
     <tbody>
@@ -170,9 +170,9 @@
               <span>{{ data.team_name }}</span>
             </div>
           </td>
-          <td>{{ tip_percentage(data, '1') }}</td>
-          <td>{{ tip_percentage(data, 'X') }}</td>
-          <td>{{ tip_percentage(data, '2') }}</td>
+          <td>{{ tip_percentage(data, 'winner') }}</td>
+          <td>{{ tip_percentage(data, 'draw') }}</td>
+          <td>{{ tip_percentage(data, 'loser') }}</td>
         </tr>
       {% endfor %}
     </tbody>

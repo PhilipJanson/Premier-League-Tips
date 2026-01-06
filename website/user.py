@@ -55,7 +55,7 @@ def endpoint_set_favorite_team(user_id: str) -> Response:
 
     current_user.favorite_team = team
     db.session.commit()
-    flash(f"{team.name} är nu ditt favoritlag.", category='success')
+    flash(f"{team.short_name} är nu ditt favoritlag.", category='success')
 
     return jsonify({}), 200
 

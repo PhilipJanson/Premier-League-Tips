@@ -12,8 +12,8 @@
             <h2>Favoritlag</h2>
             {% if current_user.favorite_team %}
               <div>
-                <img src="{{ current_user.favorite_team.logo }}" alt="{{ current_user.favorite_team.name }}'s Logo"/>
-                <p>{{ current_user.favorite_team.name }}</p>
+                <img src="{{ current_user.favorite_team.logo }}" alt="Logo"/>
+                <p>{{ current_user.favorite_team.short_name }}</p>
               </div>
             {% else %}
               <p>Inget lag valt</p>
@@ -23,7 +23,7 @@
           <div class="mb-3 d-flex flex-row gap-2 mx-5">
             <select class="form-control" name="set-favorite-team-select" id="set-favorite-team-select">
               {% for team in teams %}
-                <option value="{{ team.team_id }}">{{ team.name }}</option>
+                <option value="{{ team.team_id }}">{{ team.short_name }}</option>
               {% endfor %}
             </select>
             <button class="btn btn-success" type="button" id="button-set-favorite-team" data-uuid="{{ current_user.id }}">

@@ -18,9 +18,9 @@ from flask import (
 from flask_login import login_required, current_user
 from functools import wraps
 from typing import Any, Callable
+from .api_handler import FixtureSchema, StandingSchema, api_call
 from .models import User, General, Fixture, Team, Result, Season
-from .schemas import FixtureSchema, TeamSchema
-from .utils import api_call, calculate_user_result
+from .utils import calculate_user_result
 from . import db
 
 admin = Blueprint('admin', __name__)
@@ -67,11 +67,12 @@ def endpoint_fetch_api_fixtures() -> Response:
     start_time = time.perf_counter()
 
     try:
-        headers, fixture_response = api_call('fixtures', season)
-        schema = FixtureSchema(context={"season": season})
+        headers, fixture_response = api_call('/competitions/PL/matches',
+                                             {'season': season.season})
+        schema = FixtureSchema(context={'season': season})
         _parse_headers(headers)
 
-        for fixture_json in fixture_response['response']:
+        for fixture_json in fixture_response['matches']:
             fixture = schema.load(fixture_json)
             Fixture.create_or_update(fixture)
 
@@ -103,11 +104,12 @@ def endpoint_fetch_api_standings() -> Response:
     start_time = time.perf_counter()
 
     try:
-        headers, standings_response = api_call('standings', season)
-        schema = TeamSchema(context={"season": season})
+        headers, standings_response = api_call('/competitions/PL/standings',
+                                               {'season': season.season})
+        schema = StandingSchema(context={'season': season})
         _parse_headers(headers)
 
-        for team_json in standings_response['response'][0]['league']['standings'][0]:
+        for team_json in standings_response['standings'][0]['table']:
             team, standings = schema.load(team_json)
             Team.create_or_update_team_and_standing(team, standings)
 
@@ -256,7 +258,7 @@ def _parse_headers(headers: dict) -> None:
 
     data = {
         'last_update': datetime.datetime.now(),
-        'remaining_requests':  headers.get('x-ratelimit-requests-remaining', None)
+        'remaining_requests':  headers.get('X-Requests-Available-Minute', None)
     }
     General.update(**data)
 
