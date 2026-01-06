@@ -60,7 +60,7 @@ pylint ${PWD}
 ```
 
 ## Links
-- [API Football](https://dashboard.api-football.com/)
+- [Football Data](https://www.football-data.org/client/home)
 - [Bootstrap](https://getbootstrap.com/docs/5.3)
 - [Fontawesome](https://fontawesome.com)
 - [Supabase](https://supabase.com/dashboard)

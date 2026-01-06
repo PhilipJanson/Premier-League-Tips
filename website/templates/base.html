@@ -7,8 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ url_for('static',filename='styles/style.css') }}"/>
-    <link rel="icon" type="image/x-icon" href="https://media.api-sports.io/football/leagues/39.png"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}"/>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/logo.png') }}"/>
     <script src="https://kit.fontawesome.com/a47a118d06.js" crossorigin="anonymous"></script>
     <title>
       {% block title %}Base{% endblock %}
@@ -47,7 +47,7 @@
       <div class="collapse navbar-collapse ms-3" id="navbar">
         <!-- Navbar logo, render only on > lg -->
         <div class="d-none d-lg-flex">
-          <img src="https://media.api-sports.io/football/leagues/39.png" class="d-inline-block align-top me-3 ms-1 navbar-logo" alt="Logo"/>
+          <img src="{{ url_for('static', filename='images/logo.png') }}" class="d-inline-block align-top me-3 ms-1 navbar-logo" alt="Logo"/>
         </div>
         <div class="d-flex w-100">
           <!-- Left side navbar -->
@@ -123,20 +123,20 @@
     {% endwith %}
   {% endmacro %}
 
-  {% macro tip_icon(tip, class) %}
-    {% if tip == '1' %}
+  {% macro tip_icon(tip_value, class) %}
+    {% if tip_value == '1' %}
       <span class="{{ class if class else 'text-success' }}">
         <i class="fa-solid fa-1"></i>
       </span>
-    {% elif tip == 'X' %}
+    {% elif tip_value == 'X' %}
       <span class="{{ class if class else 'text-warning' }}">
         <i class="fa-solid fa-x"></i>
       </span>
-    {% elif tip == '2' %}
+    {% elif tip_value == '2' %}
       <span class="{{ class if class else 'text-danger' }}">
         <i class="fa-solid fa-2"></i>
       </span>
-    {% else %}Invalid tip{% endif %}
+    {% else %}Invalid tip value{% endif %}
   {% endmacro %}
 
   <body class="d-flex flex-column min-vh-100 bg-light">
@@ -153,7 +153,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white py-3 mt-5">
+    <footer class="bg-dark text-white py-3 mt-5 shadow">
       <div class="container text-center">
         <small>
           &copy;
@@ -162,6 +162,7 @@
           <a href="/privacy-policy" class="text-white text-decoration-underline">Privacy Policy</a>
           |
           <a href="https://github.com/PhilipJanson/Jansonfotboll/blob/main/LICENSE" class="text-white text-decoration-underline">License</a>
+          | Football data provided by the Football-Data.org API.
         </small>
       </div>
     </footer>

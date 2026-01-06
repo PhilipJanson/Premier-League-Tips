@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import enum
 import uuid
 
 from datetime import datetime, timezone
 from flask import current_app
 from flask_login import UserMixin
-from sqlalchemy import Boolean, ForeignKey, Integer, String, DateTime, Table, Column, Text
+from sqlalchemy import Boolean, ForeignKey, Integer, String, DateTime, Table, Column, Text, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship, joinedload
 from typing import Any
 from . import db, ACTIVE_SEASON
@@ -67,14 +68,39 @@ class User(db.Model, UserMixin):
 
         return db.session.execute(db.select(User).filter_by(username=username)).scalar_one_or_none()
 
+class FixtureStatus(enum.Enum):
+    # Planned, time may be tentative.
+    SCHEDULED = 'SCHEDULED'
+    # Scheduled, time officially confirmed.
+    TIMED = 'TIMED'
+    # Match is ongoing.
+    IN_PLAY = 'IN_PLAY'
+    # Temporarily stopped, will resume.
+    PAUSED = 'PAUSED'
+    # Match ended normally.
+    FINISHED = 'FINISHED'
+    # Started, but stopped unexpectedly.
+    SUSPENDED = 'SUSPENDED'
+    # Not started, moved to a later date.
+    POSTPONED = 'POSTPONED'
+    # Not played at all, no reschedule.
+    CANCELLED = 'CANCELLED'
+    # Result given administratively.
+    AWARDED = 'AWARDED'
+
+    @staticmethod
+    def is_finished(status: FixtureStatus) -> bool:
+        return status == FixtureStatus.FINISHED or status == FixtureStatus.AWARDED
+
 class Fixture(db.Model, Updateable):
     fixture_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     season_id: Mapped[int] = mapped_column(ForeignKey('season.id'), nullable=False)
     season: Mapped['Season'] = relationship("Season", foreign_keys=[season_id])
     round: Mapped[int] = mapped_column(Integer, nullable=True)
     date_time: Mapped[DateTime] = mapped_column(DateTime, nullable=True)
-    # Status of the fixture. 'FT': full time, 'NS': not started, 'PST': postponed.
-    status: Mapped[str] = mapped_column(String(10), nullable=False, default='NS')
+    status: Mapped[FixtureStatus] = mapped_column(Enum(FixtureStatus, name='fixture_status_enum'),
+                                                  nullable=False,
+                                                  default=FixtureStatus.SCHEDULED)
     home_team_id: Mapped[int] = mapped_column(ForeignKey('team.team_id'))
     away_team_id: Mapped[int] = mapped_column(ForeignKey('team.team_id'))
     home_team: Mapped['Team'] = relationship("Team", foreign_keys=[home_team_id])
@@ -126,6 +152,8 @@ class Team(db.Model, Updateable):
     team_id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     logo: Mapped[str] = mapped_column(String(200), nullable=True, default=None)
+    short_name: Mapped[str] = mapped_column(String(50), nullable=True)
+    tla: Mapped[str] = mapped_column(String(3), nullable=True)
     standings: Mapped[list['TeamStanding']] = relationship("TeamStanding", back_populates='team')
 
     @staticmethod
@@ -142,7 +170,7 @@ class Team(db.Model, Updateable):
                 .join(Team.standings)
                 .join(TeamStanding.season)
                 .filter(Season.season == season)
-                .order_by(Team.name)
+                .order_by(Team.short_name)
                 .options(joinedload(Team.standings))
                 .all())
 
@@ -150,7 +178,7 @@ class Team(db.Model, Updateable):
     def all() -> list[Team]:
         """Return the list of all teams."""
 
-        return db.session.execute(db.select(Team).order_by(Team.name)).scalars().all()
+        return db.session.execute(db.select(Team).order_by(Team.short_name)).scalars().all()
 
     @staticmethod
     def create_or_update_team_and_standing(team: Team, standings: TeamStanding) -> None:
@@ -160,10 +188,10 @@ class Team(db.Model, Updateable):
         existing_team = Team.by_id(team.team_id)
         if existing_team is not None:
             existing_team.update_attributes(team.__dict__)
-            current_app.logger.debug(f"Updated team: {team.name} ({team.team_id})")
+            current_app.logger.debug(f"Updated team: {team.short_name} ({team.team_id})")
         else:
             db.session.add(team)
-            current_app.logger.debug(f"Added team: {team.name} ({team.team_id})")
+            current_app.logger.debug(f"Added team: {team.short_name} ({team.team_id})")
 
         # Check if standings exists for this team and season
         exisiting_standings: TeamStanding = (db.session.execute(db.select(TeamStanding)
@@ -172,11 +200,11 @@ class Team(db.Model, Updateable):
                                                        .scalar_one_or_none())
         if exisiting_standings is not None:
             exisiting_standings.update_attributes(standings.__dict__)
-            current_app.logger.debug(f"Updated standings for team: {team.name} "
+            current_app.logger.debug(f"Updated standings for team: {team.short_name} "
                                      f"(ID: {team.team_id}, season: {standings.season})")
         else:
             db.session.add(standings)
-            current_app.logger.debug(f"Added standings for team: {team.name} "
+            current_app.logger.debug(f"Added standings for team: {team.short_name} "
                                      f"(ID: {team.team_id}, season: {standings.season})")
 
 class TeamStanding(db.Model, Updateable):
@@ -211,13 +239,24 @@ class TeamStanding(db.Model, Updateable):
                 .order_by(TeamStanding.rank)
                 .all())
 
+class TipValue(enum.Enum):
+    TIP_1 = '1'
+    TIP_X = 'X'
+    TIP_2 = '2'
+
+class TipStatus(enum.Enum):
+    CORRECT = 1
+    INCORRECT = -1
+    IN_PROGRESS = 0
+
 class Tip(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     fixture_id: Mapped[int] = mapped_column(Integer)
-    # Valid values are '1', 'X' or '2'
-    tip: Mapped[str] = mapped_column(String(1))
-    # Status of the tip. 1: correct, -1: incorrect, 0: not yet decided
-    correct: Mapped[int] = mapped_column(Integer, default=0)
+    tip_value: Mapped[TipValue] = mapped_column(Enum(TipValue, name='tip_value_enum'),
+                                                nullable=False)
+    tip_status: Mapped[TipStatus] = mapped_column(Enum(TipStatus, name='tip_status_enum'),
+                                               nullable=False,
+                                               default=TipStatus.IN_PROGRESS)
     user_id: Mapped[str] = mapped_column(ForeignKey('user.id'))
     user: Mapped['User'] = relationship("User", back_populates='tips')
 
@@ -230,14 +269,14 @@ class Tip(db.Model):
                                   .filter_by(fixture_id=fixture_id)).scalar_one_or_none()
 
     @staticmethod
-    def create_or_update(user: User, fixture_id: int, value: str) -> Tip:
+    def create_or_update(user: User, fixture_id: int, tip_value: str) -> Tip:
         """Create or update a tip for a user and a fixture ID. Return the created or updated tip."""
 
         tip = Tip.by_fixure_id(user, fixture_id)
         if tip is not None:
-            tip.tip = value
+            tip.tip_value = TipValue(tip_value)
         else:
-            tip = Tip(fixture_id=fixture_id, tip=value, user_id=user.id)
+            tip = Tip(fixture_id=fixture_id, tip_value=TipValue(tip_value), user_id=user.id)
             db.session.add(tip)
 
         return tip

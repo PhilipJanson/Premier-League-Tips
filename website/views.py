@@ -3,7 +3,7 @@
 from datetime import datetime
 from flask import Blueprint, Response, flash, render_template, jsonify, abort, request
 from flask_login import login_required, current_user
-from .models import User, Tip, Fixture, Team, TeamStanding, Result, General, Season
+from .models import User, Tip, Fixture, FixtureStatus, Team, TeamStanding, General, Season
 from .utils import (
     get_week_dates,
     get_fixture_tip_data,
@@ -86,7 +86,7 @@ def endpoint_stats(season: str) -> str:
     fixtures = (db.session.query(Fixture)
                           .join(Fixture.season)
                           .filter(Season.season == season)
-                          .filter(Fixture.status == 'NS')
+                          .filter(Fixture.status == FixtureStatus.TIMED)
                           .all())
     user_result = get_result_dict(current_user.id, season)
 

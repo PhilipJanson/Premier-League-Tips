@@ -112,24 +112,38 @@ def create_app() -> Flask:
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         response.headers['Content-Security-Policy'] = (
+            # Fallback source
             "default-src 'self'; "
+            # Script source
             "script-src 'self' 'unsafe-inline' "
             "https://cdnjs.cloudflare.com "
             "https://code.jquery.com "
             "https://cdn.jsdelivr.net "
-            "https://kit.fontawesome.com; "
+            "https://kit.fontawesome.com "
+            "https://ka-f.fontawesome.com; "
+            # Style source
             "style-src 'self' 'unsafe-inline' "
             "https://cdnjs.cloudflare.com "
             "https://cdn.jsdelivr.net; "
-            "img-src 'self' data: https://media.api-sports.io; "
+            # Image source
+            "img-src 'self' data: "
+            "https://crests.football-data.org; "
+            # Font source
             "font-src 'self' "
             "https://cdnjs.cloudflare.com "
             "https://cdn.jsdelivr.net "
-            "https://ka-f.fontawesome.com; "
+            "https://ka-f.fontawesome.com "
+            "https://use.fontawesome.com; "
+            # Connection source
             "connect-src 'self' "
-            "https://api-sports.io "
+            "https://api.football-data.org "
             "https://ka-f.fontawesome.com; "
-            "object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
+            # Plugin source
+            "object-src 'none'; "
+            # Embedded sites
+            "frame-ancestors 'none'; "
+            # <base> tag
+            "base-uri 'none'; "
         )
         return response
 
