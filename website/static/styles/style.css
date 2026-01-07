@@ -75,14 +75,6 @@ html {
 /*
  * ======= Tip =======
  */
-.team-logo-thumbnail {
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
-  display: block;
-  border-radius: 4px;
-}
-
 .tip-fixture {
   min-width: 150px;
 }
@@ -158,14 +150,13 @@ html {
 /*
  * ======= Misc =======
  */
-@media (min-width: 576px) {
-  .text-sm-nowrap {
-    white-space: nowrap !important;
-  }
 
-  .border-sm-start {
-    border-left: 1px solid var(--bs-border-color);
-  }
+.team-logo-thumbnail {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  display: block;
+  border-radius: 4px;
 }
 
 .hover {
@@ -176,33 +167,13 @@ html {
   background: #f5f5f5;
 }
 
-@media (min-width: 0px) {
-  .text-responsive {
-    font-size: 10px;
+@media (min-width: 576px) {
+  .text-sm-nowrap {
+    white-space: nowrap !important;
   }
-}
 
-@media (min-width: 544px) {
-  .text-responsive {
-    font-size: 12px;
-  }
-}
-
-@media (min-width: 768px) {
-  .text-responsive {
-    font-size: 14px;
-  }
-}
-
-@media (min-width: 992px) {
-  .text-responsive {
-    font-size: 16px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .text-responsive {
-    font-size: 16px;
+  .border-sm-start {
+    border-left: 1px solid var(--bs-border-color);
   }
 }
 
