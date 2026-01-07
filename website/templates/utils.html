@@ -37,3 +37,66 @@
     </div>
   </div>
 {% endmacro %}
+
+<!-- Team -->
+{% macro team_macro(fixture, team) %}
+  <div class="row align-items-center">
+    <div class="col-auto ps-1 py-1">
+      <img class="team-logo-thumbnail" src="{{ team.logo }}" alt="Logo"/>
+    </div>
+    <div class="col text-start text-truncate px-0">
+      {{ team.short_name }}
+    </div>
+  </div>
+{% endmacro %}
+
+<!-- Fixture -->
+{% macro fixture_macro(fixture) %}
+  <div id="{{ fixture.fixture_id }}" class="col-12 col-lg-6 my-2 my-lg-0" tabindex="0">
+    <div class="card shadow fixtures-card h-100">
+      <div class="card-header bg-white text-nowrap text-center">
+        {{ fixture_status_macro(fixture) }}
+      </div>
+      <div class="card-body">
+        <!-- Render only on > xs -->
+        <div class="d-none d-sm-flex row align-items-center my-3 mx-1">
+          <div class="col-1">
+            <img class="team-logo-thumbnail" src="{{ fixture.home_team.logo }}" alt="Logo"/>
+          </div>
+          <div class="col-4 text-start text-truncate">{{ fixture.home_team.short_name }}</div>
+          <div class="col-2 text-center">
+            {% if fixture.status.value == 'FINISHED' or fixture.status.value == 'AWARDED' %}
+              {{ fixture.home_score }}-{{ fixture.away_score }}
+            {% else %}
+              -
+            {% endif %}
+          </div>
+          <div class="col-4 text-end text-truncate">{{ fixture.away_team.short_name }}</div>
+          <div class="col-1">
+            <img class="team-logo-thumbnail" src="{{ fixture.away_team.logo }}" alt="Logo"/>
+          </div>
+        </div>
+        <!-- Render only on < xs -->
+        <div class="d-flex d-sm-none row align-items-center small">
+          <div class="col">
+            {{ team_macro(fixture, fixture.home_team) }}
+            {{ team_macro(fixture, fixture.away_team) }}
+          </div>
+          {% if fixture.status.value == 'FINISHED' or fixture.status.value == 'AWARDED' %}
+            <div class="col-1">
+              <div class="row align-items-center text-end">
+                <div class="col-12 pe-1 py-1">
+                  {{ fixture.home_score }}
+                </div>
+                <div class="col-12 pe-1 py-1">
+                  {{ fixture.away_score }}
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+        {{ caller() }}
+      </div>
+    </div>
+  </div>
+{% endmacro %}

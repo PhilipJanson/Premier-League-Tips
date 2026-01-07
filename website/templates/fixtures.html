@@ -3,109 +3,10 @@
 
 {% block title %}Matcher{% endblock %}
 
-{% macro team_macro(fixture, team) %}
-  <div class="row align-items-center">
-    <div class="col-auto ps-1 py-1">
-      <img class="team-logo-thumbnail" src="{{ team.logo }}" alt="Logo"/>
-    </div>
-    <div class="col text-start text-truncate px-0">
-      {{ team.short_name }}
-    </div>
-  </div>
-{% endmacro %}
-
-{% macro fixture_macro(fixture) %}
-  <div id="{{ fixture.fixture_id }}" class="card col-12 col-lg-6 my-2 my-lg-0 shadow fixtures-card" tabindex="0">
-    <div class="card-header bg-white text-nowrap text-center">
-      {{ utils.fixture_status_macro(fixture) }}
-    </div>
-    <div class="card-body">
-      <!-- Render only on > xs -->
-      <div class="d-none d-sm-flex row align-items-center my-3 mx-1">
-        <div class="col-1">
-          <img class="team-logo-thumbnail" src="{{ fixture.home_team.logo }}" alt="Logo"/>
-        </div>
-        <div class="col-4 text-start text-truncate">{{ fixture.home_team.short_name }}</div>
-        <div class="col-2 text-center">
-          {% if fixture.status.value == 'FINISHED' or fixture.status.value == 'AWARDED' %}
-            {{ fixture.home_score }}-{{ fixture.away_score }}
-          {% else %}
-            -
-          {% endif %}
-        </div>
-        <div class="col-4 text-end text-truncate">{{ fixture.away_team.short_name }}</div>
-        <div class="col-1">
-          <img class="team-logo-thumbnail" src="{{ fixture.away_team.logo }}" alt="Logo"/>
-        </div>
-      </div>
-      <!-- Render only on < xs -->
-      <div class="d-flex d-sm-none row align-items-center my-3 small">
-        <div class="col">
-          {{ team_macro(fixture, fixture.home_team) }}
-          {{ team_macro(fixture, fixture.away_team) }}
-        </div>
-        {% if fixture.status.value == 'FINISHED' or fixture.status.value == 'AWARDED' %}
-          <div class="col-1">
-            <div class="row align-items-center text-end">
-              <div class="col-12 pe-1 py-1">
-                {{ fixture.home_score }}
-              </div>
-              <div class="col-12 pe-1 py-1">
-                {{ fixture.away_score }}
-              </div>
-            </div>
-          </div>
-        {% endif %}
-      </div>
-      <!-- Results -->
-      <div class="border-top border-secondary-subtle mt-5">
-        {% if fixture.fixture_id not in tip_ids %}
-          <div class="mt-2 text-center">Tippa matchen för att se andras tips.</div>
-        {% else %}
-          <table class="table table-sm text-center mt-2">
-            <thead>
-              <tr>
-                <th scope="row">Användare</th>
-                <th scope="row">Tips</th>
-                <th scope="row">Resultat</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for user in all_users %}
-                {% for tip in user.tips %}
-                  {% if tip.fixture_id == fixture.fixture_id %}
-                    <tr>
-                      <td>{{ user.username | capitalize }}</td>
-                      <td>{{ utils.tip_icon_macro(tip.tip_value.value) }}</td>
-                      <td>
-                        {% if tip.tip_status.value == 1 %}
-                          <span class="text-success">
-                            <i class="fa-solid fa-circle-check"></i>
-                          </span>
-                        {% elif tip.tip_status.value == -1 %}
-                          <span class="text-danger">
-                            <i class="fa-solid fa-circle-xmark"></i>
-                          </span>
-                        {% else %}
-                          -
-                        {% endif %}
-                      </td>
-                    </tr>
-                  {% endif %}
-                {% endfor %}
-              {% endfor %}
-            </tbody>
-          </table>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-{% endmacro %}
-
 {% block content %}
   <h1 class="pb-2 text-center">Matcher</h1>
   <div class="container">
-    <div class="row mx-3 mx-lg-0">
+    <div class="row g-2">
       {% set prev_round = namespace(round = "0") %}
       {% set index = namespace(value = 1) %}
       {% for fixture in fixtures %}
@@ -126,7 +27,48 @@
           <div class="w-100"></div>
         {% endif %}
         <!-- Fixture -->
-        {{ fixture_macro(fixture) }}
+        {% call utils.fixture_macro(fixture) %}
+        <div class="border-top border-secondary-subtle mt-4">
+          {% if fixture.fixture_id not in tip_ids %}
+            <div class="mt-2 text-center">Tippa matchen för att se andras tips.</div>
+          {% else %}
+            <table class="table table-sm text-center mt-1 mb-0 pb-0">
+              <thead>
+                <tr>
+                  <th scope="row">Användare</th>
+                  <th scope="row">Tips</th>
+                  <th scope="row">Resultat</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for user in all_users %}
+                  {% for tip in user.tips %}
+                    {% if tip.fixture_id == fixture.fixture_id %}
+                      <tr>
+                        <td>{{ user.username | capitalize }}</td>
+                        <td>{{ utils.tip_icon_macro(tip.tip_value.value) }}</td>
+                        <td>
+                          {% if tip.tip_status.value == 1 %}
+                            <span class="text-success">
+                              <i class="fa-solid fa-circle-check"></i>
+                            </span>
+                          {% elif tip.tip_status.value == -1 %}
+                            <span class="text-danger">
+                              <i class="fa-solid fa-circle-xmark"></i>
+                            </span>
+                          {% else %}
+                            -
+                          {% endif %}
+                        </td>
+                      </tr>
+                    {% endif %}
+                  {% endfor %}
+                {% endfor %}
+              </tbody>
+            </table>
+          {% endif %}
+        </div>
+        {% endcall %}
         {% if index.value % 2 == 0 %}
           <div class="w-100"></div>
         {% endif %}
