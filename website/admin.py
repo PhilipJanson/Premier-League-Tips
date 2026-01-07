@@ -17,6 +17,7 @@ from flask import (
 )
 from flask_login import login_required, current_user
 from functools import wraps
+from sqlalchemy import text
 from typing import Any, Callable
 from .api_handler import FixtureSchema, StandingSchema, api_call
 from .models import User, General, Fixture, Team, Result, Season
@@ -276,3 +277,20 @@ def endpoint_toggle_holiday_theme() -> Response:
     db.session.commit()
 
     return jsonify({}), 200
+
+@admin.route("/health-check")
+def health_check() -> Response:
+    """Healtch check for app"""
+
+    now = datetime.datetime.now()
+    try:
+        db.session.execute(text('SELECT 1'))
+        return jsonify({
+            'status': 'ok',
+            'time': now
+        }), 200
+    except Exception as err:
+        return jsonify({
+            'status': 'fail',
+            'time': now
+        }), 500
