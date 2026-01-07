@@ -1,8 +1,11 @@
-{% extends "auth.html" %}
+{% extends "base.html" %}
+{% import "utils.html" as utils %}
+
 {% block title %}Logga In{% endblock %}
+
 {% block content %}
   <div class="container">
-    {% call auth_card("Logga In") %}
+    {% call utils.auth_card_macro("Logga In") %}
     <form method="POST">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <div class="form-group mb-2">

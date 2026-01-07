@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% import "utils.html" as utils %}
+
 {% block title %}Tippa Matcher{% endblock %}
 
 {% macro team_macro(fixture, team) %}
@@ -22,15 +24,7 @@
       </div>
       <!-- Time -->
       <div class="d-flex col-6 col-sm-3 border-start justify-content-center align-items-center small text-sm-nowrap text-center">
-        {% if fixture.status.value == 'FINISHED' or fixture.status.value == 'AWARDED' %}
-          Slut
-        {% elif fixture.status.value == 'POSTPONED' %}
-          <div class="text-warning">Uppskjuten</div>
-        {% elif fixture.status.value == 'CANCELLED' %}
-          <div class="text-danger">Inställd</div>
-        {% else %}
-          {{ fixture.date_time.strftime('%Y-%m-%d %H:%M') }}
-        {% endif %}
+        {{ utils.fixture_status_macro(fixture) }}
       </div>
       <!-- Tip buttons -->
       <div class="d-flex col-12 col-sm-4 border-sm-start mt-2 mt-sm-0 justify-content-center align-items-center small">
@@ -38,7 +32,7 @@
           {% for value, cls in buttons.items() %}
             <input type="radio" class="btn-check" name="{{ fixture.fixture_id }}-buttons" id="{{ fixture.fixture_id }}-tips-{{ value }}" autocomplete="off" {% if 'active' in cls %} checked="checked" {% endif %}>
             <label class="d-flex btn tip-button align-items-center {{ cls }}" for="{{ fixture.fixture_id }}-tips-{{ value }}" id="tipbutton-{{ fixture.fixture_id }}-{{ value }}" data-enabled="{{ 'true' if enabled else 'false' }}">
-              {{ tip_icon(value, "{{ 'text-light' if 'active' in cls else 'text-primary' }}") }}
+              {{ utils.tip_icon_macro(value, "{{ 'text-light' if 'active' in cls else 'text-primary' }}") }}
             </label>
           {% endfor %}
         </div>
@@ -84,11 +78,12 @@
       Tippa
     </button>
   </div>
-  <!--The fixture_id of the closest fixture in time-->
+  <!-- The fixture_id of the closest fixture in time -->
   <div id="next-fixture-id" hidden="hidden">
     {{ next_fixture.fixture_id }}
   </div>
 {% endblock %}
+
 {% block script %}
   <script type="text/javascript" src="{{ url_for('static', filename='js/tip.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='js/scrollto.js') }}"></script>

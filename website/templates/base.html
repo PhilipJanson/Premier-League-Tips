@@ -16,14 +16,14 @@
   </head>
 
   <!-- Navlink -->
-  {% macro nav_link(route, label) %}
+  {% macro nav_link_macro(route, label) %}
     <li class="nav-item me-2">
       <a class="nav-link" id="{{ route }}" href="/{{ route }}">{{ label }}</a>
     </li>
   {% endmacro %}
 
   <!-- Dropdown Navlink -->
-  {% macro nav_dropdown(route, label) %}
+  {% macro nav_dropdown_macro(route, label) %}
     <li class="nav-item dropdown me-2">
       <a class="nav-link dropdown-toggle" id="{{ route }}-list" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         {{ label }}
@@ -39,7 +39,7 @@
   {% endmacro %}
 
   <!-- Navbar -->
-  {% macro navbar() %}
+  {% macro navbar_macro() %}
     <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark shadow">
       <button class="navbar-toggler ms-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbar">
         <span class="navbar-toggler-icon"></span>
@@ -56,13 +56,13 @@
               <a class="nav-link" id="home" href="/">Hem</a>
             </li>
             {% if current_user.is_authenticated %}
-              {{ nav_link("tip/default", "Tippa") }}
-              {{ nav_link("fixtures", "Matcher") }}
-              {{ nav_dropdown("standings", "Tabell") }}
-              {{ nav_dropdown("stats", "Statistik") }}
-              {{ nav_link("team-ranker", "Lagrankning") }}
+              {{ nav_link_macro("tip/default", "Tippa") }}
+              {{ nav_link_macro("fixtures", "Matcher") }}
+              {{ nav_dropdown_macro("standings", "Tabell") }}
+              {{ nav_dropdown_macro("stats", "Statistik") }}
+              {{ nav_link_macro("team-ranker", "Lagrankning") }}
               {% if current_user.is_admin %}
-                {{ nav_link("admin", "Admin") }}
+                {{ nav_link_macro("admin", "Admin") }}
               {% endif %}
             {% endif %}
             <!-- Render only in hamburger menu on < lg -->
@@ -85,16 +85,16 @@
           <!-- Right side navbar, render only on > lg -->
           <ul class="navbar-nav ms-auto align-items-center d-none d-lg-flex">
             {% if current_user.is_authenticated %}
-              {{ nav_link("user/" ~ current_user.id, current_user.username | capitalize) }}
+              {{ nav_link_macro("user/" ~ current_user.id, current_user.username | capitalize) }}
               {% if current_user.favorite_team %}
                 <a id="link-logo" href="/user/{{ current_user.id }}">
                   <img class="team-logo-thumbnail rounded-circle bg-white float-start me-3 p-1" src="{{ current_user.favorite_team.logo }}" alt="Team logo"/>
                 </a>
               {% endif %}
-              {{ nav_link("logout", "Logga Ut") }}
+              {{ nav_link_macro("logout", "Logga Ut") }}
             {% else %}
-              {{ nav_link("login", "Logga In") }}
-              {{ nav_link("signup", "Skapa Konto") }}
+              {{ nav_link_macro("login", "Logga In") }}
+              {{ nav_link_macro("signup", "Skapa Konto") }}
             {% endif %}
           </ul>
         </div>
@@ -103,7 +103,7 @@
   {% endmacro %}
 
   <!-- Flashes -->
-  {% macro flashes() %}
+  {% macro flash_macro() %}
     {% with messages = get_flashed_messages(with_categories = true) %}
     {% if messages %}
       {% for category, message in messages %}
@@ -123,29 +123,13 @@
     {% endwith %}
   {% endmacro %}
 
-  {% macro tip_icon(tip_value, class) %}
-    {% if tip_value == '1' %}
-      <span class="{{ class if class else 'text-success' }}">
-        <i class="fa-solid fa-1"></i>
-      </span>
-    {% elif tip_value == 'X' %}
-      <span class="{{ class if class else 'text-warning' }}">
-        <i class="fa-solid fa-x"></i>
-      </span>
-    {% elif tip_value == '2' %}
-      <span class="{{ class if class else 'text-danger' }}">
-        <i class="fa-solid fa-2"></i>
-      </span>
-    {% else %}Invalid tip value{% endif %}
-  {% endmacro %}
-
   <body class="d-flex flex-column min-vh-100 bg-light">
     {% if general and general.holiday_theme %}
       <div id="holiday-snow" aria-hidden="true"></div>
     {% endif %}
 
-    {{ navbar() }}
-    {{ flashes() }}
+    {{ navbar_macro() }}
+    {{ flash_macro() }}
 
     <!-- Content -->
     <div class="holiday-wrapper flex-grow-1 pt-4">

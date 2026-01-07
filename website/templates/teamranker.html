@@ -1,5 +1,7 @@
 {% extends "base.html" %}
+
 {% block title %}Team Picker{% endblock %}
+
 {% block content %}
   <h1 class="pb-2 text-center">Team Picker</h1>
   <div class="container border rounded shadow p-4 bg-white" id="sortable" data-sortable-id="0" aria-dropeffect="move">
@@ -15,6 +17,7 @@
     {% endfor %}
   </div>
 {% endblock %}
+
 {% block script %}
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>

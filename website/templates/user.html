@@ -1,7 +1,9 @@
 {% extends "base.html" %}
+
 {% block title %}
   {{ current_user.username | capitalize }}
 {% endblock %}
+
 {% block content %}
   <h1 class="pb-2 text-center">{{ current_user.username | capitalize }}</h1>
   <div class="container text-center p-4 ">
@@ -39,6 +41,7 @@
 
   </div>
 {% endblock %}
+
 {% block script %}
   <script type="text/javascript" src="{{ url_for('static', filename='js/user.js') }}"></script>
 {% endblock %}

@@ -1,0 +1,39 @@
+<!-- Fixture Status -->
+{% macro fixture_status_macro(fixture) %}
+  {% if fixture.status.value == 'FINISHED' or fixture.status.value == 'AWARDED' %}
+    Slut
+  {% elif fixture.status.value == 'POSTPONED' %}
+    <div class="text-warning">Uppskjuten</div>
+  {% elif fixture.status.value == 'CANCELLED' %}
+    <div class="text-danger">Inställd</div>
+  {% else %}
+    {{ fixture.date_time.strftime('%Y-%m-%d %H:%M') }}
+  {% endif %}
+{% endmacro %}
+
+<!-- Tip Icon -->
+{% macro tip_icon_macro(tip_value, class) %}
+  {% if tip_value == '1' %}
+    <span class="{{ class if class else 'text-success' }}">
+      <i class="fa-solid fa-1"></i>
+    </span>
+  {% elif tip_value == 'X' %}
+    <span class="{{ class if class else 'text-warning' }}">
+      <i class="fa-solid fa-x"></i>
+    </span>
+  {% elif tip_value == '2' %}
+    <span class="{{ class if class else 'text-danger' }}">
+      <i class="fa-solid fa-2"></i>
+    </span>
+  {% else %}Invalid tip value{% endif %}
+{% endmacro %}
+
+<!-- Auth Card -->
+{% macro auth_card_macro(title) %}
+  <div class="card auth-card">
+    <div class="card-body">
+      <h5 class="card-title">{{ title }}</h5>
+      {{ caller() }}
+    </div>
+  </div>
+{% endmacro %}
