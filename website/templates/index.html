@@ -4,30 +4,32 @@
 {% block title %}Jansonfotboll{% endblock %}
 
 {% block content %}
-  <div class="container text-center">
-    {% if general and general.holiday_theme %}
-      <h1 class="pb-2">God Jul!</h1>
-      <img class="large-logo" src="{{ url_for('static', filename='images/christmas-logo.png') }}" alt="Christmas Logo"/>
-    {% else %}
-      <h1 class="pb-2">Jansonfotboll</h1>
-      <img class="large-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo"/>
-    {% endif %}
-    <div class="ps-5 pe-5 mb-5">
-      En webapplikation skapad för att visa matcher och resultat från Premier League.
-    </div>
-    {% if fixtures is not none %}
-      <h3 class="pb-2">Veckans matcher</h3>
-      <div class="row mx-3 mx-lg-0 g-2">
-        {% for fixture in fixtures %}
-          {% call utils.fixture_macro(fixture) %}
-          {% endcall %}
-          {% if loop.index % 2 == 0 %}
-            <div class="w-100"></div>
-          {% endif %}
-        {% endfor %}
+  <div class="container">
+    <div class="text-center">
+      {% if general and general.holiday_theme %}
+        <h1 class="pb-2">God Jul!</h1>
+        <img class="large-logo" src="{{ url_for('static', filename='images/christmas-logo.png') }}" alt="Christmas Logo"/>
+      {% else %}
+        <h1 class="pb-2">Jansonfotboll</h1>
+        <img class="large-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo"/>
+      {% endif %}
+      <div class="ps-5 pe-5 mb-5">
+        En webapplikation skapad för att visa matcher och resultat från Premier League.
       </div>
-    {% else %}
-      <h3>Inga matcher denna vecka</h3>
-    {% endif %}
+      {% if fixtures %}
+        <h3 class="pb-2">Veckans matcher</h3>
+        <div class="row mx-3 mx-lg-0 g-2">
+          {% for fixture in fixtures %}
+            {% call utils.fixture_macro(fixture) %}
+            {% endcall %}
+            {% if loop.index % 2 == 0 %}
+              <div class="w-100"></div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <h3>Inga matcher denna vecka</h3>
+      {% endif %}
+    </div>
   </div>
 {% endblock %}

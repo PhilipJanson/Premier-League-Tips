@@ -5,7 +5,7 @@ from __future__ import annotations
 import enum
 import uuid
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from flask import current_app
 from flask_login import UserMixin
 from sqlalchemy import Boolean, ForeignKey, Integer, String, DateTime, Table, Column, Text, Enum
@@ -47,7 +47,6 @@ class User(db.Model, UserMixin):
 
         user = User(username=username, password=hashed_password, is_admin=False)
         db.session.add(user)
-        current_app.logger.debug(f"Created user: {user.username} ({user.id})")
         return user
 
     @staticmethod
@@ -126,7 +125,7 @@ class Fixture(db.Model, Updateable):
                 .all())
 
     @staticmethod
-    def by_dates(season: str, start_date: str, end_date: str) -> list[Fixture]:
+    def by_dates(season: str, start_date: date, end_date: date) -> list[Fixture]:
         """Return the list of fixtures in a given season between two dates."""
 
         return (db.session.query(Fixture)
@@ -134,6 +133,7 @@ class Fixture(db.Model, Updateable):
                 .filter(Season.season == season)
                 .filter(Fixture.date_time >= start_date)
                 .filter(Fixture.date_time <= end_date)
+                .order_by(Fixture.date_time)
                 .all())
 
     @staticmethod

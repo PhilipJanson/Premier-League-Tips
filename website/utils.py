@@ -49,14 +49,13 @@ def check_password_rules(password: str) -> None:
     if not re.search(r"[^\w\s]", password):
         raise ValidationError("Lösenordet måste innehålla minst ett specialtecken.")
 
-# TODO: Change return types to datetime
-def get_week_dates() -> tuple[str, str]:
+def get_week_dates() -> tuple[date, date]:
     """Return the start and end dates in string format for the current week."""
 
     today = date.today()
     start = today - timedelta(days=today.weekday())
     end = start + timedelta(days=6)
-    return str(start), str(end)
+    return start, end
 
 def calculate_next_fixture(fixtures: list[Fixture], selected_date: datetime) -> Fixture:
     """Return the next upcoming fixture given a datetime object. If a fixture can't be found,

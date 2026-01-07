@@ -9,6 +9,7 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 from sqlalchemy.pool import QueuePool
+from typing import Any
 
 # Database location, only used in dev environment
 DB_NAME = 'database.db'
@@ -87,26 +88,32 @@ def create_app() -> Flask:
     login_manager.init_app(app)
 
     @app.context_processor
-    def inject_general() -> General | None:
-        try:
-            return {'general': General.get()}
-        except Exception:
-            return {'general': None}
+    def inject_context_data() -> dict[str, Any]:
+        now = datetime.now()
+        context = {
+            'general': None,
+            'season_data': None,
+            'now': now
+        }
 
-    @app.context_processor
-    def inject_now() -> datetime:
-        return {'now': datetime.now()}
+        try:
+            context['general'] = General.get()
+            context['season_data'] = Season.get_season_data()
+        except Exception as err:
+            app.logger.exception(err)
+
+        return context
 
     @login_manager.user_loader
     def load_user(user_id: str) -> User | None:
         return User.by_id(user_id)
 
     @app.errorhandler(404)
-    def not_found_error(_error) -> str:
-        return render_template('404.html'), 404
+    def not_found_error(_error) -> Response:
+        return render_template('not_found.html'), 404
 
     @app.after_request
-    def set_security_headers(response: Response):
+    def set_security_headers(response: Response) -> Response:
         # Clickjacking, MIME sniffing, referrer, and CSP
         response.headers['X-Frame-Options'] = 'DENY'
         response.headers['X-Content-Type-Options'] = 'nosniff'

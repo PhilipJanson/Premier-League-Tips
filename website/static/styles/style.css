@@ -106,6 +106,13 @@ html {
 }
 
 /*
+ * ======= Standings =======
+ */
+.standings-table {
+  min-width: 360px;
+}
+
+/*
  * ======= Stats =======
  */
 .stat-card {

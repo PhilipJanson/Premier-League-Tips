@@ -46,11 +46,10 @@ def admin_required(func) -> Callable:
 def endpoint_admin() -> str:
     """Page to display options for an admin user."""
 
-    kwargs = {
-        'season_data': Season.get_season_data(),
+    context = {
         'all_users': User.all(),
     }
-    return render_template('admin.html', **kwargs)
+    return render_template('admin.html', **context)
 
 @admin.route('/fetch-api-fixtures', methods=['POST'])
 @login_required

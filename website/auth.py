@@ -1,6 +1,15 @@
 """Auth."""
 
-from flask import Blueprint, Response, render_template, flash, redirect, url_for, request
+from flask import (
+    Blueprint,
+    Response,
+    render_template,
+    flash,
+    redirect,
+    url_for,
+    request,
+    current_app
+)
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import User
@@ -32,7 +41,7 @@ def endpoint_login() -> Response:
             flash("Inloggad!", category='success')
             return redirect(url_for('views.endpoint_home'))
 
-    return render_template('login.html', user=None)
+    return render_template('login.html')
 
 @auth.route('/logout')
 @login_required
@@ -76,8 +85,12 @@ def endpoint_signup() -> Response:
             db.session.commit()
             login_user(new_user, remember=remember_me)
             flash("Konto skapat!", category='success')
+            current_app.logger.info(
+                "New user created {username} ({uuid}).".format(username=new_user.username,
+                                                               uuid=new_user.id)
+            )
             return redirect(url_for('views.endpoint_home'))
         except ValidationError as err:
             flash(err.message, category='error')
 
-    return render_template('signup.html', user=None)
+    return render_template('signup.html')

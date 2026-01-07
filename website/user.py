@@ -9,7 +9,7 @@ from flask import (
     request
 )
 from flask_login import login_required, current_user
-from .models import User, Season, Team
+from .models import User, Team
 from . import db
 
 user = Blueprint('user', __name__)
@@ -24,11 +24,10 @@ def endpoint_user(user_id: str) -> str:
         flash("Du är ej behörig att visa denna sida.", category='error')
         return redirect(url_for('views.endpoint_home'))
 
-    kwargs = {
-        'season_data': Season.get_season_data(),
+    context = {
         'teams': Team.all()
     }
-    return render_template('user.html', **kwargs)
+    return render_template('user.html', **context)
 
 @user.route('/<user_id>/set-favorite-team', methods=['POST'])
 @login_required
@@ -79,7 +78,4 @@ def endpoint_change_password(user_id: str) -> str:
         flash("Du är ej behörig att visa denna sida.", category='error')
         return redirect(url_for('views.endpoint_home'))
 
-    kwargs = {
-        'season_data': Season.get_season_data(),
-    }
-    return render_template('change_password.html', **kwargs)
+    return render_template('change_password.html')

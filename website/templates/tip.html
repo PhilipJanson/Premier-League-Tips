@@ -44,6 +44,7 @@
 {% block content %}
   <h1 class="pb-2 text-center">Tippa matcher</h1>
   <div class="container">
+    {% if fixture_data %}
     <div class="row mx-3 mx-lg-0">
       {% set prev_round = namespace(round = "0") %}
       {% set index = namespace(value = 1) %}
@@ -72,7 +73,11 @@
         {% set index.value = index.value + 1 %}
       {% endfor %}
     </div>
+    {% else %}
+      {{ utils.no_data_macro() }}
+    {% endif %}
   </div>
+  <!-- Tip button -->
   <div id="nav-bottom-button" class="tip-bottom-nav text-end p-2 pe-4">
     <button class="btn btn-primary" type="button" id="tip-button-submit">
       Tippa

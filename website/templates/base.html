@@ -137,17 +137,23 @@
     </div>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white py-3 mt-5 shadow">
-      <div class="container text-center">
-        <small>
-          &copy;
-          {{ now.year }}
-          Philip Janson |
-          <a href="/privacy-policy" class="text-white text-decoration-underline">Privacy Policy</a>
-          |
-          <a href="https://github.com/PhilipJanson/Jansonfotboll/blob/main/LICENSE" class="text-white text-decoration-underline">License</a>
-          | Football data provided by the Football-Data.org API.
-        </small>
+    <footer class="bg-dark py-3 mt-5">
+      <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-center align-items-center text-white text-center gap-2">
+          <div class="col-auto">&copy;
+            {{ now.year }}
+            Philip Janson</div>
+          <div class="d-none d-md-block">|</div>
+          <div class="col-auto">
+            <a href="/privacy-policy" class="text-white text-decoration-underline" target="_blank">Privacy Policy</a>
+          </div>
+          <div class="d-none d-md-block">|</div>
+          <div class="col-auto">
+            <a href="https://github.com/PhilipJanson/Jansonfotboll/blob/main/LICENSE" class="text-white text-decoration-underline" target="_blank">License</a>
+          </div>
+          <div class="d-none d-md-block">|</div>
+          <div class="col-auto">Football data provided by the Football-Data.org API.</div>
+        </div>
       </div>
     </footer>
 

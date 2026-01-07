@@ -27,9 +27,6 @@ def api_call(endpoint: str, search_query: dict[str, str]) -> tuple[dict, Any]:
     response = requests.get(uri.strip(), headers=headers)
     response.raise_for_status()
 
-    # TODO remove
-    print(response.headers)
-
     response_json = response.json()
     if DUMP_DATA:
         print(json.dumps(response_json, indent=4))
