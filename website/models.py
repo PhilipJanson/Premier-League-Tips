@@ -35,6 +35,7 @@ class User(db.Model, UserMixin):
     email: Mapped[str] = mapped_column(String(100), nullable=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True),
                                                 default=lambda: datetime.now(timezone.utc))
+    session_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     tips: Mapped[list['Tip']] = relationship("Tip", back_populates='user')
     results: Mapped[list['Result']] = relationship("Result", back_populates='user')
     favorite_team_id: Mapped[int] = mapped_column(ForeignKey('team.team_id'), nullable=True)

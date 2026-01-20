@@ -65,3 +65,4 @@ pylint ${PWD}
 - [Fontawesome](https://fontawesome.com)
 - [Supabase](https://supabase.com/dashboard)
 - [Render](https://dashboard.render.com/web)
+- [Trello](https://trello.com)

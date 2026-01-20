@@ -4,42 +4,116 @@
   {{ current_user.username | capitalize }}
 {% endblock %}
 
+{% macro user_card(title) %}
+  <div class="card user-card">
+    {% if title %}
+    <div class="card-header">
+      {{ title }}
+    </div>
+    {% endif %}
+    <div class="card-body p-4">
+      {{ caller() }}
+    </div>
+  </div>
+{% endmacro %}
+
 {% block content %}
-  <h1 class="pb-2 text-center">{{ current_user.username | capitalize }}</h1>
-  <div class="container text-center p-4">
-    <div class="row justify-content-center align-items-center">
-      <div class="col-auto border bg-white shadow">
-        <div class="border-bottom pb-3 mb-1">
-          <div class="mb-4">
-            <h2>Favoritlag</h2>
-            {% if current_user.favorite_team %}
-              <div>
-                <img src="{{ current_user.favorite_team.logo }}" alt="Logo"/>
-                <p>{{ current_user.favorite_team.short_name }}</p>
-              </div>
-            {% else %}
-              <p>Inget lag valt</p>
-            {% endif %}
+  <div class="container">
+    {% call user_card() %}
+          <h2 class="mb-0">
+            {{ current_user.username | capitalize }}
+          </h2>
+          <small class="text-muted">
+            Medlem sedan {{ current_user.timestamp.strftime('%Y-%m-%d') }}
+          </small>
+    {% endcall %}
+    {% call user_card('Favoritlag') %}
+          <div class="row py-3">
+            <div class="d-flex flex-column col-12 col-sm-6 text-center justify-content-center">
+              {% if current_user.favorite_team %}
+                <div>
+                  <img class="border border-dark-subtle rounded-circle user-team-logo p-2 mb-3" src="{{ current_user.favorite_team.logo }}" alt="Logo"/>
+                </div>
+              {% else %}
+                <p class="font-monospace">Inget lag valt</p>
+              {% endif %}
+            </div>
+            <div class="d-flex flex-column col-12 col-sm-6 justify-content-center gap-2">
+              <select class="form-control" name="set-favorite-team-select" id="set-favorite-team-select">
+                <option value="">Välj lag...</option>
+                {% for team in teams %}
+                  <option value="{{ team.team_id }}" {% if current_user.favorite_team and current_user.favorite_team.team_id == team.team_id %} selected="selected" {% endif %}>{{ team.short_name }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn btn-success" type="button" id="button-set-favorite-team">
+                Välj favoritlag
+              </button>
+            </div>
           </div>
-          <div class="mb-3">Välj favoritlag</div>
-          <div class="mb-3 d-flex flex-row gap-2 mx-5">
-            <select class="form-control" name="set-favorite-team-select" id="set-favorite-team-select">
-              {% for team in teams %}
-                <option value="{{ team.team_id }}">{{ team.short_name }}</option>
-              {% endfor %}
-            </select>
-            <button class="btn btn-success" type="button" id="button-set-favorite-team" data-uuid="{{ current_user.id }}">
-              Välj favoritlag
+    {% endcall %}
+    <div class="card user-card">
+      <div class="card-header">
+      </div>
+      <div class="card-body p-4">
+        <!-- Favorite team -->
+        <h4 class="text-center">Favoritlag</h4>
+        <div class="border-bottom border-dark-subtle">
+
+        </div>
+        <!-- Data -->
+        <div class="border-bottom border-dark-subtle">
+          <ul class="list-group list-group-flush m-1">
+            <li class="list-group-item">
+              Konto skapat:
+              {{ current_user.timestamp.strftime('%Y-%m-%d') }}
+            </li>
+            <li class="list-group-item align-items-bottom">
+              <div class="text-truncate">
+                Email:
+                {% if current_user.email %}
+                  {{ current_user.email }}
+                {% else %}
+                  Ingen email
+                {% endif %}
+              </div>
+            </li>
+          </ul>
+        </div>
+        <!-- Email -->
+        <h4 class="text-center mt-3">Email</h4>
+        <div class="border-bottom border-dark-subtle pb-3">
+          <form class="text-center">
+            <div class="form-group mb-2">
+              <input type="email" class="form-control" id="email" name="email" placeholder="Skriv email" required="required"/>
+            </div>
+            <div class="form-group form-check mb-2 text-start">
+              <input type="checkbox" class="form-check-input" id="accept-privacy" name="accept-privacy" required="required"/>
+              <label class="form-check-label" for="accept-privacy">
+                Jag godkänner att mina uppgifter sparas enligt
+                <a href="{{ url_for('views.endpoint_privacy_policy') }}" target="_blank">
+                  integritetspolicyn
+                </a>
+              </label>
+            </div>
+            <button type="submit" class="btn btn-success">Uppdatera email</button>
+          </form>
+        </div>
+        <!-- Danger Zone -->
+        <h4 class="text-center mt-3">Danger zone</h4>
+        <div class="border-bottom border-dark-subtle pb-3">
+          <div class="d-flex flex-column align-items-center gap-2">
+            <button class="btn btn-primary" type="button" id="button-change-password">
+              Byt Lösenord
+            </button>
+            <button class="btn btn-danger" type="button" id="button-remove-user">
+              Radera mitt konto
             </button>
           </div>
         </div>
-        <div class="mb-3">
-          <a href="{{ url_for('user.endpoint_change_password', user_id=current_user.id) }}">Byt lösenord</a>
-        </div>
       </div>
     </div>
-
   </div>
+  <div class="hidded" id="user-id" data-uuid="{{ current_user.id }}"></div>
 {% endblock %}
 
 {% block script %}

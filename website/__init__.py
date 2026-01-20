@@ -3,8 +3,8 @@
 import os
 
 from datetime import datetime, timedelta
-from flask import Flask, Response, render_template
-from flask_login import LoginManager
+from flask import Flask, Response, render_template, session
+from flask_login import LoginManager, logout_user, current_user
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
@@ -13,8 +13,6 @@ from typing import Any
 
 # Database location, only used in dev environment
 DB_NAME = 'database.db'
-# Premier League ID
-LEAGUE_ID = 39
 # The current active season
 # Note: Only used as a fallback in case no active season is set in the database
 ACTIVE_SEASON = '2025'
@@ -87,30 +85,17 @@ def create_app() -> Flask:
     login_manager.login_view = 'auth.endpoint_login'
     login_manager.init_app(app)
 
-    @app.context_processor
-    def inject_context_data() -> dict[str, Any]:
-        now = datetime.now()
-        context = {
-            'general': None,
-            'season_data': None,
-            'now': now
-        }
-
-        try:
-            context['general'] = General.get()
-            context['season_data'] = Season.get_season_data()
-        except Exception as err:
-            app.logger.exception(err)
-
-        return context
-
     @login_manager.user_loader
     def load_user(user_id: str) -> User | None:
         return User.by_id(user_id)
 
-    @app.errorhandler(404)
-    def not_found_error(_error) -> Response:
-        return render_template('not_found.html'), 404
+    @app.before_request
+    def validate_session_version() -> None:
+        if not current_user.is_authenticated:
+            return
+
+        if session.get('session_version') != current_user.session_version:
+            logout_user()
 
     @app.after_request
     def set_security_headers(response: Response) -> Response:
@@ -153,5 +138,26 @@ def create_app() -> Flask:
             "base-uri 'none'; "
         )
         return response
+
+    @app.context_processor
+    def inject_context_data() -> dict[str, Any]:
+        now = datetime.now()
+        context = {
+            'general': None,
+            'season_data': None,
+            'now': now
+        }
+
+        try:
+            context['general'] = General.get()
+            context['season_data'] = Season.get_season_data()
+        except Exception as err:
+            app.logger.exception(err)
+
+        return context
+
+    @app.errorhandler(404)
+    def not_found_error(_error) -> Response:
+        return render_template('not_found.html'), 404
 
     return app

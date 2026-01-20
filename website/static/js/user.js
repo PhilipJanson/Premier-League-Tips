@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function setFavoriteTeam(userId, csrfToken) {
     const teamId = document.getElementById('set-favorite-team-select').value;
     if (!teamId) {
-      console.log('teamId was null');
       return;
     }
 
@@ -21,7 +20,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const csrfToken = document
     .querySelector('meta[name="csrf-token"]')
     .getAttribute('content');
-  const button = document.getElementById('button-set-favorite-team');
-  const uuid = button.dataset.uuid;
-  button.addEventListener('click', () => setFavoriteTeam(uuid, csrfToken));
+  const userIdElement = document.getElementById('user-id');
+  const userId = userIdElement.dataset.uuid;
+
+  const favoriteTeamButton = document.getElementById(
+    'button-set-favorite-team'
+  );
+  favoriteTeamButton.addEventListener('click', () =>
+    setFavoriteTeam(userId, csrfToken)
+  );
+
+  const changePasswordButton = document.getElementById(
+    'button-change-password'
+  );
+  changePasswordButton.addEventListener(
+    'click',
+    () => (window.location.href = `/user/${userId}/change-password`)
+  );
 });
